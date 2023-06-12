@@ -15,8 +15,16 @@ class EmployeeViewSet(ModelViewSet):
     input_schema = EmployeeIn
     output_schema = EmployeeOut
 
-    retrieve = RetrieveModelView(output_schema=output_schema)
-    update = UpdateModelView(input_schema=input_schema, output_schema=output_schema)
+    retrieve = RetrieveModelView(
+        output_schema=output_schema,
+        queryset_getter=lambda id: Employee.objects.select_related("department"),
+    )
+    update = UpdateModelView(
+        input_schema=input_schema,
+        output_schema=output_schema,
+        pre_save=lambda request, instance: None,
+        post_save=lambda request, instance: None,
+    )
     delete = DeleteModelView()
 
 

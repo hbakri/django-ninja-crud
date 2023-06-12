@@ -1,7 +1,7 @@
-.PHONY: build
-build:
-	@docker build -t django-ninja-crud .
+export DJANGO_SETTINGS_MODULE=tests.test_settings
 
 .PHONY: run-tests
 run-tests:
-	@docker run --rm django-ninja-crud
+	@python -m poetry run coverage run -m django test
+	@python -m poetry run coverage report
+	@python -m poetry run coverage html

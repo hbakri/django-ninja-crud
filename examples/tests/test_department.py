@@ -30,17 +30,20 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         cls.employee = Employee.objects.create(
             first_name="first_name", last_name="last_name", department=cls.department_1
         )
-        cls.credentials_ok = {}
+        cls.token = "supersecret"
 
     def get_instance(self: Union["DepartmentViewSetTest", TestCase]):
         return self.department_1
 
     def get_credentials(self: Union["DepartmentViewSetTest", TestCase]):
-        return Credentials(ok=self.credentials_ok)
+        return Credentials(
+            ok={"HTTP_AUTHORIZATION": f"Bearer {self.token}"}, unauthorized={}
+        )
 
     department_payloads = Payloads(
         ok={"title": "new_title"},
         bad_request={"bad-title": 1},
+        conflict={"title": "department-2"},
     )
 
     test_list = ListModelViewTest(

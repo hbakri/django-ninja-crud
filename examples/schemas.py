@@ -25,4 +25,5 @@ class EmployeeOut(Schema):
     first_name: str
     last_name: str
     department_id: UUID = None
+    department: DepartmentOut = None
     birthdate: date = None

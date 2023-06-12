@@ -11,7 +11,7 @@ class Identifiable(models.Model):
 
 
 class Department(Identifiable):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, unique=True)
 
 
 class Employee(Identifiable):

@@ -3,11 +3,19 @@ from http import HTTPStatus
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
 from ninja import NinjaAPI
 from ninja.errors import ValidationError as NinjaValidationError
+from ninja.security import HttpBearer
 
 from examples.views.view_department import router as department_router
 from examples.views.view_employee import router as employee_router
 
-api = NinjaAPI(urls_namespace="api")
+
+class AuthBearer(HttpBearer):
+    def authenticate(self, request, token):
+        if token == "supersecret":
+            return token
+
+
+api = NinjaAPI(urls_namespace="api", auth=AuthBearer())
 api.add_router("departments", department_router, tags=["departments"])
 api.add_router("employees", employee_router, tags=["employees"])
 

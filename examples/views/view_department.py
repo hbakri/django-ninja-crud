@@ -18,7 +18,12 @@ class DepartmentViewSet(ModelViewSet):
     output_schema = DepartmentOut
 
     list = ListModelView(output_schema=output_schema)
-    create = CreateModelView(input_schema=input_schema, output_schema=output_schema)
+    create = CreateModelView(
+        input_schema=input_schema,
+        output_schema=output_schema,
+        pre_save=lambda request, instance: None,
+        post_save=lambda request, instance: None,
+    )
     retrieve = RetrieveModelView(output_schema=output_schema)
     update = UpdateModelView(input_schema=input_schema, output_schema=output_schema)
     delete = DeleteModelView()
@@ -35,6 +40,7 @@ class DepartmentViewSet(ModelViewSet):
         input_schema=EmployeeIn,
         output_schema=EmployeeOut,
         pre_save=lambda request, id, instance: setattr(instance, "department_id", id),
+        post_save=lambda request, id, instance: None,
     )
 
 
