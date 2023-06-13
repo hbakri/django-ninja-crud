@@ -7,7 +7,12 @@
 
 ![Django Ninja CRUD](https://media.discordapp.net/attachments/1093869226202234930/1117550925083590677/Hicham_B._Django-ninja_cover_ce78724c-1512-41e5-86de-3ffa2cfd0ea9.png?width=2688&height=1070)
 
-Django Ninja CRUD is a library that provides a set of generic views to perform CRUD operations on Django models using [Django Ninja](https://django-ninja.rest-framework.com/).
+Django Ninja CRUD is a library that provides a set of generic views to perform **CRUD** operations (**C**reate, **R**etrieve, **U**pdate, **D**elete) on Django models using [Django Ninja](https://django-ninja.rest-framework.com/).
+
+Features:
+- **DRY**: No need to write the same code over and over again.
+- **Customizable**: You can customize the views to fit your needs, or even write your own views.
+- **Testable**: You can test your views easily, the same way you defined them.
 
 ## Installation
 ```bash
@@ -15,11 +20,35 @@ pip install django-ninja-crud
 ```
 
 ## Usage
+Let's say you have a model called `Department`:
 ```python
-from ninja_crud.views import ModelViewSet, ListModelView, CreateModelView, \
-    RetrieveModelView, UpdateModelView, DeleteModelView
+# models.py
+from django.db import models
+
+class Department(models.Model):
+    title = models.CharField(max_length=255, unique=True)
+```
+
+And you have a schema for serializing and deserializing the model:
+```python
+# schemas.py
+from ninja import Schema
+
+class DepartmentIn(Schema):
+    title: str
+
+class DepartmentOut(Schema):
+    id: int
+    title: str
+```
+
+Here is a brief example of how to use django-ninja-crud:
+```python
+# views.py
 from examples.models import Department
 from examples.schemas import DepartmentIn, DepartmentOut
+from ninja_crud.views import ModelViewSet, ListModelView, CreateModelView, \
+    RetrieveModelView, UpdateModelView, DeleteModelView
 
 
 class DepartmentViewSet(ModelViewSet):
@@ -32,6 +61,47 @@ class DepartmentViewSet(ModelViewSet):
     retrieve = RetrieveModelView(output_schema=output_schema)
     update = UpdateModelView(input_schema=input_schema, output_schema=output_schema)
     delete = DeleteModelView()
+```
+
+## Testing
+You can then write the associated tests like so:
+```python
+# tests.py
+from django.test import TestCase
+from examples.models import Department
+from examples.views.view_department import DepartmentViewSet
+from ninja_crud.tests import (
+    CreateModelViewTest,
+    DeleteModelViewTest,
+    ListModelViewTest,
+    ModelViewSetTest,
+    Payloads,
+    RetrieveModelViewTest,
+    UpdateModelViewTest,
+)
+
+class DepartmentViewSetTest(ModelViewSetTest, TestCase):
+    model_view_set = DepartmentViewSet
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.department = Department.objects.create(title="department-1")
+
+    def get_instance(self):
+        return self.department
+
+    department_payloads = Payloads(
+        ok={"title": "new_title"},
+        bad_request={"bad-key": 1},
+        conflict={"title": "existing-title"},
+    )
+
+    test_list = ListModelViewTest(instance_getter=get_instance)
+    test_create = CreateModelViewTest(payloads=department_payloads, instance_getter=get_instance)
+    test_retrieve = RetrieveModelViewTest(instance_getter=get_instance)
+    test_update = UpdateModelViewTest(payloads=department_payloads, instance_getter=get_instance)
+    test_delete = DeleteModelViewTest(instance_getter=get_instance)
 ```
 
 ## Support
