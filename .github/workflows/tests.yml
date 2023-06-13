@@ -1,4 +1,4 @@
-name: Tests
+name: tests
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install poetry
         poetry install --no-root
-    - name: Test with coverage
+    - name: Run tests with coverage
       env:
         DJANGO_SETTINGS_MODULE: tests.test_settings
       run: |
