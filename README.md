@@ -70,15 +70,9 @@ You can then write the associated tests like so:
 from django.test import TestCase
 from examples.models import Department
 from examples.views.view_department import DepartmentViewSet
-from ninja_crud.tests import (
-    CreateModelViewTest,
-    DeleteModelViewTest,
-    ListModelViewTest,
-    ModelViewSetTest,
-    Payloads,
-    RetrieveModelViewTest,
-    UpdateModelViewTest,
-)
+from ninja_crud.tests import CreateModelViewTest, DeleteModelViewTest, \
+    ListModelViewTest, ModelViewSetTest, Payloads, RetrieveModelViewTest, \
+    UpdateModelViewTest
 
 class DepartmentViewSetTest(ModelViewSetTest, TestCase):
     model_view_set = DepartmentViewSet
