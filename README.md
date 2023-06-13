@@ -86,15 +86,16 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.department = Department.objects.create(title="department-1")
+        cls.department_1 = Department.objects.create(title="department-1")
+        cls.department_2 = Department.objects.create(title="department-2")
 
     def get_instance(self):
-        return self.department
+        return self.department_1
 
     department_payloads = Payloads(
-        ok={"title": "new_title"},
-        bad_request={"bad-key": 1},
-        conflict={"title": "existing-title"},
+        ok={"title": "department-updated"},
+        bad_request={"bad-key": "department-updated"},
+        conflict={"title": "department-2"},
     )
 
     test_list = ListModelViewTest(instance_getter=get_instance)
