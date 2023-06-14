@@ -28,7 +28,7 @@ jobs:
         poetry run coverage run -m django test
     - name: Build and publish
       env:
-        PYPI_USERNAME: hbakri
+        PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
         PYPI_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
         poetry publish --build
