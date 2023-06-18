@@ -21,7 +21,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
         self,
         payloads: Payloads,
         instance_getter: Callable[[TestCase], Model],
-        credentials_getter: Callable[[TestCase], Credentials],
+        credentials_getter: Callable[[TestCase], Credentials] = None,
     ) -> None:
         super().__init__(
             instance_getter=instance_getter, credentials_getter=credentials_getter

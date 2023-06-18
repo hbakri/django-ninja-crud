@@ -1,12 +1,11 @@
 from typing import Union
 
 from django.test import TestCase
+from example.models import Department, Employee
+from example.views.view_department import DepartmentViewSet
 
-from examples.models import Department, Employee
-from examples.views.view_department import DepartmentViewSet
 from ninja_crud.tests import (
     CreateModelViewTest,
-    Credentials,
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
@@ -35,38 +34,21 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
     def get_instance(self: Union["DepartmentViewSetTest", TestCase]):
         return self.department_1
 
-    def get_credentials(self: Union["DepartmentViewSetTest", TestCase]):
-        return Credentials(
-            ok={"HTTP_AUTHORIZATION": f"Bearer {self.token}"}, unauthorized={}
-        )
-
     department_payloads = Payloads(
         ok={"title": "new_title"},
         bad_request={"bad-title": 1},
         conflict={"title": "department-2"},
     )
 
-    test_list = ListModelViewTest(
-        instance_getter=get_instance,
-        credentials_getter=get_credentials,
-    )
+    test_list = ListModelViewTest(instance_getter=get_instance)
     test_create = CreateModelViewTest(
-        payloads=department_payloads,
-        instance_getter=get_instance,
-        credentials_getter=get_credentials,
+        payloads=department_payloads, instance_getter=get_instance
     )
-    test_retrieve = RetrieveModelViewTest(
-        instance_getter=get_instance,
-        credentials_getter=get_credentials,
-    )
+    test_retrieve = RetrieveModelViewTest(instance_getter=get_instance)
     test_update = UpdateModelViewTest(
-        payloads=department_payloads,
-        instance_getter=get_instance,
-        credentials_getter=get_credentials,
+        payloads=department_payloads, instance_getter=get_instance
     )
-    test_delete = DeleteModelViewTest(
-        instance_getter=get_instance, credentials_getter=get_credentials
-    )
+    test_delete = DeleteModelViewTest(instance_getter=get_instance)
 
     employee_payloads = Payloads(
         ok={
@@ -76,12 +58,7 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         bad_request={"first_name": 1},
     )
 
-    test_list_employees = ListModelViewTest(
-        instance_getter=get_instance,
-        credentials_getter=get_credentials,
-    )
+    test_list_employees = ListModelViewTest(instance_getter=get_instance)
     test_create_employee = CreateModelViewTest(
-        payloads=employee_payloads,
-        instance_getter=get_instance,
-        credentials_getter=get_credentials,
+        payloads=employee_payloads, instance_getter=get_instance
     )

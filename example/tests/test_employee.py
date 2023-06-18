@@ -1,11 +1,10 @@
 from typing import Union
 
 from django.test import TestCase
+from example.models import Department, Employee
+from example.views.view_employee import EmployeeViewSet
 
-from examples.models import Department, Employee
-from examples.views.view_employee import EmployeeViewSet
 from ninja_crud.tests import (
-    Credentials,
     DeleteModelViewTest,
     ModelViewSetTest,
     Payloads,
@@ -33,11 +32,6 @@ class EmployeeViewSetTest(ModelViewSetTest, TestCase):
     def get_instance(self: Union["EmployeeViewSetTest", TestCase]):
         return self.employee
 
-    def get_credentials(self: Union["EmployeeViewSetTest", TestCase]):
-        return Credentials(
-            ok={"HTTP_AUTHORIZATION": f"Bearer {self.token}"}, unauthorized={}
-        )
-
     employee_payloads = Payloads(
         ok={
             "first_name": "new_first_name",
@@ -47,15 +41,8 @@ class EmployeeViewSetTest(ModelViewSetTest, TestCase):
         bad_request={"first_name": 1},
     )
 
-    test_retrieve = RetrieveModelViewTest(
-        instance_getter=get_instance,
-        credentials_getter=get_credentials,
-    )
+    test_retrieve = RetrieveModelViewTest(instance_getter=get_instance)
     test_update = UpdateModelViewTest(
-        payloads=employee_payloads,
-        instance_getter=get_instance,
-        credentials_getter=get_credentials,
+        payloads=employee_payloads, instance_getter=get_instance
     )
-    test_delete = DeleteModelViewTest(
-        instance_getter=get_instance, credentials_getter=get_credentials
-    )
+    test_delete = DeleteModelViewTest(instance_getter=get_instance)

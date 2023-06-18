@@ -31,6 +31,10 @@ class Payloads(NamedTuple):
     conflict: Optional[dict] = None
 
 
+def default_credentials_getter(_: TestCase) -> Credentials:
+    return Credentials(ok={})
+
+
 class AbstractModelViewTest:
     model_view_set: ModelViewSet
     test_case: TestCase
@@ -41,9 +45,11 @@ class AbstractModelViewTest:
     def __init__(
         self,
         instance_getter: Callable[[TestCase], Model],
-        credentials_getter: Callable[[TestCase], Credentials],
+        credentials_getter: Callable[[TestCase], Credentials] = None,
     ) -> None:
         self.get_instance = instance_getter
+        if credentials_getter is None:
+            credentials_getter = default_credentials_getter
         self.get_credentials = credentials_getter
 
     def get_tests(self) -> List[Tuple[str, Callable]]:

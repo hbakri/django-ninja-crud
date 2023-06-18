@@ -43,11 +43,13 @@ class DepartmentOut(Schema):
 ```
 
 Here is a brief example of how to use django-ninja-crud:
+
 ```python
 # views.py
-from examples.models import Department
-from examples.schemas import DepartmentIn, DepartmentOut
-from ninja_crud.views import ModelViewSet, ListModelView, CreateModelView, \
+from example.models import Department
+from example.schemas import DepartmentIn, DepartmentOut
+from ninja import Router
+from ninja_crud.views import ModelViewSet, ListModelView, CreateModelView,
     RetrieveModelView, UpdateModelView, DeleteModelView
 
 
@@ -61,18 +63,24 @@ class DepartmentViewSet(ModelViewSet):
     retrieve = RetrieveModelView(output_schema=output_schema)
     update = UpdateModelView(input_schema=input_schema, output_schema=output_schema)
     delete = DeleteModelView()
+
+
+router = Router()
+DepartmentViewSet.register_routes(router)
 ```
 
 ## Testing
 You can then write the associated tests like so:
+
 ```python
 # tests.py
 from django.test import TestCase
-from examples.models import Department
-from examples.views.view_department import DepartmentViewSet
-from ninja_crud.tests import CreateModelViewTest, DeleteModelViewTest, \
-    ListModelViewTest, ModelViewSetTest, Payloads, RetrieveModelViewTest, \
+from example.models import Department
+from example.views.view_department import DepartmentViewSet
+from ninja_crud.tests import CreateModelViewTest, DeleteModelViewTest,
+    ListModelViewTest, ModelViewSetTest, Payloads, RetrieveModelViewTest,
     UpdateModelViewTest
+
 
 class DepartmentViewSetTest(ModelViewSetTest, TestCase):
     model_view_set = DepartmentViewSet

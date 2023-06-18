@@ -1,12 +1,14 @@
 from http import HTTPStatus
 
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
+from example.views.view_department import router as department_router
+from example.views.view_employee import router as employee_router
 from ninja import NinjaAPI
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.security import HttpBearer
 
-from examples.views.view_department import router as department_router
-from examples.views.view_employee import router as employee_router
+from tests.test_app.views.view_collection import router as collection_router
+from tests.test_app.views.view_item import router as item_router
 
 
 class AuthBearer(HttpBearer):
@@ -15,22 +17,26 @@ class AuthBearer(HttpBearer):
             return token
 
 
-api = NinjaAPI(urls_namespace="api", auth=AuthBearer())
-api.add_router("departments", department_router, tags=["departments"])
-api.add_router("employees", employee_router, tags=["employees"])
+api = NinjaAPI(urls_namespace="api")
+api.add_router(
+    "collections", collection_router, auth=AuthBearer(), tags=["collections"]
+)
+api.add_router("items", item_router, auth=AuthBearer(), tags=["items"])
+api.add_router("departments", department_router, auth=None, tags=["departments"])
+api.add_router("employees", employee_router, auth=None, tags=["employees"])
 
 
 @api.exception_handler(ObjectDoesNotExist)
-def _(request, exc):
+def handle_object_does_not_exist(request, exc):
     return api.create_response(
         request,
-        {"message": "Object not found", "detail": str(exc)},
+        {"message": "ObjectDoesNotExist", "detail": str(exc)},
         status=HTTPStatus.NOT_FOUND,
     )
 
 
 @api.exception_handler(PermissionDenied)
-def _(request, exc: PermissionDenied):
+def handle_permission_error(request, exc: PermissionDenied):
     return api.create_response(
         request,
         {
@@ -42,17 +48,17 @@ def _(request, exc: PermissionDenied):
 
 
 @api.exception_handler(NinjaValidationError)
-def _(request, exc: NinjaValidationError):
+def handle_ninja_validation_error(request, exc: NinjaValidationError):
     mapped_msg = {error["loc"][-1]: error["msg"] for error in exc.errors}
     return api.create_response(
         request,
-        data={"message": "ValidationError", "detail": mapped_msg},
+        data={"message": "NinjaValidationError", "detail": mapped_msg},
         status=HTTPStatus.BAD_REQUEST,
     )
 
 
 @api.exception_handler(ValidationError)
-def _(request, exc: ValidationError):
+def handle_validation_error(request, exc: ValidationError):
     status = HTTPStatus.BAD_REQUEST
     for field, errors in exc.error_dict.items():
         for error in errors:
