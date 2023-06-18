@@ -21,7 +21,7 @@ class ListModelView(AbstractModelView):
             Callable[[], QuerySet[Model]], Callable[[UUID], QuerySet[Model]]
         ] = None,
         related_model: Type[Model] = None,
-        is_instance: bool = False,
+        detail: bool = False,
         decorators: List[Callable] = None,
     ) -> None:
         super().__init__(decorators=decorators)
@@ -29,10 +29,10 @@ class ListModelView(AbstractModelView):
         self.filter_schema = filter_schema
         self.get_queryset = queryset_getter
         self.related_model = related_model
-        self.is_instance = is_instance
+        self.detail = detail
 
     def register_route(self, router: Router, model: Type[Model]) -> None:
-        if self.is_instance:
+        if self.detail:
             self.register_instance_route(router, model)
         else:
             self.register_collection_route(router, model)

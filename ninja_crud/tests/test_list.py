@@ -34,7 +34,7 @@ class ListModelViewTest(AbstractModelViewTest):
     ) -> HttpResponse:
         model_view: ListModelView = self.get_model_view()
         model_name = utils.to_snake_case(self.model_view_set.model.__name__)
-        if model_view.is_instance:
+        if model_view.detail:
             related_model_name = utils.to_snake_case(model_view.related_model.__name__)
             url_name = f"{model_name}_{related_model_name}s"
             kwargs = {"id": id}
@@ -58,7 +58,7 @@ class ListModelViewTest(AbstractModelViewTest):
 
         model_view: ListModelView = self.get_model_view()
 
-        if model_view.is_instance:
+        if model_view.detail:
             if model_view.get_queryset is not None:
                 queryset = model_view.get_queryset(id)
             else:

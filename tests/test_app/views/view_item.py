@@ -51,7 +51,7 @@ class ItemViewSet(ModelViewSet):
     delete = DeleteModelView(decorators=[user_is_collection_creator])
 
     list_tags = ListModelView(
-        is_instance=True,
+        detail=True,
         related_model=Tag,
         output_schema=output_schema,
     )
