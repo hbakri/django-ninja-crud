@@ -143,7 +143,7 @@ class ModelViewSetTestMeta(type):
                     model_name = new_cls.model_view_set.model.__name__.lower()
                     substring_replace = model_name
                     if isinstance(method, (ListModelView, CreateModelView)):
-                        if method.is_instance_view:
+                        if method.is_instance:
                             related_model_name = method.related_model.__name__.lower()
                             substring_replace = f"{model_name}_{related_model_name}"
                     new_test_name = test_name.replace("model", substring_replace)

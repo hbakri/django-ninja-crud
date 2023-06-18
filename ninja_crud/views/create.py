@@ -17,7 +17,7 @@ class CreateModelView(AbstractModelView):
         input_schema: Type[Schema],
         output_schema: Type[Schema],
         decorators: List[Callable] = None,
-        is_instance_view: bool = False,
+        is_instance: bool = False,
         related_model: Type[Model] = None,
         pre_save: Union[
             Callable[[HttpRequest, Model], None],
@@ -31,13 +31,13 @@ class CreateModelView(AbstractModelView):
         super().__init__(decorators=decorators)
         self.input_schema = input_schema
         self.output_schema = output_schema
-        self.is_instance_view = is_instance_view
+        self.is_instance = is_instance
         self.related_model = related_model
         self.pre_save = pre_save
         self.post_save = post_save
 
     def register_route(self, router: Router, model: Type[Model]) -> None:
-        if self.is_instance_view:
+        if self.is_instance:
             self.register_instance_route(router, model)
         else:
             self.register_collection_route(router, model)
