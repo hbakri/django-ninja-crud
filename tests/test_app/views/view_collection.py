@@ -14,7 +14,13 @@ from ninja_crud.views import (
     UpdateModelView,
 )
 from tests.test_app.models import Collection, Item
-from tests.test_app.schemas import CollectionIn, CollectionOut, ItemIn, ItemOut
+from tests.test_app.schemas import (
+    CollectionFilter,
+    CollectionIn,
+    CollectionOut,
+    ItemIn,
+    ItemOut,
+)
 
 
 def user_is_creator(func):
@@ -32,8 +38,9 @@ class CollectionViewSet(ModelViewSet):
     model = Collection
     input_schema = CollectionIn
     output_schema = CollectionOut
+    filter_schema = CollectionFilter
 
-    list = ListModelView(output_schema=output_schema)
+    list = ListModelView(output_schema=output_schema, filter_schema=filter_schema)
     create = CreateModelView(
         input_schema=input_schema,
         output_schema=output_schema,
