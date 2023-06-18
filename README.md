@@ -1,7 +1,7 @@
 # Django Ninja CRUD
 [![example workflow](https://github.com/hbakri/django-ninja-crud/actions/workflows/tests.yml/badge.svg)](https://github.com/hbakri/django-ninja-crud/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/hbakri/django-ninja-crud/main.svg?label=coverage)](https://codecov.io/gh/hbakri/django-ninja-crud)
-[![PyPI version](https://badge.fury.io/py/django-ninja-crud.svg?)](https://badge.fury.io/py/django-ninja-crud)
+[![PyPI version](https://badge.fury.io/py/django-ninja-crud.svg)](https://badge.fury.io/py/django-ninja-crud)
 [![Downloads](https://pepy.tech/badge/django-ninja-crud)](https://pepy.tech/project/django-ninja-crud)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
