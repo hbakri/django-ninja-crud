@@ -30,7 +30,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     def create_model(self, id: UUID, data: dict, credentials: dict) -> HttpResponse:
         model_view: CreateModelView = self.get_model_view()
         model_name = utils.to_snake_case(self.model_view_set.model.__name__)
-        if model_view.is_instance_view:
+        if model_view.detail:
             related_model_name = utils.to_snake_case(model_view.related_model.__name__)
             url_name = f"{model_name}_{related_model_name}s"
             kwargs = {"id": id}
@@ -50,7 +50,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         content = json.loads(response.content)
 
         model_view: CreateModelView = self.get_model_view()
-        if model_view.is_instance_view:
+        if model_view.detail:
             model = model_view.related_model
         else:
             model = self.model_view_set.model

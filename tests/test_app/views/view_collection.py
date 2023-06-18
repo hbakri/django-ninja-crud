@@ -62,14 +62,14 @@ class CollectionViewSet(ModelViewSet):
     )
 
     list_items = ListModelView(
-        is_instance_view=True,
+        detail=True,
         related_model=Item,
         output_schema=ItemOut,
         queryset_getter=lambda id: Item.objects.filter(collection_id=id),
         decorators=[user_is_creator],
     )
     create_item = CreateModelView(
-        is_instance_view=True,
+        detail=True,
         related_model=Item,
         input_schema=ItemIn,
         output_schema=ItemOut,
