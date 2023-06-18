@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.db import models
 
 
@@ -18,7 +19,16 @@ class Representable(models.Model):
         abstract = True
 
 
-class Collection(Identifiable, Representable):
+class Trackable(models.Model):
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class Collection(Identifiable, Representable, Trackable):
     pass
 
 
@@ -32,3 +42,7 @@ class Item(Identifiable, Representable):
                 name="unique_item_collection_name",
             ),
         ]
+
+
+class Tag(Identifiable, Representable):
+    items = models.ManyToManyField(Item, related_name="tags")

@@ -14,7 +14,9 @@ class AbstractModelView(ABC):
         self.decorators = decorators
 
     @abstractmethod
-    def register_route(self, router: Router, model: Type[Model]) -> None:
+    def register_route(
+        self, router: Router, model: Type[Model]
+    ) -> None:  # pragma: no cover
         pass
 
 

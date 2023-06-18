@@ -1,7 +1,6 @@
 import json
 import uuid
 from http import HTTPStatus
-from typing import Optional
 from uuid import UUID
 
 from django.db.models import Model
@@ -16,10 +15,7 @@ from ninja_crud.views.retrieve import RetrieveModelView
 class RetrieveModelViewTest(AbstractModelViewTest):
     model_view = RetrieveModelView
 
-    def retrieve_model(self, id: UUID, credentials: Optional[dict]) -> HttpResponse:
-        if credentials is None:
-            credentials = {}
-
+    def retrieve_model(self, id: UUID, credentials: dict) -> HttpResponse:
         kwargs = {"id": id}
         url_name = utils.to_snake_case(self.model_view_set.model.__name__)
         return self.client.get(
@@ -56,7 +52,9 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         if credentials.unauthorized is None:
             self.test_case.skipTest("No unauthorized credentials provided")
         instance: Model = self.get_instance(self.test_case)
-        response = self.retrieve_model(id=instance.pk, credentials=None)
+        response = self.retrieve_model(
+            id=instance.pk, credentials=credentials.unauthorized
+        )
         self.assert_response_is_bad_request(
             response, status_code=HTTPStatus.UNAUTHORIZED
         )

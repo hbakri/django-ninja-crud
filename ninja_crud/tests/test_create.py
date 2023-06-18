@@ -1,6 +1,6 @@
 import json
 from http import HTTPStatus
-from typing import Callable, Optional
+from typing import Callable
 from uuid import UUID
 
 from django.db.models import Model
@@ -27,12 +27,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         )
         self.payloads = payloads
 
-    def create_model(
-        self, id: UUID, data: dict, credentials: Optional[dict]
-    ) -> HttpResponse:
-        if credentials is None:
-            credentials = {}
-
+    def create_model(self, id: UUID, data: dict, credentials: dict) -> HttpResponse:
         model_view: CreateModelView = self.get_model_view()
         model_name = utils.to_snake_case(self.model_view_set.model.__name__)
         if model_view.is_instance_view:
@@ -101,7 +96,7 @@ class CreateModelViewTest(AbstractModelViewTest):
             self.test_case.skipTest("No unauthorized credentials provided")
         instance: Model = self.get_instance(self.test_case)
         response = self.create_model(
-            id=instance.pk, data=self.payloads.ok, credentials=None
+            id=instance.pk, data=self.payloads.ok, credentials=credentials.unauthorized
         )
         self.assert_response_is_bad_request(
             response, status_code=HTTPStatus.UNAUTHORIZED

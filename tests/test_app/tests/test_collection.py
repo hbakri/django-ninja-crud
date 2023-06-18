@@ -1,3 +1,4 @@
+import random
 from typing import Union
 
 from django.test import TestCase
@@ -12,30 +13,26 @@ from ninja_crud.tests import (
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
-from tests.test_app.models import Collection, Item
+from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_collection import CollectionViewSet
 
 
-class CollectionViewSetTest(ModelViewSetTest, TestCase):
+class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
     model_view_set = CollectionViewSet
-    collection_1: Collection
-    collection_2: Collection
-    item: Item
-
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-        cls.collection_1 = Collection.objects.create(name="collection-1")
-        cls.collection_2 = Collection.objects.create(name="collection-2")
-        cls.item = Item.objects.create(name="item-1", collection=cls.collection_1)
-        cls.token = "supersecret"
 
     def get_instance(self: Union["CollectionViewSetTest", TestCase]):
         return self.collection_1
 
-    def get_credentials(self: Union["CollectionViewSetTest", TestCase]):
+    def get_credentials_ok(self: Union["CollectionViewSetTest", TestCase]):
         return Credentials(
-            ok={"HTTP_AUTHORIZATION": f"Bearer {self.token}"}, unauthorized={}
+            ok={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"}, unauthorized={}
+        )
+
+    def get_credentials_ok_forbidden(self: Union["CollectionViewSetTest", TestCase]):
+        return Credentials(
+            ok={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+            unauthorized={"HTTP_AUTHORIZATION": f"Bearer {random.randint(100, 1000)}"},
+            forbidden={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
         )
 
     collection_payloads = Payloads(
@@ -46,37 +43,36 @@ class CollectionViewSetTest(ModelViewSetTest, TestCase):
 
     test_list = ListModelViewTest(
         instance_getter=get_instance,
-        credentials_getter=get_credentials,
+        credentials_getter=get_credentials_ok,
     )
     test_create = CreateModelViewTest(
         payloads=collection_payloads,
         instance_getter=get_instance,
-        credentials_getter=get_credentials,
+        credentials_getter=get_credentials_ok,
     )
     test_retrieve = RetrieveModelViewTest(
         instance_getter=get_instance,
-        credentials_getter=get_credentials,
+        credentials_getter=get_credentials_ok,
     )
     test_update = UpdateModelViewTest(
         payloads=collection_payloads,
         instance_getter=get_instance,
-        credentials_getter=get_credentials,
+        credentials_getter=get_credentials_ok_forbidden,
     )
     test_delete = DeleteModelViewTest(
-        instance_getter=get_instance, credentials_getter=get_credentials
+        instance_getter=get_instance, credentials_getter=get_credentials_ok_forbidden
     )
 
     item_payloads = Payloads(
         ok={"name": "new-name", "description": "new-description"},
-        bad_request={"unknown_field": 1},
     )
 
     test_list_items = ListModelViewTest(
         instance_getter=get_instance,
-        credentials_getter=get_credentials,
+        credentials_getter=get_credentials_ok_forbidden,
     )
     test_create_item = CreateModelViewTest(
         payloads=item_payloads,
         instance_getter=get_instance,
-        credentials_getter=get_credentials,
+        credentials_getter=get_credentials_ok_forbidden,
     )

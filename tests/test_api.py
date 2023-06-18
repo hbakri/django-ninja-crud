@@ -5,23 +5,16 @@ from example.views.view_department import router as department_router
 from example.views.view_employee import router as employee_router
 from ninja import NinjaAPI
 from ninja.errors import ValidationError as NinjaValidationError
-from ninja.security import HttpBearer
 
 from tests.test_app.views.view_collection import router as collection_router
 from tests.test_app.views.view_item import router as item_router
-
-
-class AuthBearer(HttpBearer):
-    def authenticate(self, request, token):
-        if token == "supersecret":
-            return token
-
+from tests.test_authentication import TokenBearer
 
 api = NinjaAPI(urls_namespace="api")
 api.add_router(
-    "collections", collection_router, auth=AuthBearer(), tags=["collections"]
+    "collections", collection_router, auth=TokenBearer(), tags=["collections"]
 )
-api.add_router("items", item_router, auth=AuthBearer(), tags=["items"])
+api.add_router("items", item_router, auth=TokenBearer(), tags=["items"])
 api.add_router("departments", department_router, auth=None, tags=["departments"])
 api.add_router("employees", employee_router, auth=None, tags=["employees"])
 

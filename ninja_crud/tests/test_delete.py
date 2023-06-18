@@ -1,6 +1,5 @@
 import uuid
 from http import HTTPStatus
-from typing import Optional
 from uuid import UUID
 
 from django.db.models import Model
@@ -15,10 +14,7 @@ from ninja_crud.views.delete import DeleteModelView
 class DeleteModelViewTest(AbstractModelViewTest):
     model_view = DeleteModelView
 
-    def delete_model(self, id: UUID, credentials: Optional[dict]) -> HttpResponse:
-        if credentials is None:
-            credentials = {}
-
+    def delete_model(self, id: UUID, credentials: dict) -> HttpResponse:
         kwargs = {"id": id}
         url_name = utils.to_snake_case(self.model_view_set.model.__name__)
         return self.client.delete(
@@ -42,7 +38,9 @@ class DeleteModelViewTest(AbstractModelViewTest):
         if credentials.unauthorized is None:
             self.test_case.skipTest("No unauthorized credentials provided")
         instance: Model = self.get_instance(self.test_case)
-        response = self.delete_model(id=instance.pk, credentials=None)
+        response = self.delete_model(
+            id=instance.pk, credentials=credentials.unauthorized
+        )
         self.assert_response_is_bad_request(
             response, status_code=HTTPStatus.UNAUTHORIZED
         )

@@ -109,10 +109,7 @@ class AbstractModelViewTest:
         items = content["items"]
         self.test_case.assertIsInstance(items, list)
 
-        if limit >= 0:
-            queryset_items = queryset[offset : offset + limit]
-        else:
-            queryset_items = queryset
+        queryset_items = queryset[offset : offset + limit]
         self.test_case.assertEqual(len(items), queryset_items.count())
 
         for item in items:
