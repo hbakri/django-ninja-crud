@@ -61,7 +61,7 @@ class ListModelView(AbstractModelView):
                 queryset = self.get_queryset()
             else:
                 queryset = model.objects.get_queryset()
-            return self.list_models(queryset=queryset, filters=filters)
+            return self.filter_queryset(queryset=queryset, filters=filters)
 
     def register_instance_route(self, router: Router, model: Type[Model]) -> None:
         parent_model_name = utils.to_snake_case(model.__name__)
@@ -92,10 +92,10 @@ class ListModelView(AbstractModelView):
                 queryset = self.get_queryset(id)
             else:
                 queryset = self.related_model.objects.get_queryset()
-            return self.list_models(queryset=queryset, filters=filters)
+            return self.filter_queryset(queryset=queryset, filters=filters)
 
     @staticmethod
-    def list_models(queryset: QuerySet[Model], filters: FilterSchema):
+    def filter_queryset(queryset: QuerySet[Model], filters: FilterSchema):
         filters_dict = filters.dict()
         if "order_by" in filters_dict and filters_dict["order_by"] is not None:
             queryset = queryset.order_by(*filters_dict.pop("order_by"))

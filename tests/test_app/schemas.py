@@ -1,6 +1,9 @@
+from typing import Optional
 from uuid import UUID
 
 from ninja import Schema
+
+from ninja_crud.schemas import OrderableFilterSchema
 
 
 class Identifiable(Schema):
@@ -10,6 +13,10 @@ class Identifiable(Schema):
 class Representable(Schema):
     name: str
     description: str = None
+
+
+class CollectionFilter(OrderableFilterSchema):
+    name: Optional[str]
 
 
 class CollectionIn(Representable):

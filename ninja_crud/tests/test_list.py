@@ -1,9 +1,11 @@
 import json
 from http import HTTPStatus
+from typing import Callable, List
 from uuid import UUID
 
 from django.db.models import Model
 from django.http import HttpResponse
+from django.test import TestCase
 from django.urls import reverse
 
 from ninja_crud import utils
@@ -14,7 +16,22 @@ from ninja_crud.views.list import ListModelView
 class ListModelViewTest(AbstractModelViewTest):
     model_view = ListModelView
 
-    def list_model(self, id: UUID, credentials: dict) -> HttpResponse:
+    def __init__(
+        self,
+        instance_getter: Callable[[TestCase], Model],
+        credentials_getter: Callable[[TestCase], Credentials] = None,
+        filters: List[dict] = None,
+    ) -> None:
+        super().__init__(
+            instance_getter=instance_getter, credentials_getter=credentials_getter
+        )
+        if filters is None:
+            filters = []
+        self.filters = filters
+
+    def list_model(
+        self, id: UUID, credentials: dict, data: dict = None
+    ) -> HttpResponse:
         model_view: ListModelView = self.get_model_view()
         model_name = utils.to_snake_case(self.model_view_set.model.__name__)
         if model_view.is_instance_view:
@@ -27,12 +44,15 @@ class ListModelViewTest(AbstractModelViewTest):
 
         response = self.client.get(
             reverse(f"api:{url_name}", kwargs=kwargs),
+            data=data,
             content_type="application/json",
             **credentials,
         )
         return response
 
-    def assert_response_is_ok(self, response: HttpResponse, id: UUID):
+    def assert_response_is_ok(
+        self, response: HttpResponse, id: UUID, data: dict = None
+    ):
         self.test_case.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
@@ -49,6 +69,10 @@ class ListModelViewTest(AbstractModelViewTest):
             else:
                 queryset = self.model_view_set.model.objects.get_queryset()
 
+        if data is not None:
+            filter_instance = model_view.filter_schema(**data)
+            queryset = model_view.filter_queryset(queryset, filter_instance)
+
         self.assert_content_equals_schema_list(
             content, queryset=queryset, output_schema=model_view.output_schema
         )
@@ -58,6 +82,13 @@ class ListModelViewTest(AbstractModelViewTest):
         instance: Model = self.get_instance(self.test_case)
         response = self.list_model(id=instance.pk, credentials=credentials.ok)
         self.assert_response_is_ok(response, id=instance.pk)
+
+        for data in self.filters:
+            with self.test_case.subTest(data=data):
+                response = self.list_model(
+                    id=instance.pk, credentials=credentials.ok, data=data
+                )
+                self.assert_response_is_ok(response, id=instance.pk, data=data)
 
     def test_list_model_unauthorized(self):
         credentials: Credentials = self.get_credentials(self.test_case)
