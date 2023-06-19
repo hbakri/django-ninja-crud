@@ -32,7 +32,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install poetry
         poetry install --no-root
-        poetry add Django==${{ matrix.django-version }}
+        poetry add Django==${{ matrix.django-version }} --no-lock
     - name: Run tests with coverage
       env:
         DJANGO_SETTINGS_MODULE: tests.test_settings
