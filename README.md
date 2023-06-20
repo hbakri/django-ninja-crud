@@ -5,6 +5,10 @@
 [![Downloads](https://pepy.tech/badge/django-ninja-crud)](https://pepy.tech/project/django-ninja-crud)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+![Python versions](https://img.shields.io/badge/python-3.7%20|%203.8%20|%203.9%20|%203.10%20|%203.11-blue)
+![Django versions](https://img.shields.io/badge/django-3.2%20|%204.1%20|%204.2-blue)
+![Django Ninja versions](https://img.shields.io/badge/django--ninja-0.21.0%20|%200.22.0-blue)
+
 ![Django Ninja CRUD](https://media.discordapp.net/attachments/1093869226202234930/1117550925083590677/Hicham_B._Django-ninja_cover_ce78724c-1512-41e5-86de-3ffa2cfd0ea9.png?width=2688&height=1070)
 
 Django Ninja CRUD is a library that provides a set of generic views to perform **CRUD** operations (**C**reate, **R**etrieve, **U**pdate, **D**elete) on Django models using [Django Ninja](https://django-ninja.rest-framework.com/).
@@ -49,7 +53,7 @@ Here is a brief example of how to use django-ninja-crud:
 from example.models import Department
 from example.schemas import DepartmentIn, DepartmentOut
 from ninja import Router
-from ninja_crud.views import ModelViewSet, ListModelView, CreateModelView,
+from ninja_crud.views import ModelViewSet, ListModelView, CreateModelView, \
     RetrieveModelView, UpdateModelView, DeleteModelView
 
 
@@ -77,8 +81,8 @@ You can then write the associated tests like so:
 from django.test import TestCase
 from example.models import Department
 from example.views.view_department import DepartmentViewSet
-from ninja_crud.tests import CreateModelViewTest, DeleteModelViewTest,
-    ListModelViewTest, ModelViewSetTest, Payloads, RetrieveModelViewTest,
+from ninja_crud.tests import CreateModelViewTest, DeleteModelViewTest, \
+    ListModelViewTest, ModelViewSetTest, Payloads, RetrieveModelViewTest, \
     UpdateModelViewTest
 
 
