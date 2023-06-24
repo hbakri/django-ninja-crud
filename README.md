@@ -1,7 +1,7 @@
 # Django Ninja CRUD
 [![example workflow](https://github.com/hbakri/django-ninja-crud/actions/workflows/tests.yml/badge.svg)](https://github.com/hbakri/django-ninja-crud/actions)
-[![Coverage](https://img.shields.io/codecov/c/github/hbakri/django-ninja-crud/main.svg?label=coverage)](https://codecov.io/gh/hbakri/django-ninja-crud)
-[![PyPI version](https://badge.fury.io/py/django-ninja-crud.svg)](https://badge.fury.io/py/django-ninja-crud)
+[![Coverage](https://img.shields.io/codecov/c/github/hbakri/django-ninja-crud/main.svg?label=coverage&logo=codecov&logoColor=white)](https://codecov.io/gh/hbakri/django-ninja-crud)
+[![PyPI version](https://img.shields.io/pypi/v/django-ninja-crud?color=g&logo=python&logoColor=white)](https://pypi.org/project/django-ninja-crud/)
 [![Downloads](https://pepy.tech/badge/django-ninja-crud)](https://pepy.tech/project/django-ninja-crud)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -11,20 +11,30 @@
 
 ![Django Ninja CRUD](https://media.discordapp.net/attachments/1093869226202234930/1117550925083590677/Hicham_B._Django-ninja_cover_ce78724c-1512-41e5-86de-3ffa2cfd0ea9.png?width=2688&height=1070)
 
-Django Ninja CRUD is a library that provides a set of generic views to perform **CRUD** operations (**C**reate, **R**etrieve, **U**pdate, **D**elete) on Django models using [Django Ninja](https://django-ninja.rest-framework.com/).
+Django Ninja CRUD is a powerful tool designed to streamline the development of **CRUD** (**C**reate, **R**ead, **U**pdate, **D**elete) operations in Django applications using the [Django Ninja](https://django-ninja.rest-framework.com) framework. It is intended to help developers save significant time by eliminating the need to write repetitive code for each operation and even more on the associated tests.
 
-Features:
-- **DRY**: No need to write the same code over and over again.
-- **Customizable**: You can customize the views to fit your needs, or even write your own views.
-- **Testable**: You can test your views easily, the same way you defined them.
+Developing these features from scratch every time can be _time-consuming_ and _error-prone_. That's where Django Ninja CRUD comes in—it provides a set of predefined, customizable "blueprints" for these operations, allowing developers to set them up quickly and reliably. Instead of getting bogged down with the details of how these operations are performed, developers can focus on the unique, creative aspects of their applications.
 
-## Installation
+## 🏄‍♂️ Key Features
+
+Django Ninja CRUD is a flexible, transparent, and configurable solution to a common challenge in web development.
+
+- **Flexibility:** _Designed to adapt to your needs_. Whether you're creating, retrieving, updating, or deleting data, you can shape your operations as you see fit. It allows developers to either use the standard operations or to define their own, tailored to their specific requirements.
+- **Transparency:** _What you see is what you get_. The operations you define are the operations you perform, making it easy to understand and follow the data flow. It encourages practices that make your code easy to read and maintain. Also, it allows for easy testing of the defined operations, ensuring that everything works as expected.
+- **Configurability:** _Provides a high degree of customization_. You're not locked into a rigid structure; instead, you can adjust and fine-tune your operations to suit your project's unique needs. You can use the built-in tools to quickly set up standard operations, and if needed, you can customize them or even build your own from scratch.
+
+By using this package, developers can write efficient and clear code, saving time and reducing potential errors. It's a tool that accommodates the developer's workflow, rather than forcing the developer to adapt to it.
+
+## 📝 Installation
 ```bash
 pip install django-ninja-crud
 ```
+For more information, see the [installation guide](https://django-ninja-crud.readme.io/docs/installation).
 
-## Usage
-Let's say you have a model called `Department`:
+## 👨‍🎨 Example
+### Usage
+Let's imagine you're building a system for a university and you have a model called `Department`. Each department in your university has a unique title.
+
 ```python
 # models.py
 from django.db import models
@@ -33,7 +43,8 @@ class Department(models.Model):
     title = models.CharField(max_length=255, unique=True)
 ```
 
-And you have a schema for serializing and deserializing the model:
+To interact with this data, we need a way to convert it between Python objects and a format that's easy to read and write (like JSON). In Django Ninja, we do this with `Schema`:
+
 ```python
 # schemas.py
 from ninja import Schema
@@ -46,7 +57,9 @@ class DepartmentOut(Schema):
     title: str
 ```
 
-Here is a brief example of how to use django-ninja-crud:
+The `DepartmentIn` schema defines what data we need when creating or updating a department. The `DepartmentOut` schema defines what data we'll provide when retrieving a department.
+
+Now, here comes the power of Django Ninja CRUD. With it, you can set up the **CRUD** operations for the `Department` model with just a few lines of code:
 
 ```python
 # views.py
@@ -73,8 +86,8 @@ router = Router()
 DepartmentViewSet.register_routes(router)
 ```
 
-## Testing
-You can then write the associated tests like so:
+### Testing
+A key advantage of this package is that it makes your views easy to test. Once you've set up your **CRUD** operations, you can write tests to ensure they're working as expected. Here's an example of how you might test the `Department` operations:
 
 ```python
 # tests.py
@@ -110,6 +123,12 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
     test_update = UpdateModelViewTest(payloads=department_payloads, instance_getter=get_instance)
     test_delete = DeleteModelViewTest(instance_getter=get_instance)
 ```
+With this package, these tests can be written in a consistent, straightforward way, making it easier to ensure your views are working as expected. Once you've written these tests, you can run them whenever you make changes to your views, giving you confidence that your changes haven't broken anything.
 
-## Support
+In summary, this package simplifies the process of setting up and testing **CRUD** operations in Django Ninja, letting you focus on what makes your application unique. By providing a flexible, transparent, and configurable solution, this package is a powerful tool for accelerating web development.
+
+## 📚 Documentation
+https://django-ninja-crud.readme.io/docs
+
+## 🫶 Support
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/hbakri)
