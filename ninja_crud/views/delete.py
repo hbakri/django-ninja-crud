@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Callable, List, Type
+from typing import Callable, List, Type, Union
 from uuid import UUID
 
 from django.db.models import Model
@@ -16,7 +16,7 @@ class DeleteModelView(AbstractModelView):
         self,
         decorators: List[Callable] = None,
         pre_delete: Callable[[HttpRequest, Model], None] = None,
-        post_delete: Callable[[HttpRequest, UUID], None] = None,
+        post_delete: Callable[[HttpRequest, Union[int, UUID]], None] = None,
     ) -> None:
         super().__init__(decorators=decorators)
         self.pre_delete = pre_delete
@@ -35,7 +35,7 @@ class DeleteModelView(AbstractModelView):
             summary=summary,
         )
         @merge_decorators(self.decorators)
-        def delete_model(request: HttpRequest, id: UUID):
+        def delete_model(request: HttpRequest, id: Union[int, UUID]):
             instance = model.objects.get(pk=id)
             if self.pre_delete is not None:
                 self.pre_delete(request, instance)

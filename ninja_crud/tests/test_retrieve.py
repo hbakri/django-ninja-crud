@@ -1,6 +1,8 @@
 import json
+import random
 import uuid
 from http import HTTPStatus
+from typing import Union
 from uuid import UUID
 
 from django.db.models import Model
@@ -15,7 +17,7 @@ from ninja_crud.views.retrieve import RetrieveModelView
 class RetrieveModelViewTest(AbstractModelViewTest):
     model_view = RetrieveModelView
 
-    def retrieve_model(self, id: UUID, credentials: dict) -> HttpResponse:
+    def retrieve_model(self, id: Union[int, UUID], credentials: dict) -> HttpResponse:
         kwargs = {"id": id}
         url_name = utils.to_snake_case(self.model_view_set.model.__name__)
         return self.client.get(
@@ -24,7 +26,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
             **credentials,
         )
 
-    def assert_response_is_ok(self, response: HttpResponse, id: UUID):
+    def assert_response_is_ok(self, response: HttpResponse, id: Union[int, UUID]):
         self.test_case.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
@@ -61,7 +63,11 @@ class RetrieveModelViewTest(AbstractModelViewTest):
 
     def test_retrieve_model_not_found(self):
         credentials: Credentials = self.get_credentials(self.test_case)
-        response = self.retrieve_model(id=uuid.uuid4(), credentials=credentials.ok)
+        instance: Model = self.get_instance(self.test_case)
+        random_id = (
+            uuid.uuid4() if type(instance.pk) is UUID else random.randint(1000, 9999)
+        )
+        response = self.retrieve_model(id=random_id, credentials=credentials.ok)
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)
 
     def test_retrieve_model_forbidden(self):

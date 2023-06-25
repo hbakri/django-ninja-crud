@@ -1,7 +1,8 @@
 import json
+import random
 import uuid
 from http import HTTPStatus
-from typing import Callable
+from typing import Callable, Union
 from uuid import UUID
 
 from django.db.models import Model
@@ -28,7 +29,9 @@ class UpdateModelViewTest(AbstractModelViewTest):
         )
         self.payloads = payloads
 
-    def update_model(self, id: UUID, data: dict, credentials: dict) -> HttpResponse:
+    def update_model(
+        self, id: Union[int, UUID], data: dict, credentials: dict
+    ) -> HttpResponse:
         kwargs = {"id": id}
         url_name = utils.to_snake_case(self.model_view_set.model.__name__)
         return self.client.put(
@@ -93,8 +96,12 @@ class UpdateModelViewTest(AbstractModelViewTest):
 
     def test_update_model_not_found(self):
         credentials: Credentials = self.get_credentials(self.test_case)
+        instance: Model = self.get_instance(self.test_case)
+        random_id = (
+            uuid.uuid4() if type(instance.pk) is UUID else random.randint(1000, 9999)
+        )
         response = self.update_model(
-            id=uuid.uuid4(), data=self.payloads.ok, credentials=credentials.ok
+            id=random_id, data=self.payloads.ok, credentials=credentials.ok
         )
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)
 
