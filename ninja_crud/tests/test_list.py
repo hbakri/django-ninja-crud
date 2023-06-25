@@ -104,15 +104,14 @@ class ListModelViewTest(AbstractModelViewTest):
             self.test_case.skipTest("No bad request filters provided")
         credentials: Credentials = self.get_credentials(self.test_case)
         instance: Model = self.get_instance(self.test_case)
-        with self.test_case.subTest(data=self.filters.bad_request):
-            response = self.list_model(
-                id=instance.pk,
-                credentials=credentials.ok,
-                data=self.filters.bad_request,
-            )
-            self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.BAD_REQUEST
-            )
+        response = self.list_model(
+            id=instance.pk,
+            credentials=credentials.ok,
+            data=self.filters.bad_request,
+        )
+        self.assert_response_is_bad_request(
+            response, status_code=HTTPStatus.BAD_REQUEST
+        )
 
     def test_list_model_unauthorized(self):
         credentials: Credentials = self.get_credentials(self.test_case)
