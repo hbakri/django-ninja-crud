@@ -68,11 +68,20 @@ class ListModelViewTest(AbstractModelViewTest):
                 queryset = self.model_view_set.model.objects.get_queryset()
 
         if data is not None:
+            limit = data.pop("limit", 100)
+            offset = data.pop("offset", 0)
             filter_instance = model_view.filter_schema(**data)
             queryset = model_view.filter_queryset(queryset, filter_instance)
+        else:
+            limit = 100
+            offset = 0
 
         self.assert_content_equals_schema_list(
-            content, queryset=queryset, output_schema=model_view.output_schema
+            content,
+            queryset=queryset,
+            output_schema=model_view.output_schema,
+            limit=limit,
+            offset=offset,
         )
 
     def test_list_model_ok(self):
@@ -95,15 +104,14 @@ class ListModelViewTest(AbstractModelViewTest):
             self.test_case.skipTest("No bad request filters provided")
         credentials: Credentials = self.get_credentials(self.test_case)
         instance: Model = self.get_instance(self.test_case)
-        with self.test_case.subTest(data=self.filters.bad_request):
-            response = self.list_model(
-                id=instance.pk,
-                credentials=credentials.ok,
-                data=self.filters.bad_request,
-            )
-            self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.BAD_REQUEST
-            )
+        response = self.list_model(
+            id=instance.pk,
+            credentials=credentials.ok,
+            data=self.filters.bad_request,
+        )
+        self.assert_response_is_bad_request(
+            response, status_code=HTTPStatus.BAD_REQUEST
+        )
 
     def test_list_model_unauthorized(self):
         credentials: Credentials = self.get_credentials(self.test_case)
