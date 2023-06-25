@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Callable, List, Type
+from typing import Callable, List, Type, Union
 from uuid import UUID
 
 from django.db.models import Model
@@ -42,7 +42,9 @@ class UpdateModelView(AbstractModelView):
             summary=summary,
         )
         @merge_decorators(self.decorators)
-        def update_model(request: HttpRequest, id: int | UUID, payload: input_schema):
+        def update_model(
+            request: HttpRequest, id: Union[int, UUID], payload: input_schema
+        ):
             instance = model.objects.get(id=id)
             for field, value in payload.dict(exclude_unset=True).items():
                 setattr(instance, field, value)

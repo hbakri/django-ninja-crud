@@ -1,6 +1,7 @@
 import random
 import uuid
 from http import HTTPStatus
+from typing import Union
 from uuid import UUID
 
 from django.db.models import Model
@@ -15,7 +16,7 @@ from ninja_crud.views.delete import DeleteModelView
 class DeleteModelViewTest(AbstractModelViewTest):
     model_view = DeleteModelView
 
-    def delete_model(self, id: UUID, credentials: dict) -> HttpResponse:
+    def delete_model(self, id: Union[int, UUID], credentials: dict) -> HttpResponse:
         kwargs = {"id": id}
         url_name = utils.to_snake_case(self.model_view_set.model.__name__)
         return self.client.delete(

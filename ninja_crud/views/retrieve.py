@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Callable, List, Type
+from typing import Callable, List, Type, Union
 from uuid import UUID
 
 from django.db.models import Model, QuerySet
@@ -37,7 +37,7 @@ class RetrieveModelView(AbstractModelView):
             summary=summary,
         )
         @merge_decorators(self.decorators)
-        def retrieve_model(request: HttpRequest, id: int | UUID):
+        def retrieve_model(request: HttpRequest, id: Union[int, UUID]):
             if self.get_queryset is not None:
                 queryset = self.get_queryset(id)
             else:

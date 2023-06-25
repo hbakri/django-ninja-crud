@@ -21,11 +21,11 @@ class CreateModelView(AbstractModelView):
         related_model: Type[Model] = None,
         pre_save: Union[
             Callable[[HttpRequest, Model], None],
-            Callable[[HttpRequest, int | UUID, Model], None],
+            Callable[[HttpRequest, Union[int, UUID], Model], None],
         ] = None,
         post_save: Union[
             Callable[[HttpRequest, Model], None],
-            Callable[[HttpRequest, int | UUID, Model], None],
+            Callable[[HttpRequest, Union[int, UUID], Model], None],
         ] = None,
     ) -> None:
         super().__init__(decorators=decorators)
@@ -89,7 +89,9 @@ class CreateModelView(AbstractModelView):
             summary=summary,
         )
         @merge_decorators(self.decorators)
-        def create_model(request: HttpRequest, id: int | UUID, payload: input_schema):
+        def create_model(
+            request: HttpRequest, id: Union[int, UUID], payload: input_schema
+        ):
             instance = self.related_model()
             for field, value in payload.dict(exclude_unset=True).items():
                 setattr(instance, field, value)

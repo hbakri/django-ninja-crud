@@ -2,7 +2,7 @@ import json
 import random
 import uuid
 from http import HTTPStatus
-from typing import Callable
+from typing import Callable, Union
 from uuid import UUID
 
 from django.db.models import Model
@@ -29,7 +29,9 @@ class UpdateModelViewTest(AbstractModelViewTest):
         )
         self.payloads = payloads
 
-    def update_model(self, id: UUID, data: dict, credentials: dict) -> HttpResponse:
+    def update_model(
+        self, id: Union[int, UUID], data: dict, credentials: dict
+    ) -> HttpResponse:
         kwargs = {"id": id}
         url_name = utils.to_snake_case(self.model_view_set.model.__name__)
         return self.client.put(

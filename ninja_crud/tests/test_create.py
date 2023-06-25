@@ -1,6 +1,6 @@
 import json
 from http import HTTPStatus
-from typing import Callable
+from typing import Callable, Union
 from uuid import UUID
 
 from django.db.models import Model
@@ -27,7 +27,9 @@ class CreateModelViewTest(AbstractModelViewTest):
         )
         self.payloads = payloads
 
-    def create_model(self, id: UUID, data: dict, credentials: dict) -> HttpResponse:
+    def create_model(
+        self, id: Union[int, UUID], data: dict, credentials: dict
+    ) -> HttpResponse:
         model_view: CreateModelView = self.get_model_view()
         model_name = utils.to_snake_case(self.model_view_set.model.__name__)
         if model_view.detail:

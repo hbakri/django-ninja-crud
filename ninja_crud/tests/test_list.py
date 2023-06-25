@@ -1,6 +1,6 @@
 import json
 from http import HTTPStatus
-from typing import Callable, List
+from typing import Callable, List, Union
 from uuid import UUID
 
 from django.db.models import Model
@@ -30,7 +30,7 @@ class ListModelViewTest(AbstractModelViewTest):
         self.filters = filters
 
     def list_model(
-        self, id: UUID, credentials: dict, data: dict = None
+        self, id: Union[int, UUID], credentials: dict, data: dict = None
     ) -> HttpResponse:
         model_view: ListModelView = self.get_model_view()
         model_name = utils.to_snake_case(self.model_view_set.model.__name__)
@@ -51,7 +51,7 @@ class ListModelViewTest(AbstractModelViewTest):
         return response
 
     def assert_response_is_ok(
-        self, response: HttpResponse, id: UUID, data: dict = None
+        self, response: HttpResponse, id: Union[int, UUID], data: dict = None
     ):
         self.test_case.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)

@@ -2,6 +2,7 @@ import json
 import random
 import uuid
 from http import HTTPStatus
+from typing import Union
 from uuid import UUID
 
 from django.db.models import Model
@@ -16,7 +17,7 @@ from ninja_crud.views.retrieve import RetrieveModelView
 class RetrieveModelViewTest(AbstractModelViewTest):
     model_view = RetrieveModelView
 
-    def retrieve_model(self, id: int | UUID, credentials: dict) -> HttpResponse:
+    def retrieve_model(self, id: Union[int, UUID], credentials: dict) -> HttpResponse:
         kwargs = {"id": id}
         url_name = utils.to_snake_case(self.model_view_set.model.__name__)
         return self.client.get(
@@ -25,7 +26,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
             **credentials,
         )
 
-    def assert_response_is_ok(self, response: HttpResponse, id: int | UUID):
+    def assert_response_is_ok(self, response: HttpResponse, id: Union[int, UUID]):
         self.test_case.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
