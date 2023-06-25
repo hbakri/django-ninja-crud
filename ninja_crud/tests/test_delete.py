@@ -1,3 +1,4 @@
+import random
 import uuid
 from http import HTTPStatus
 from uuid import UUID
@@ -47,7 +48,11 @@ class DeleteModelViewTest(AbstractModelViewTest):
 
     def test_delete_model_not_found(self):
         credentials: Credentials = self.get_credentials(self.test_case)
-        response = self.delete_model(id=uuid.uuid4(), credentials=credentials.ok)
+        instance: Model = self.get_instance(self.test_case)
+        random_id = (
+            uuid.uuid4() if type(instance.pk) is UUID else random.randint(1000, 9999)
+        )
+        response = self.delete_model(id=random_id, credentials=credentials.ok)
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)
 
     def test_delete_model_forbidden(self):

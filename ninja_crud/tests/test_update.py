@@ -1,4 +1,5 @@
 import json
+import random
 import uuid
 from http import HTTPStatus
 from typing import Callable
@@ -93,8 +94,12 @@ class UpdateModelViewTest(AbstractModelViewTest):
 
     def test_update_model_not_found(self):
         credentials: Credentials = self.get_credentials(self.test_case)
+        instance: Model = self.get_instance(self.test_case)
+        random_id = (
+            uuid.uuid4() if type(instance.pk) is UUID else random.randint(1000, 9999)
+        )
         response = self.update_model(
-            id=uuid.uuid4(), data=self.payloads.ok, credentials=credentials.ok
+            id=random_id, data=self.payloads.ok, credentials=credentials.ok
         )
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)
 

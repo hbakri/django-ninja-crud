@@ -8,6 +8,7 @@ from ninja.errors import ValidationError as NinjaValidationError
 
 from tests.test_app.views.view_collection import router as collection_router
 from tests.test_app.views.view_item import router as item_router
+from tests.test_app.views.view_user import router as user_router
 from tests.test_authentication import TokenBearer
 
 api = NinjaAPI(urls_namespace="api")
@@ -15,6 +16,7 @@ api.add_router(
     "collections", collection_router, auth=TokenBearer(), tags=["collections"]
 )
 api.add_router("items", item_router, auth=TokenBearer(), tags=["items"])
+api.add_router("users", user_router, tags=["users"])
 api.add_router("departments", department_router, auth=None, tags=["departments"])
 api.add_router("employees", employee_router, auth=None, tags=["employees"])
 

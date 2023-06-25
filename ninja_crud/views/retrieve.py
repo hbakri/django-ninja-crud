@@ -37,7 +37,7 @@ class RetrieveModelView(AbstractModelView):
             summary=summary,
         )
         @merge_decorators(self.decorators)
-        def retrieve_model(request: HttpRequest, id: UUID):
+        def retrieve_model(request: HttpRequest, id: int | UUID):
             if self.get_queryset is not None:
                 queryset = self.get_queryset(id)
             else:

@@ -18,7 +18,7 @@ class ListModelView(AbstractModelView):
         output_schema: Type[Schema],
         filter_schema: Type[FilterSchema] = None,
         queryset_getter: Union[
-            Callable[[], QuerySet[Model]], Callable[[UUID], QuerySet[Model]]
+            Callable[[], QuerySet[Model]], Callable[[int | UUID], QuerySet[Model]]
         ] = None,
         related_model: Type[Model] = None,
         detail: bool = False,
@@ -85,7 +85,7 @@ class ListModelView(AbstractModelView):
         @paginate(LimitOffsetPagination)
         def list_models(
             request: HttpRequest,
-            id: UUID,
+            id: int | UUID,
             filters: filter_schema = Query(default=FilterSchema()),
         ):
             if self.get_queryset is not None:

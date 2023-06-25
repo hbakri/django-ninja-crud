@@ -42,7 +42,7 @@ class UpdateModelView(AbstractModelView):
             summary=summary,
         )
         @merge_decorators(self.decorators)
-        def update_model(request: HttpRequest, id: UUID, payload: input_schema):
+        def update_model(request: HttpRequest, id: int | UUID, payload: input_schema):
             instance = model.objects.get(id=id)
             for field, value in payload.dict(exclude_unset=True).items():
                 setattr(instance, field, value)
