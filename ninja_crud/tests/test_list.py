@@ -1,6 +1,6 @@
 import json
 from http import HTTPStatus
-from typing import Callable, List, Union
+from typing import Callable, Union
 from uuid import UUID
 
 from django.db.models import Model
@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from ninja_crud import utils
-from ninja_crud.tests.test_abstract import AbstractModelViewTest, Credentials
+from ninja_crud.tests.test_abstract import AbstractModelViewTest, Credentials, Payloads
 from ninja_crud.views.list import ListModelView
 
 
@@ -20,13 +20,11 @@ class ListModelViewTest(AbstractModelViewTest):
         self,
         instance_getter: Callable[[TestCase], Model],
         credentials_getter: Callable[[TestCase], Credentials] = None,
-        filters: List[dict] = None,
+        filters: Payloads = None,
     ) -> None:
         super().__init__(
             instance_getter=instance_getter, credentials_getter=credentials_getter
         )
-        if filters is None:
-            filters = []
         self.filters = filters
 
     def list_model(
@@ -83,12 +81,29 @@ class ListModelViewTest(AbstractModelViewTest):
         response = self.list_model(id=instance.pk, credentials=credentials.ok)
         self.assert_response_is_ok(response, id=instance.pk)
 
-        for data in self.filters:
-            with self.test_case.subTest(data=data):
+        if self.filters is not None:
+            with self.test_case.subTest(data=self.filters.ok):
                 response = self.list_model(
-                    id=instance.pk, credentials=credentials.ok, data=data
+                    id=instance.pk, credentials=credentials.ok, data=self.filters.ok
                 )
-                self.assert_response_is_ok(response, id=instance.pk, data=data)
+                self.assert_response_is_ok(
+                    response, id=instance.pk, data=self.filters.ok
+                )
+
+    def test_list_model_bad_request(self):
+        if self.filters is None or self.filters.bad_request is None:
+            self.test_case.skipTest("No bad request filters provided")
+        credentials: Credentials = self.get_credentials(self.test_case)
+        instance: Model = self.get_instance(self.test_case)
+        with self.test_case.subTest(data=self.filters.bad_request):
+            response = self.list_model(
+                id=instance.pk,
+                credentials=credentials.ok,
+                data=self.filters.bad_request,
+            )
+            self.assert_response_is_bad_request(
+                response, status_code=HTTPStatus.BAD_REQUEST
+            )
 
     def test_list_model_unauthorized(self):
         credentials: Credentials = self.get_credentials(self.test_case)

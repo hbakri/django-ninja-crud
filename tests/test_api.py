@@ -1,6 +1,11 @@
 from http import HTTPStatus
 
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
+from django.core.exceptions import (
+    FieldError,
+    ObjectDoesNotExist,
+    PermissionDenied,
+    ValidationError,
+)
 from example.views.view_department import router as department_router
 from example.views.view_employee import router as employee_router
 from ninja import NinjaAPI
@@ -63,4 +68,13 @@ def handle_validation_error(request, exc: ValidationError):
         request,
         data={"message": "ValidationError", "detail": exc.message_dict},
         status=status,
+    )
+
+
+@api.exception_handler(FieldError)
+def handle_field_error(request, exc: FieldError):
+    return api.create_response(
+        request,
+        data={"message": "FieldError", "detail": str(exc)},
+        status=HTTPStatus.BAD_REQUEST,
     )

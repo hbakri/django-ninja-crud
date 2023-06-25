@@ -44,7 +44,10 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
     test_list = ListModelViewTest(
         instance_getter=get_instance,
         credentials_getter=get_credentials_ok,
-        filters=[{"name": "collection-1", "order_by": ["name"]}],
+        filters=Payloads(
+            ok={"name": "collection-1", "order_by": ["name"]},
+            bad_request={"order_by": ["unknown_field"]},
+        ),
     )
     test_create = CreateModelViewTest(
         payloads=collection_payloads,
