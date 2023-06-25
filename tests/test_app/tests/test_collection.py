@@ -45,7 +45,7 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
         instance_getter=get_instance,
         credentials_getter=get_credentials_ok,
         filters=Payloads(
-            ok={"name": "collection-1", "order_by": ["name"]},
+            ok={"name": "collection-1", "order_by": ["name"], "limit": 1},
             bad_request={"order_by": ["unknown_field"]},
         ),
     )

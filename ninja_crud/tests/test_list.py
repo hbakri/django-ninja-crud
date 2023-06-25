@@ -68,11 +68,20 @@ class ListModelViewTest(AbstractModelViewTest):
                 queryset = self.model_view_set.model.objects.get_queryset()
 
         if data is not None:
+            limit = data.pop("limit", 100)
+            offset = data.pop("offset", 0)
             filter_instance = model_view.filter_schema(**data)
             queryset = model_view.filter_queryset(queryset, filter_instance)
+        else:
+            limit = 100
+            offset = 0
 
         self.assert_content_equals_schema_list(
-            content, queryset=queryset, output_schema=model_view.output_schema
+            content,
+            queryset=queryset,
+            output_schema=model_view.output_schema,
+            limit=limit,
+            offset=offset,
         )
 
     def test_list_model_ok(self):

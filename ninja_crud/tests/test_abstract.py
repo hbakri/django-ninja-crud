@@ -93,8 +93,8 @@ class AbstractModelViewTest:
         content: List[dict],
         queryset: QuerySet[Model],
         output_schema: Type[Schema],
-        limit: int = 100,
-        offset: int = 0,
+        limit: int,
+        offset: int,
     ):
         self.test_case.assertIsInstance(content, dict)
 
