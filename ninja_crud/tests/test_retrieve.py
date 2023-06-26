@@ -9,8 +9,8 @@ from django.db.models import Model
 from django.http import HttpResponse
 from django.urls import reverse
 
-from ninja_crud import utils
 from ninja_crud.tests.test_abstract import AbstractModelViewTest, Credentials
+from ninja_crud.views import utils
 from ninja_crud.views.retrieve import RetrieveModelView
 
 

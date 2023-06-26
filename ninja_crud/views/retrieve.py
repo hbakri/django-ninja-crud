@@ -1,13 +1,11 @@
 from http import HTTPStatus
-from typing import Callable, List, Type, Union
-from uuid import UUID
+from typing import Any, Callable, List, Type
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
 from ninja import Router, Schema
 
-from ninja_crud import utils
-from ninja_crud.utils import merge_decorators
+from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
 
@@ -15,7 +13,7 @@ class RetrieveModelView(AbstractModelView):
     def __init__(
         self,
         output_schema: Type[Schema],
-        queryset_getter: Callable[[UUID], QuerySet[Model]] = None,
+        queryset_getter: Callable[[Any], QuerySet[Model]] = None,
         decorators: List[Callable] = None,
     ) -> None:
         super().__init__(decorators=decorators)
@@ -28,6 +26,7 @@ class RetrieveModelView(AbstractModelView):
         summary = f"Retrieve {model.__name__}"
 
         output_schema = self.output_schema
+        id_type = utils.get_id_type(model)
 
         @router.get(
             "/{id}",
@@ -36,11 +35,11 @@ class RetrieveModelView(AbstractModelView):
             operation_id=operation_id,
             summary=summary,
         )
-        @merge_decorators(self.decorators)
-        def retrieve_model(request: HttpRequest, id: Union[int, UUID]):
+        @utils.merge_decorators(self.decorators)
+        def retrieve_model(request: HttpRequest, id: id_type):
             if self.get_queryset is not None:
                 queryset = self.get_queryset(id)
             else:
                 queryset = model.objects.get_queryset()
-            instance = queryset.get(pk=id)
+            instance = queryset.get(id=id)
             return HTTPStatus.OK, instance

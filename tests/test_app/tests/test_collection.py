@@ -1,4 +1,5 @@
 import random
+import uuid
 from typing import Union
 
 from django.test import TestCase
@@ -20,8 +21,8 @@ from tests.test_app.views.view_collection import CollectionViewSet
 class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
     model_view_set = CollectionViewSet
 
-    def get_instance(self: Union["CollectionViewSetTest", TestCase]):
-        return self.collection_1
+    def get_instance(self) -> Payloads:
+        return Payloads(ok={"id": self.collection_1.id}, not_found={"id": uuid.uuid4()})
 
     def get_credentials_ok(self: Union["CollectionViewSetTest", TestCase]):
         return Credentials(

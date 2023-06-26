@@ -1,15 +1,14 @@
 import json
 from http import HTTPStatus
-from typing import Callable, Union
-from uuid import UUID
+from typing import Any, Callable
 
 from django.db.models import Model
 from django.http import HttpResponse
 from django.test import TestCase
 from django.urls import reverse
 
-from ninja_crud import utils
 from ninja_crud.tests.test_abstract import AbstractModelViewTest, Credentials, Payloads
+from ninja_crud.views import utils
 from ninja_crud.views.create import CreateModelView
 
 
@@ -27,9 +26,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         )
         self.payloads = payloads
 
-    def create_model(
-        self, id: Union[int, UUID], data: dict, credentials: dict
-    ) -> HttpResponse:
+    def create_model(self, id: Any, data: dict, credentials: dict) -> HttpResponse:
         model_view: CreateModelView = self.get_model_view()
         model_name = utils.to_snake_case(self.model_view_set.model.__name__)
         if model_view.detail:

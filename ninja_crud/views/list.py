@@ -1,14 +1,12 @@
 from http import HTTPStatus
-from typing import Callable, List, Type, Union
-from uuid import UUID
+from typing import Any, Callable, List, Type, Union
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
 from ninja import FilterSchema, Query, Router, Schema
 from ninja.pagination import LimitOffsetPagination, paginate
 
-from ninja_crud import utils
-from ninja_crud.utils import merge_decorators
+from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
 
@@ -18,7 +16,7 @@ class ListModelView(AbstractModelView):
         output_schema: Type[Schema],
         filter_schema: Type[FilterSchema] = None,
         queryset_getter: Union[
-            Callable[[], QuerySet[Model]], Callable[[Union[int, UUID]], QuerySet[Model]]
+            Callable[[], QuerySet[Model]], Callable[[Any], QuerySet[Model]]
         ] = None,
         related_model: Type[Model] = None,
         detail: bool = False,
@@ -52,7 +50,7 @@ class ListModelView(AbstractModelView):
             operation_id=operation_id,
             summary=summary,
         )
-        @merge_decorators(self.decorators)
+        @utils.merge_decorators(self.decorators)
         @paginate(LimitOffsetPagination)
         def list_models(
             request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
@@ -73,6 +71,7 @@ class ListModelView(AbstractModelView):
 
         output_schema = self.output_schema
         filter_schema = self.filter_schema
+        id_type = utils.get_id_type(model)
 
         @router.get(
             url,
@@ -81,11 +80,11 @@ class ListModelView(AbstractModelView):
             operation_id=operation_id,
             summary=summary,
         )
-        @merge_decorators(self.decorators)
+        @utils.merge_decorators(self.decorators)
         @paginate(LimitOffsetPagination)
         def list_models(
             request: HttpRequest,
-            id: Union[int, UUID],
+            id: id_type,
             filters: filter_schema = Query(default=FilterSchema()),
         ):
             if self.get_queryset is not None:

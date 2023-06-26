@@ -1,13 +1,11 @@
 from http import HTTPStatus
-from typing import Callable, List, Type, Union
-from uuid import UUID
+from typing import Any, Callable, List, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
 from ninja import Router
 
-from ninja_crud import utils
-from ninja_crud.utils import merge_decorators
+from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
 
@@ -16,7 +14,7 @@ class DeleteModelView(AbstractModelView):
         self,
         decorators: List[Callable] = None,
         pre_delete: Callable[[HttpRequest, Model], None] = None,
-        post_delete: Callable[[HttpRequest, Union[int, UUID]], None] = None,
+        post_delete: Callable[[HttpRequest, Any], None] = None,
     ) -> None:
         super().__init__(decorators=decorators)
         self.pre_delete = pre_delete
@@ -26,6 +24,7 @@ class DeleteModelView(AbstractModelView):
         model_name = utils.to_snake_case(model.__name__)
         operation_id = f"delete_{model_name}"
         summary = f"Delete {model.__name__}"
+        id_type = utils.get_id_type(model)
 
         @router.delete(
             "/{id}",
@@ -34,9 +33,9 @@ class DeleteModelView(AbstractModelView):
             operation_id=operation_id,
             summary=summary,
         )
-        @merge_decorators(self.decorators)
-        def delete_model(request: HttpRequest, id: Union[int, UUID]):
-            instance = model.objects.get(pk=id)
+        @utils.merge_decorators(self.decorators)
+        def delete_model(request: HttpRequest, id: id_type):
+            instance = model.objects.get(id=id)
             if self.pre_delete is not None:
                 self.pre_delete(request, instance)
             instance.delete()

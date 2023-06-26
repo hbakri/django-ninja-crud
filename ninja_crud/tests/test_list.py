@@ -8,8 +8,8 @@ from django.http import HttpResponse
 from django.test import TestCase
 from django.urls import reverse
 
-from ninja_crud import utils
 from ninja_crud.tests.test_abstract import AbstractModelViewTest, Credentials, Payloads
+from ninja_crud.views import utils
 from ninja_crud.views.list import ListModelView
 
 

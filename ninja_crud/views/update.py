@@ -1,13 +1,11 @@
 from http import HTTPStatus
-from typing import Callable, List, Type, Union
-from uuid import UUID
+from typing import Callable, List, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
 from ninja import Router, Schema
 
-from ninja_crud import utils
-from ninja_crud.utils import merge_decorators
+from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
 
@@ -33,6 +31,7 @@ class UpdateModelView(AbstractModelView):
 
         input_schema = self.input_schema
         output_schema = self.output_schema
+        id_type = utils.get_id_type(model)
 
         @router.put(
             "/{id}",
@@ -41,10 +40,8 @@ class UpdateModelView(AbstractModelView):
             operation_id=operation_id,
             summary=summary,
         )
-        @merge_decorators(self.decorators)
-        def update_model(
-            request: HttpRequest, id: Union[int, UUID], payload: input_schema
-        ):
+        @utils.merge_decorators(self.decorators)
+        def update_model(request: HttpRequest, id: id_type, payload: input_schema):
             instance = model.objects.get(id=id)
             for field, value in payload.dict(exclude_unset=True).items():
                 setattr(instance, field, value)
