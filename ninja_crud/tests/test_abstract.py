@@ -1,7 +1,7 @@
 import inspect
 import json
 from http import HTTPStatus
-from typing import Callable, List, NamedTuple, Optional, Tuple, Type
+from typing import Callable, List, NamedTuple, Optional, Tuple, Type, TypeVar, Union
 
 from django.db.models import Model, QuerySet
 from django.http import HttpResponse
@@ -16,22 +16,31 @@ from ninja_crud.views import (
     ModelViewSet,
 )
 
+T = TypeVar("T")
+TestCaseType = TypeVar("TestCaseType", bound=TestCase)
+ParamsOrCallable = Union[T, Callable[[TestCaseType], T]]
 
-class Credentials(NamedTuple):
+
+class PathParams(NamedTuple):
+    ok: dict
+    not_found: Optional[dict] = None
+
+
+class QueryParams(NamedTuple):
+    ok: dict
+    bad_request: Optional[dict] = None
+
+
+class AuthParams(NamedTuple):
     ok: dict
     forbidden: Optional[dict] = None
     unauthorized: Optional[dict] = None
 
 
-class Payloads(NamedTuple):
+class BodyParams(NamedTuple):
     ok: dict
     bad_request: Optional[dict] = None
     conflict: Optional[dict] = None
-    not_found: Optional[dict] = None
-
-
-def default_credentials_getter(_: TestCase) -> Credentials:
-    return Credentials(ok={})
 
 
 class AbstractModelViewTest:
@@ -43,13 +52,23 @@ class AbstractModelViewTest:
 
     def __init__(
         self,
-        instance_getter: Callable[[TestCase], Model],
-        credentials_getter: Callable[[TestCase], Credentials] = None,
+        path_params: ParamsOrCallable[PathParams, TestCaseType],
+        auth_params: ParamsOrCallable[AuthParams, TestCaseType] = None,
     ) -> None:
-        self.get_instance = instance_getter
-        if credentials_getter is None:
-            credentials_getter = default_credentials_getter
-        self.get_credentials = credentials_getter
+        self.path_params = path_params
+        self.auth_params = auth_params
+
+    def get_path_params(self) -> PathParams:
+        if callable(self.path_params):
+            return self.path_params(self.test_case)
+        return self.path_params
+
+    def get_auth_params(self) -> AuthParams:
+        if self.auth_params is None:
+            return AuthParams(ok={})
+        elif callable(self.auth_params):
+            return self.auth_params(self.test_case)
+        return self.auth_params
 
     def get_tests(self) -> List[Tuple[str, Callable]]:
         return [

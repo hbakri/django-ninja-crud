@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.test import TestCase
 from django.urls import reverse
 
-from ninja_crud.tests.test_abstract import AbstractModelViewTest, Credentials, Payloads
+from ninja_crud.tests.test_abstract import AbstractModelViewTest, AuthParams, BodyParams
 from ninja_crud.views import utils
 from ninja_crud.views.list import ListModelView
 
@@ -18,13 +18,11 @@ class ListModelViewTest(AbstractModelViewTest):
 
     def __init__(
         self,
-        instance_getter: Callable[[TestCase], Model],
-        credentials_getter: Callable[[TestCase], Credentials] = None,
-        filters: Payloads = None,
+        path_params: Callable[[TestCase], Model],
+        auth_params: Callable[[TestCase], AuthParams] = None,
+        filters: BodyParams = None,
     ) -> None:
-        super().__init__(
-            instance_getter=instance_getter, credentials_getter=credentials_getter
-        )
+        super().__init__(path_params=path_params, auth_params=auth_params)
         self.filters = filters
 
     def list_model(
@@ -85,8 +83,8 @@ class ListModelViewTest(AbstractModelViewTest):
         )
 
     def test_list_model_ok(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.list_model(id=instance.pk, credentials=credentials.ok)
         self.assert_response_is_ok(response, id=instance.pk)
 
@@ -102,8 +100,8 @@ class ListModelViewTest(AbstractModelViewTest):
     def test_list_model_bad_request(self):
         if self.filters is None or self.filters.bad_request is None:
             self.test_case.skipTest("No bad request filters provided")
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.list_model(
             id=instance.pk,
             credentials=credentials.ok,
@@ -114,19 +112,19 @@ class ListModelViewTest(AbstractModelViewTest):
         )
 
     def test_list_model_unauthorized(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
         if credentials.unauthorized is None:
             self.test_case.skipTest("No unauthorized credentials provided")
-        instance: Model = self.get_instance(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.list_model(id=instance.pk, credentials=credentials.unauthorized)
         self.assert_response_is_bad_request(
             response, status_code=HTTPStatus.UNAUTHORIZED
         )
 
     def test_list_model_forbidden(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
         if credentials.forbidden is None:
             self.test_case.skipTest("No forbidden credentials provided")
-        instance: Model = self.get_instance(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.list_model(id=instance.pk, credentials=credentials.forbidden)
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.FORBIDDEN)

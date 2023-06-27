@@ -1,14 +1,17 @@
 import json
 from http import HTTPStatus
-from typing import Any, Callable
 
-from django.db.models import Model
 from django.http import HttpResponse
-from django.test import TestCase
 from django.urls import reverse
 
-from ninja_crud.tests.test_abstract import AbstractModelViewTest, Credentials, Payloads
-from ninja_crud.views import utils
+from ninja_crud.tests.test_abstract import (
+    AbstractModelViewTest,
+    AuthParams,
+    BodyParams,
+    ParamsOrCallable,
+    PathParams,
+    TestCaseType,
+)
 from ninja_crud.views.create import CreateModelView
 
 
@@ -17,31 +20,30 @@ class CreateModelViewTest(AbstractModelViewTest):
 
     def __init__(
         self,
-        payloads: Payloads,
-        instance_getter: Callable[[TestCase], Model],
-        credentials_getter: Callable[[TestCase], Credentials] = None,
+        body_params: ParamsOrCallable[BodyParams, TestCaseType],
+        path_params: ParamsOrCallable[PathParams, TestCaseType] = None,
+        auth_params: ParamsOrCallable[AuthParams, TestCaseType] = None,
     ) -> None:
-        super().__init__(
-            instance_getter=instance_getter, credentials_getter=credentials_getter
-        )
-        self.payloads = payloads
+        if path_params is None:
+            path_params = PathParams(ok={})
+        super().__init__(path_params=path_params, auth_params=auth_params)
+        self.body_params = body_params
 
-    def create_model(self, id: Any, data: dict, credentials: dict) -> HttpResponse:
+    def get_body_params(self) -> BodyParams:
+        if callable(self.body_params):
+            return self.body_params(self.test_case)
+        return self.body_params
+
+    def request_create_model(
+        self, path_params: dict, auth_params: dict, body_params: dict
+    ) -> HttpResponse:
         model_view: CreateModelView = self.get_model_view()
-        model_name = utils.to_snake_case(self.model_view_set.model.__name__)
-        if model_view.detail:
-            related_model_name = utils.to_snake_case(model_view.related_model.__name__)
-            url_name = f"{model_name}_{related_model_name}s"
-            kwargs = {"id": id}
-        else:
-            url_name = f"{model_name}s"
-            kwargs = {}
-
+        url_name = model_view.get_url_name(self.model_view_set.model)
         return self.client.post(
-            reverse(f"api:{url_name}", kwargs=kwargs),
-            data=data,
+            reverse(f"api:{url_name}", kwargs=path_params),
+            data=body_params,
             content_type="application/json",
-            **credentials,
+            **auth_params,
         )
 
     def assert_response_is_ok(self, response: HttpResponse):
@@ -60,53 +62,68 @@ class CreateModelViewTest(AbstractModelViewTest):
         )
 
     def test_create_model_ok(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
-        response = self.create_model(
-            id=instance.pk, data=self.payloads.ok, credentials=credentials.ok
+        response = self.request_create_model(
+            path_params=self.get_path_params().ok,
+            auth_params=self.get_auth_params().ok,
+            body_params=self.get_body_params().ok,
         )
         self.assert_response_is_ok(response)
 
     def test_create_model_bad_request(self):
-        if self.payloads.bad_request is None:
-            self.test_case.skipTest("No bad request payload provided")
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
-        response = self.create_model(
-            id=instance.pk, data=self.payloads.bad_request, credentials=credentials.ok
+        body_params = self.get_body_params()
+        if body_params.bad_request is None:
+            self.test_case.skipTest("No bad request body provided")
+        response = self.request_create_model(
+            path_params=self.get_path_params().ok,
+            auth_params=self.get_auth_params().ok,
+            body_params=body_params.bad_request,
         )
         self.assert_response_is_bad_request(
             response, status_code=HTTPStatus.BAD_REQUEST
         )
 
     def test_create_model_conflict(self):
-        if self.payloads.conflict is None:
-            self.test_case.skipTest("No conflict payload provided")
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
-        response = self.create_model(
-            id=instance.pk, data=self.payloads.conflict, credentials=credentials.ok
+        body_params = self.get_body_params()
+        if body_params.conflict is None:
+            self.test_case.skipTest("No conflict body provided")
+        response = self.request_create_model(
+            path_params=self.get_path_params().ok,
+            auth_params=self.get_auth_params().ok,
+            body_params=body_params.conflict,
         )
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.CONFLICT)
 
     def test_create_model_unauthorized(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        if credentials.unauthorized is None:
-            self.test_case.skipTest("No unauthorized credentials provided")
-        instance: Model = self.get_instance(self.test_case)
-        response = self.create_model(
-            id=instance.pk, data=self.payloads.ok, credentials=credentials.unauthorized
+        auth_params = self.get_auth_params()
+        if auth_params.unauthorized is None:
+            self.test_case.skipTest("No unauthorized auth provided")
+        response = self.request_create_model(
+            path_params=self.get_path_params().ok,
+            auth_params=auth_params.unauthorized,
+            body_params=self.get_body_params().ok,
         )
         self.assert_response_is_bad_request(
             response, status_code=HTTPStatus.UNAUTHORIZED
         )
 
     def test_create_model_forbidden(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        if credentials.forbidden is None:
-            self.test_case.skipTest("No forbidden credentials provided")
-        instance: Model = self.get_instance(self.test_case)
-        response = self.create_model(
-            id=instance.pk, data=self.payloads.ok, credentials=credentials.forbidden
+        auth_params = self.get_auth_params()
+        if auth_params.forbidden is None:
+            self.test_case.skipTest("No forbidden auth provided")
+        response = self.request_create_model(
+            path_params=self.get_path_params().ok,
+            auth_params=auth_params.forbidden,
+            body_params=self.get_body_params().ok,
         )
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.FORBIDDEN)
+
+    def test_create_model_not_found(self):
+        path_params = self.get_path_params()
+        if path_params.not_found is None:
+            self.test_case.skipTest("No not found path provided")
+        response = self.request_create_model(
+            path_params=path_params.not_found,
+            auth_params=self.get_auth_params().ok,
+            body_params=self.get_body_params().ok,
+        )
+        self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)

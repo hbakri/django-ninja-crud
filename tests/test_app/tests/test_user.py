@@ -4,11 +4,11 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from ninja_crud.tests import (
+    BodyParams,
     CreateModelViewTest,
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
-    Payloads,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -33,7 +33,7 @@ class UserViewSetTest(ModelViewSetTest, TestCase):
     def get_instance(self: Union["UserViewSetTest", TestCase]):
         return self.user_1
 
-    user_payloads = Payloads(
+    user_payloads = BodyParams(
         ok={
             "username": "new-user",
             "email": "user@email.com",
@@ -47,12 +47,10 @@ class UserViewSetTest(ModelViewSetTest, TestCase):
         },
     )
 
-    test_list = ListModelViewTest(instance_getter=get_instance)
+    test_list = ListModelViewTest(path_params=get_instance)
     test_create = CreateModelViewTest(
-        payloads=user_payloads, instance_getter=get_instance
+        body_params=user_payloads, path_params=get_instance
     )
-    test_retrieve = RetrieveModelViewTest(instance_getter=get_instance)
-    test_update = UpdateModelViewTest(
-        payloads=user_payloads, instance_getter=get_instance
-    )
-    test_delete = DeleteModelViewTest(instance_getter=get_instance)
+    test_retrieve = RetrieveModelViewTest(path_params=get_instance)
+    test_update = UpdateModelViewTest(payloads=user_payloads, path_params=get_instance)
+    test_delete = DeleteModelViewTest(path_params=get_instance)

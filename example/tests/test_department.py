@@ -5,11 +5,11 @@ from example.models import Department, Employee
 from example.views.view_department import DepartmentViewSet
 
 from ninja_crud.tests import (
+    BodyParams,
     CreateModelViewTest,
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
-    Payloads,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -34,23 +34,23 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
     def get_instance(self: Union["DepartmentViewSetTest", TestCase]):
         return self.department_1
 
-    department_payloads = Payloads(
+    department_payloads = BodyParams(
         ok={"title": "new_title"},
         bad_request={"bad-title": 1},
         conflict={"title": "department-2"},
     )
 
-    test_list = ListModelViewTest(instance_getter=get_instance)
+    test_list = ListModelViewTest(path_params=get_instance)
     test_create = CreateModelViewTest(
-        payloads=department_payloads, instance_getter=get_instance
+        body_params=department_payloads, path_params=get_instance
     )
-    test_retrieve = RetrieveModelViewTest(instance_getter=get_instance)
+    test_retrieve = RetrieveModelViewTest(path_params=get_instance)
     test_update = UpdateModelViewTest(
-        payloads=department_payloads, instance_getter=get_instance
+        payloads=department_payloads, path_params=get_instance
     )
-    test_delete = DeleteModelViewTest(instance_getter=get_instance)
+    test_delete = DeleteModelViewTest(path_params=get_instance)
 
-    employee_payloads = Payloads(
+    employee_payloads = BodyParams(
         ok={
             "first_name": "new_first_name",
             "last_name": "new_last_name",
@@ -58,7 +58,7 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         bad_request={"first_name": 1},
     )
 
-    test_list_employees = ListModelViewTest(instance_getter=get_instance)
+    test_list_employees = ListModelViewTest(path_params=get_instance)
     test_create_employee = CreateModelViewTest(
-        payloads=employee_payloads, instance_getter=get_instance
+        body_params=employee_payloads, path_params=get_instance
     )

@@ -3,11 +3,11 @@ from typing import Union
 from django.test import TestCase
 
 from ninja_crud.tests import (
-    Credentials,
+    AuthParams,
+    BodyParams,
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
-    Payloads,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -22,39 +22,39 @@ class ItemViewSetTest(ModelViewSetTest, BaseTestCase):
         return self.item
 
     def get_credentials_ok(self: Union["ItemViewSetTest", TestCase]):
-        return Credentials(
+        return AuthParams(
             ok={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"}, unauthorized={}
         )
 
     def get_credentials_ok_forbidden(self: Union["ItemViewSetTest", TestCase]):
-        return Credentials(
+        return AuthParams(
             ok={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
             unauthorized={},
             forbidden={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
         )
 
-    item_payloads = Payloads(
+    item_payloads = BodyParams(
         ok={"name": "new-name", "description": "new-description"},
     )
 
     test_list = ListModelViewTest(
-        instance_getter=get_instance,
-        credentials_getter=get_credentials_ok,
+        path_params=get_instance,
+        auth_params=get_credentials_ok,
     )
     test_retrieve = RetrieveModelViewTest(
-        instance_getter=get_instance,
-        credentials_getter=get_credentials_ok_forbidden,
+        path_params=get_instance,
+        auth_params=get_credentials_ok_forbidden,
     )
     test_update = UpdateModelViewTest(
         payloads=item_payloads,
-        instance_getter=get_instance,
-        credentials_getter=get_credentials_ok_forbidden,
+        path_params=get_instance,
+        auth_params=get_credentials_ok_forbidden,
     )
     test_delete = DeleteModelViewTest(
-        instance_getter=get_instance, credentials_getter=get_credentials_ok_forbidden
+        path_params=get_instance, auth_params=get_credentials_ok_forbidden
     )
 
     test_list_tags = ListModelViewTest(
-        instance_getter=get_instance,
-        credentials_getter=get_credentials_ok,
+        path_params=get_instance,
+        auth_params=get_credentials_ok,
     )

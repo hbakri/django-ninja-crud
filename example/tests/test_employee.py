@@ -5,9 +5,9 @@ from example.models import Department, Employee
 from example.views.view_employee import EmployeeViewSet
 
 from ninja_crud.tests import (
+    BodyParams,
     DeleteModelViewTest,
     ModelViewSetTest,
-    Payloads,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -32,7 +32,7 @@ class EmployeeViewSetTest(ModelViewSetTest, TestCase):
     def get_instance(self: Union["EmployeeViewSetTest", TestCase]):
         return self.employee
 
-    employee_payloads = Payloads(
+    employee_payloads = BodyParams(
         ok={
             "first_name": "new_first_name",
             "last_name": "new_last_name",
@@ -41,8 +41,8 @@ class EmployeeViewSetTest(ModelViewSetTest, TestCase):
         bad_request={"first_name": 1},
     )
 
-    test_retrieve = RetrieveModelViewTest(instance_getter=get_instance)
+    test_retrieve = RetrieveModelViewTest(path_params=get_instance)
     test_update = UpdateModelViewTest(
-        payloads=employee_payloads, instance_getter=get_instance
+        payloads=employee_payloads, path_params=get_instance
     )
-    test_delete = DeleteModelViewTest(instance_getter=get_instance)
+    test_delete = DeleteModelViewTest(path_params=get_instance)

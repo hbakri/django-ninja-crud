@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.test import TestCase
 from django.urls import reverse
 
-from ninja_crud.tests.test_abstract import AbstractModelViewTest, Credentials, Payloads
+from ninja_crud.tests.test_abstract import AbstractModelViewTest, AuthParams, BodyParams
 from ninja_crud.views import utils
 from ninja_crud.views.update import UpdateModelView
 
@@ -20,13 +20,11 @@ class UpdateModelViewTest(AbstractModelViewTest):
 
     def __init__(
         self,
-        payloads: Payloads,
-        instance_getter: Callable[[TestCase], Model],
-        credentials_getter: Callable[[TestCase], Credentials] = None,
+        payloads: BodyParams,
+        path_params: Callable[[TestCase], Model],
+        auth_params: Callable[[TestCase], AuthParams] = None,
     ) -> None:
-        super().__init__(
-            instance_getter=instance_getter, credentials_getter=credentials_getter
-        )
+        super().__init__(path_params=path_params, auth_params=auth_params)
         self.payloads = payloads
 
     def update_model(
@@ -53,8 +51,8 @@ class UpdateModelViewTest(AbstractModelViewTest):
         )
 
     def test_update_model_ok(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.update_model(
             id=instance.pk, data=self.payloads.ok, credentials=credentials.ok
         )
@@ -63,8 +61,8 @@ class UpdateModelViewTest(AbstractModelViewTest):
     def test_update_model_bad_request(self):
         if self.payloads.bad_request is None:
             self.test_case.skipTest("No bad request payload provided")
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.update_model(
             id=instance.pk, data=self.payloads.bad_request, credentials=credentials.ok
         )
@@ -75,18 +73,18 @@ class UpdateModelViewTest(AbstractModelViewTest):
     def test_update_model_conflict(self):
         if self.payloads.conflict is None:
             self.test_case.skipTest("No conflict payload provided")
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.update_model(
             id=instance.pk, data=self.payloads.conflict, credentials=credentials.ok
         )
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.CONFLICT)
 
     def test_update_model_unauthorized(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
         if credentials.unauthorized is None:
             self.test_case.skipTest("No unauthorized credentials provided")
-        instance: Model = self.get_instance(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.update_model(
             id=instance.pk, data=self.payloads.ok, credentials=credentials.unauthorized
         )
@@ -95,8 +93,8 @@ class UpdateModelViewTest(AbstractModelViewTest):
         )
 
     def test_update_model_not_found(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         random_id = (
             uuid.uuid4() if type(instance.pk) is UUID else random.randint(1000, 9999)
         )
@@ -106,10 +104,10 @@ class UpdateModelViewTest(AbstractModelViewTest):
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)
 
     def test_update_model_forbidden(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
         if credentials.forbidden is None:
             self.test_case.skipTest("No forbidden credentials provided")
-        instance: Model = self.get_instance(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.update_model(
             id=instance.pk, data=self.payloads.ok, credentials=credentials.forbidden
         )

@@ -98,9 +98,10 @@ A key advantage of this package is that it makes your views easy to test. Once y
 from django.test import TestCase
 from example.models import Department
 from example.views.view_department import DepartmentViewSet
-from ninja_crud.tests import CreateModelViewTest, DeleteModelViewTest, \
-    ListModelViewTest, ModelViewSetTest, Payloads, RetrieveModelViewTest, \
-    UpdateModelViewTest
+from ninja_crud.tests import CreateModelViewTest, DeleteModelViewTest,
+
+ListModelViewTest, ModelViewSetTest, Payloads, RetrieveModelViewTest,
+UpdateModelViewTest
 
 
 class DepartmentViewSetTest(ModelViewSetTest, TestCase):
@@ -121,11 +122,11 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         conflict={"title": "department-2"},
     )
 
-    test_list = ListModelViewTest(instance_getter=get_instance)
-    test_create = CreateModelViewTest(payloads=department_payloads, instance_getter=get_instance)
-    test_retrieve = RetrieveModelViewTest(instance_getter=get_instance)
-    test_update = UpdateModelViewTest(payloads=department_payloads, instance_getter=get_instance)
-    test_delete = DeleteModelViewTest(instance_getter=get_instance)
+    test_list = ListModelViewTest(kwargs=get_instance)
+    test_create = CreateModelViewTest(body_params=department_payloads, path_params=get_instance)
+    test_retrieve = RetrieveModelViewTest(kwargs=get_instance)
+    test_update = UpdateModelViewTest(payloads=department_payloads, kwargs=get_instance)
+    test_delete = DeleteModelViewTest(path_params=get_instance)
 ```
 With this package, these tests can be written in a consistent, straightforward way, making it easier to ensure your views are working as expected. Once you've written these tests, you can run them whenever you make changes to your views, giving you confidence that your changes haven't broken anything.
 

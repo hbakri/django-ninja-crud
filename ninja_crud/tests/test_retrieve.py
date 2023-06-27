@@ -9,7 +9,7 @@ from django.db.models import Model
 from django.http import HttpResponse
 from django.urls import reverse
 
-from ninja_crud.tests.test_abstract import AbstractModelViewTest, Credentials
+from ninja_crud.tests.test_abstract import AbstractModelViewTest, AuthParams
 from ninja_crud.views import utils
 from ninja_crud.views.retrieve import RetrieveModelView
 
@@ -44,16 +44,16 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         )
 
     def test_retrieve_model_ok(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.retrieve_model(id=instance.pk, credentials=credentials.ok)
         self.assert_response_is_ok(response, id=instance.pk)
 
     def test_retrieve_model_unauthorized(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
         if credentials.unauthorized is None:
             self.test_case.skipTest("No unauthorized credentials provided")
-        instance: Model = self.get_instance(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.retrieve_model(
             id=instance.pk, credentials=credentials.unauthorized
         )
@@ -62,8 +62,8 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         )
 
     def test_retrieve_model_not_found(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         random_id = (
             uuid.uuid4() if type(instance.pk) is UUID else random.randint(1000, 9999)
         )
@@ -71,10 +71,10 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)
 
     def test_retrieve_model_forbidden(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
+        credentials: AuthParams = self.auth_params(self.test_case)
         if credentials.forbidden is None:
             self.test_case.skipTest("No forbidden credentials provided")
-        instance: Model = self.get_instance(self.test_case)
+        instance: Model = self.path_params(self.test_case)
         response = self.retrieve_model(
             id=instance.pk, credentials=credentials.forbidden
         )

@@ -99,3 +99,11 @@ class CreateModelView(AbstractModelView):
             if self.post_save:
                 self.post_save(request, id, instance)
             return HTTPStatus.CREATED, instance
+
+    def get_url_name(self, model: Type[Model]) -> str:
+        model_name = utils.to_snake_case(model.__name__)
+        if self.detail:
+            related_model_name = utils.to_snake_case(self.related_model.__name__)
+            return f"{model_name}_{related_model_name}s"
+        else:
+            return f"{model_name}s"
