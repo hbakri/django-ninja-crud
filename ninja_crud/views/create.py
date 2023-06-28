@@ -51,7 +51,7 @@ class CreateModelView(AbstractModelView):
         @router.post(
             "/",
             response={HTTPStatus.CREATED: output_schema},
-            url_name=f"{model_name}s",
+            url_name=self.get_url_name(model),
             operation_id=operation_id,
             summary=summary,
         )
@@ -73,8 +73,8 @@ class CreateModelView(AbstractModelView):
         model_name = utils.to_snake_case(self.related_model.__name__)
         plural_model_name = f"{model_name}s"
         url = "/{id}/" + plural_model_name
-        operation_id = f"create_{parent_model_name}_{plural_model_name}"
-        summary = f"Create {self.related_model.__name__} of a {model.__name__}"
+        operation_id = f"create_{parent_model_name}_{model_name}"
+        summary = f"Create {self.related_model.__name__}"
 
         input_schema = self.input_schema
         output_schema = self.output_schema
@@ -83,7 +83,7 @@ class CreateModelView(AbstractModelView):
         @router.post(
             url,
             response={HTTPStatus.CREATED: output_schema},
-            url_name=f"{parent_model_name}_{plural_model_name}",
+            url_name=self.get_url_name(model),
             operation_id=operation_id,
             summary=summary,
         )

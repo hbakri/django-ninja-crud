@@ -5,8 +5,10 @@ from ninja_crud.tests import (
     AuthParams,
     BodyParams,
     CreateModelViewTest,
+    ListModelViewTest,
     ModelViewSetTest,
     PathParams,
+    QueryParams,
 )
 from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_collection import CollectionViewSet
@@ -38,14 +40,13 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
         conflict={"name": "collection-2"},
     )
 
-    # test_list = ListModelViewTest(
-    #     path_params=get_kwargs,
-    #     auth_params=get_credentials_ok,
-    #     filters=BodyParams(
-    #         ok={"name": "collection-1", "order_by": ["name"], "limit": 1},
-    #         bad_request={"order_by": ["unknown_field"]},
-    #     ),
-    # )
+    test_list = ListModelViewTest(
+        auth_params=get_auth_params_ok,
+        query_params=QueryParams(
+            ok={"name": "collection-1", "order_by": ["name"], "limit": 1},
+            bad_request={"order_by": ["unknown_field"]},
+        ),
+    )
     test_create = CreateModelViewTest(
         auth_params=get_auth_params_ok,
         body_params=collection_payloads,
@@ -67,10 +68,10 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
         ok={"name": "new-name", "description": "new-description"},
     )
 
-    # test_list_items = ListModelViewTest(
-    #     path_params=get_instance,
-    #     auth_params=get_credentials_ok_forbidden,
-    # )
+    test_list_items = ListModelViewTest(
+        path_params=get_path_params,
+        auth_params=get_auth_params_ok_forbidden,
+    )
     test_create_item = CreateModelViewTest(
         path_params=get_path_params,
         auth_params=get_auth_params_ok_forbidden,

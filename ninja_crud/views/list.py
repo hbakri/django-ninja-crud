@@ -25,7 +25,7 @@ class ListModelView(AbstractModelView):
         super().__init__(decorators=decorators)
         self.output_schema = output_schema
         self.filter_schema = filter_schema
-        self.get_queryset = queryset_getter
+        self.queryset_getter = queryset_getter
         self.related_model = related_model
         self.detail = detail
 
@@ -46,7 +46,7 @@ class ListModelView(AbstractModelView):
         @router.get(
             "/",
             response={HTTPStatus.OK: List[output_schema]},
-            url_name=f"{model_name}s",
+            url_name=self.get_url_name(model),
             operation_id=operation_id,
             summary=summary,
         )
@@ -55,10 +55,7 @@ class ListModelView(AbstractModelView):
         def list_models(
             request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
         ):
-            if self.get_queryset is not None:
-                queryset = self.get_queryset()
-            else:
-                queryset = model.objects.get_queryset()
+            queryset = self.get_queryset(model)
             return self.filter_queryset(queryset=queryset, filters=filters)
 
     def register_instance_route(self, router: Router, model: Type[Model]) -> None:
@@ -76,7 +73,7 @@ class ListModelView(AbstractModelView):
         @router.get(
             url,
             response={HTTPStatus.OK: List[output_schema]},
-            url_name=f"{parent_model_name}_{plural_model_name}",
+            url_name=self.get_url_name(model),
             operation_id=operation_id,
             summary=summary,
         )
@@ -87,11 +84,20 @@ class ListModelView(AbstractModelView):
             id: id_type,
             filters: filter_schema = Query(default=FilterSchema()),
         ):
-            if self.get_queryset is not None:
-                queryset = self.get_queryset(id)
-            else:
-                queryset = self.related_model.objects.get_queryset()
+            queryset = self.get_queryset(model, id)
             return self.filter_queryset(queryset=queryset, filters=filters)
+
+    def get_queryset(self, model: Type[Model], id: Any = None) -> QuerySet[Model]:
+        if self.detail:
+            if self.queryset_getter is not None:
+                return self.queryset_getter(id)
+            else:
+                return self.related_model.objects.get_queryset()
+        else:
+            if self.queryset_getter is not None:
+                return self.queryset_getter()
+            else:
+                return model.objects.get_queryset()
 
     @staticmethod
     def filter_queryset(queryset: QuerySet[Model], filters: FilterSchema):
@@ -101,3 +107,11 @@ class ListModelView(AbstractModelView):
 
         queryset = filters.filter(queryset)
         return queryset
+
+    def get_url_name(self, model: Type[Model]) -> str:
+        model_name = utils.to_snake_case(model.__name__)
+        if self.detail:
+            related_model_name = utils.to_snake_case(self.related_model.__name__)
+            return f"{model_name}_{related_model_name}s"
+        else:
+            return f"{model_name}s"
