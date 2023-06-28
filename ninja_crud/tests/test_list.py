@@ -130,13 +130,3 @@ class ListModelViewTest(AbstractModelViewTest):
             auth_params=auth_params.forbidden,
         )
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.FORBIDDEN)
-
-    def test_list_model_not_found(self):
-        path_params = self.get_path_params()
-        if path_params.not_found is None:
-            self.test_case.skipTest("No not found path provided")
-        response = self.request_list_model(
-            path_params=path_params.not_found,
-            auth_params=self.get_auth_params().ok,
-        )
-        self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)

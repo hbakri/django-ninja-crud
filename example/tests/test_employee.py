@@ -1,4 +1,4 @@
-from typing import Union
+import uuid
 
 from django.test import TestCase
 from example.models import Department, Employee
@@ -8,6 +8,7 @@ from ninja_crud.tests import (
     BodyParams,
     DeleteModelViewTest,
     ModelViewSetTest,
+    PathParams,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -29,10 +30,10 @@ class EmployeeViewSetTest(ModelViewSetTest, TestCase):
         )
         cls.token = "supersecret"
 
-    def get_instance(self: Union["EmployeeViewSetTest", TestCase]):
-        return self.employee
+    def get_path_params(self):
+        return PathParams(ok={"id": self.employee.id}, not_found={"id": uuid.uuid4()})
 
-    employee_payloads = BodyParams(
+    employee_body_params = BodyParams(
         ok={
             "first_name": "new_first_name",
             "last_name": "new_last_name",
@@ -41,8 +42,8 @@ class EmployeeViewSetTest(ModelViewSetTest, TestCase):
         bad_request={"first_name": 1},
     )
 
-    test_retrieve = RetrieveModelViewTest(path_params=get_instance)
+    test_retrieve = RetrieveModelViewTest(path_params=get_path_params)
     test_update = UpdateModelViewTest(
-        payloads=employee_payloads, path_params=get_instance
+        path_params=get_path_params, body_params=employee_body_params
     )
-    test_delete = DeleteModelViewTest(path_params=get_instance)
+    test_delete = DeleteModelViewTest(path_params=get_path_params)

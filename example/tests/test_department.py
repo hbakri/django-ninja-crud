@@ -1,4 +1,4 @@
-from typing import Union
+import uuid
 
 from django.test import TestCase
 from example.models import Department, Employee
@@ -10,6 +10,7 @@ from ninja_crud.tests import (
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
+    PathParams,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -31,26 +32,26 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         )
         cls.token = "supersecret"
 
-    def get_instance(self: Union["DepartmentViewSetTest", TestCase]):
-        return self.department_1
+    def get_path_params(self):
+        return PathParams(
+            ok={"id": self.department_1.id}, not_found={"id": uuid.uuid4()}
+        )
 
-    department_payloads = BodyParams(
+    department_body_params = BodyParams(
         ok={"title": "new_title"},
         bad_request={"bad-title": 1},
         conflict={"title": "department-2"},
     )
 
-    test_list = ListModelViewTest(path_params=get_instance)
-    test_create = CreateModelViewTest(
-        body_params=department_payloads, path_params=get_instance
-    )
-    test_retrieve = RetrieveModelViewTest(path_params=get_instance)
+    test_list = ListModelViewTest()
+    test_create = CreateModelViewTest(body_params=department_body_params)
+    test_retrieve = RetrieveModelViewTest(path_params=get_path_params)
     test_update = UpdateModelViewTest(
-        payloads=department_payloads, path_params=get_instance
+        path_params=get_path_params, body_params=department_body_params
     )
-    test_delete = DeleteModelViewTest(path_params=get_instance)
+    test_delete = DeleteModelViewTest(path_params=get_path_params)
 
-    employee_payloads = BodyParams(
+    employee_body_params = BodyParams(
         ok={
             "first_name": "new_first_name",
             "last_name": "new_last_name",
@@ -58,7 +59,7 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         bad_request={"first_name": 1},
     )
 
-    test_list_employees = ListModelViewTest(path_params=get_instance)
+    test_list_employees = ListModelViewTest(path_params=get_path_params)
     test_create_employee = CreateModelViewTest(
-        body_params=employee_payloads, path_params=get_instance
+        path_params=get_path_params, body_params=employee_body_params
     )
