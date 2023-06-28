@@ -5,6 +5,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest
 from ninja import Router
 
+from ninja_crud.schemas import OrderableFilterSchema
 from ninja_crud.views import (
     DeleteModelView,
     ListModelView,
@@ -31,9 +32,11 @@ class ItemViewSet(ModelViewSet):
     model = Item
     input_schema = ItemIn
     output_schema = ItemOut
+    filter_schema = OrderableFilterSchema
 
     list = ListModelView(
         output_schema=output_schema,
+        filter_schema=filter_schema,
         queryset_getter=lambda: Item.objects.get_queryset(),
     )
     retrieve = RetrieveModelView(

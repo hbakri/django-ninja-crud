@@ -1,7 +1,7 @@
 import inspect
 import json
 from http import HTTPStatus
-from typing import Callable, List, NamedTuple, Optional, Tuple, Type
+from typing import Callable, List, NamedTuple, Optional, Tuple, Type, TypeVar, Union
 
 from django.db.models import Model, QuerySet
 from django.http import HttpResponse
@@ -16,21 +16,31 @@ from ninja_crud.views import (
     ModelViewSet,
 )
 
+T = TypeVar("T")
+TestCaseType = TypeVar("TestCaseType", bound=TestCase)
+ParamsOrCallable = Union[T, Callable[[TestCaseType], T]]
 
-class Credentials(NamedTuple):
+
+class PathParams(NamedTuple):
+    ok: dict
+    not_found: Optional[dict] = None
+
+
+class QueryParams(NamedTuple):
+    ok: dict
+    bad_request: Optional[dict] = None
+
+
+class AuthParams(NamedTuple):
     ok: dict
     forbidden: Optional[dict] = None
     unauthorized: Optional[dict] = None
 
 
-class Payloads(NamedTuple):
+class BodyParams(NamedTuple):
     ok: dict
     bad_request: Optional[dict] = None
     conflict: Optional[dict] = None
-
-
-def default_credentials_getter(_: TestCase) -> Credentials:
-    return Credentials(ok={})
 
 
 class AbstractModelViewTest:
@@ -42,13 +52,22 @@ class AbstractModelViewTest:
 
     def __init__(
         self,
-        instance_getter: Callable[[TestCase], Model],
-        credentials_getter: Callable[[TestCase], Credentials] = None,
+        path_params: ParamsOrCallable[PathParams, TestCaseType],
+        auth_params: ParamsOrCallable[AuthParams, TestCaseType] = None,
     ) -> None:
-        self.get_instance = instance_getter
-        if credentials_getter is None:
-            credentials_getter = default_credentials_getter
-        self.get_credentials = credentials_getter
+        self.path_params = path_params
+        self.auth_params = auth_params
+
+    def get_path_params(self) -> PathParams:
+        if callable(self.path_params):
+            return self.path_params(self.test_case)
+        return self.path_params
+
+    def get_auth_params(self) -> AuthParams:
+        if callable(self.auth_params):
+            return self.auth_params(self.test_case)
+        else:
+            return self.auth_params or AuthParams(ok={})
 
     def get_tests(self) -> List[Tuple[str, Callable]]:
         return [
@@ -72,10 +91,10 @@ class AbstractModelViewTest:
         self.test_case.assertIsInstance(content, dict)
 
         self.test_case.assertIn("id", content)
-        self.test_case.assertTrue(queryset.filter(pk=content["id"]).exists())
-        self.test_case.assertEqual(queryset.filter(pk=content["id"]).count(), 1)
+        self.test_case.assertTrue(queryset.filter(id=content["id"]).exists())
+        self.test_case.assertEqual(queryset.filter(id=content["id"]).count(), 1)
 
-        element = queryset.get(pk=content["id"])
+        element = queryset.get(id=content["id"])
         self.assert_dict_equals_schema(content, output_schema.from_orm(element))
 
     def assert_dict_equals_schema(self, element: dict, schema: Schema):

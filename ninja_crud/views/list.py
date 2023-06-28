@@ -1,14 +1,12 @@
 from http import HTTPStatus
-from typing import Callable, List, Type, Union
-from uuid import UUID
+from typing import Any, Callable, List, Type, Union
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
 from ninja import FilterSchema, Query, Router, Schema
 from ninja.pagination import LimitOffsetPagination, paginate
 
-from ninja_crud import utils
-from ninja_crud.utils import merge_decorators
+from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
 
@@ -18,7 +16,7 @@ class ListModelView(AbstractModelView):
         output_schema: Type[Schema],
         filter_schema: Type[FilterSchema] = None,
         queryset_getter: Union[
-            Callable[[], QuerySet[Model]], Callable[[Union[int, UUID]], QuerySet[Model]]
+            Callable[[], QuerySet[Model]], Callable[[Any], QuerySet[Model]]
         ] = None,
         related_model: Type[Model] = None,
         detail: bool = False,
@@ -27,7 +25,7 @@ class ListModelView(AbstractModelView):
         super().__init__(decorators=decorators)
         self.output_schema = output_schema
         self.filter_schema = filter_schema
-        self.get_queryset = queryset_getter
+        self.queryset_getter = queryset_getter
         self.related_model = related_model
         self.detail = detail
 
@@ -48,19 +46,16 @@ class ListModelView(AbstractModelView):
         @router.get(
             "/",
             response={HTTPStatus.OK: List[output_schema]},
-            url_name=f"{model_name}s",
+            url_name=self.get_url_name(model),
             operation_id=operation_id,
             summary=summary,
         )
-        @merge_decorators(self.decorators)
+        @utils.merge_decorators(self.decorators)
         @paginate(LimitOffsetPagination)
         def list_models(
             request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
         ):
-            if self.get_queryset is not None:
-                queryset = self.get_queryset()
-            else:
-                queryset = model.objects.get_queryset()
+            queryset = self.get_queryset(model)
             return self.filter_queryset(queryset=queryset, filters=filters)
 
     def register_instance_route(self, router: Router, model: Type[Model]) -> None:
@@ -73,26 +68,36 @@ class ListModelView(AbstractModelView):
 
         output_schema = self.output_schema
         filter_schema = self.filter_schema
+        id_type = utils.get_id_type(model)
 
         @router.get(
             url,
             response={HTTPStatus.OK: List[output_schema]},
-            url_name=f"{parent_model_name}_{plural_model_name}",
+            url_name=self.get_url_name(model),
             operation_id=operation_id,
             summary=summary,
         )
-        @merge_decorators(self.decorators)
+        @utils.merge_decorators(self.decorators)
         @paginate(LimitOffsetPagination)
         def list_models(
             request: HttpRequest,
-            id: Union[int, UUID],
+            id: id_type,
             filters: filter_schema = Query(default=FilterSchema()),
         ):
-            if self.get_queryset is not None:
-                queryset = self.get_queryset(id)
-            else:
-                queryset = self.related_model.objects.get_queryset()
+            queryset = self.get_queryset(model, id)
             return self.filter_queryset(queryset=queryset, filters=filters)
+
+    def get_queryset(self, model: Type[Model], id: Any = None) -> QuerySet[Model]:
+        if self.detail:
+            if self.queryset_getter is not None:
+                return self.queryset_getter(id)
+            else:
+                return self.related_model.objects.get_queryset()
+        else:
+            if self.queryset_getter is not None:
+                return self.queryset_getter()
+            else:
+                return model.objects.get_queryset()
 
     @staticmethod
     def filter_queryset(queryset: QuerySet[Model], filters: FilterSchema):
@@ -102,3 +107,11 @@ class ListModelView(AbstractModelView):
 
         queryset = filters.filter(queryset)
         return queryset
+
+    def get_url_name(self, model: Type[Model]) -> str:
+        model_name = utils.to_snake_case(model.__name__)
+        if self.detail:
+            related_model_name = utils.to_snake_case(self.related_model.__name__)
+            return f"{model_name}_{related_model_name}s"
+        else:
+            return f"{model_name}s"

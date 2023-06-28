@@ -1,58 +1,42 @@
-from typing import Union
-
-from django.contrib.auth.models import User
-from django.test import TestCase
-
 from ninja_crud.tests import (
+    BodyParams,
     CreateModelViewTest,
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
-    Payloads,
+    PathParams,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
+from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_user import UserViewSet
 
 
-class UserViewSetTest(ModelViewSetTest, TestCase):
+class UserViewSetTest(ModelViewSetTest, BaseTestCase):
     model_view_set = UserViewSet
-    user_1: User
-    user_2: User
 
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-        cls.user_1 = User.objects.create(
-            username="user-1", email="user.1@email.com", password="password-1"
+    def get_path_params(self):
+        return PathParams(ok={"id": self.user_1.id})
+
+    def get_user_body_params(self):
+        return BodyParams(
+            ok={
+                "username": "new-user",
+                "email": "user@email.com",
+                "password": "new-password",
+            },
+            bad_request={"username": "new-user", "password": "new-password"},
+            conflict={
+                "username": self.user_2.username,
+                "email": "user@email.com",
+                "password": "new-password",
+            },
         )
-        cls.user_2 = User.objects.create(
-            username="user-2", email="user.2@email.com", password="password-2"
-        )
 
-    def get_instance(self: Union["UserViewSetTest", TestCase]):
-        return self.user_1
-
-    user_payloads = Payloads(
-        ok={
-            "username": "new-user",
-            "email": "user@email.com",
-            "password": "new-password",
-        },
-        bad_request={"username": "new-user", "password": "new-password"},
-        conflict={
-            "username": "user-2",
-            "email": "user@email.com",
-            "password": "new-password",
-        },
-    )
-
-    test_list = ListModelViewTest(instance_getter=get_instance)
-    test_create = CreateModelViewTest(
-        payloads=user_payloads, instance_getter=get_instance
-    )
-    test_retrieve = RetrieveModelViewTest(instance_getter=get_instance)
+    test_list = ListModelViewTest()
+    test_create = CreateModelViewTest(body_params=get_user_body_params)
+    test_retrieve = RetrieveModelViewTest(path_params=get_path_params)
     test_update = UpdateModelViewTest(
-        payloads=user_payloads, instance_getter=get_instance
+        path_params=get_path_params, body_params=get_user_body_params
     )
-    test_delete = DeleteModelViewTest(instance_getter=get_instance)
+    test_delete = DeleteModelViewTest(path_params=get_path_params)

@@ -9,7 +9,8 @@ class BaseTestCase(TestCase):
     user_2: User
     collection_1: Collection
     collection_2: Collection
-    item: Item
+    item_1: Item
+    item_2: Item
 
     @classmethod
     def setUpTestData(cls):
@@ -26,4 +27,5 @@ class BaseTestCase(TestCase):
         cls.collection_2 = Collection.objects.create(
             name="collection-2", created_by=cls.user_2
         )
-        cls.item = Item.objects.create(name="item-1", collection=cls.collection_1)
+        cls.item_1 = Item.objects.create(name="item-1", collection=cls.collection_1)
+        cls.item_2 = Item.objects.create(name="item-2", collection=cls.collection_2)

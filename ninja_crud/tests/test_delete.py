@@ -1,28 +1,24 @@
-import random
-import uuid
 from http import HTTPStatus
-from typing import Union
-from uuid import UUID
 
-from django.db.models import Model
 from django.http import HttpResponse
 from django.urls import reverse
 
-from ninja_crud import utils
-from ninja_crud.tests.test_abstract import AbstractModelViewTest, Credentials
+from ninja_crud.tests.test_abstract import AbstractModelViewTest
 from ninja_crud.views.delete import DeleteModelView
 
 
 class DeleteModelViewTest(AbstractModelViewTest):
     model_view = DeleteModelView
 
-    def delete_model(self, id: Union[int, UUID], credentials: dict) -> HttpResponse:
-        kwargs = {"id": id}
-        url_name = utils.to_snake_case(self.model_view_set.model.__name__)
+    def request_delete_model(
+        self, path_params: dict, auth_params: dict
+    ) -> HttpResponse:
+        model_view: DeleteModelView = self.get_model_view()
+        url_name = model_view.get_url_name(self.model_view_set.model)
         return self.client.delete(
-            reverse(f"api:{url_name}", kwargs=kwargs),
+            reverse(f"api:{url_name}", kwargs=path_params),
             content_type="application/json",
-            **credentials,
+            **auth_params,
         )
 
     def assert_response_is_ok(self, response: HttpResponse):
@@ -30,36 +26,40 @@ class DeleteModelViewTest(AbstractModelViewTest):
         self.test_case.assertEqual(response.content, b"")
 
     def test_delete_model_ok(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
-        response = self.delete_model(id=instance.pk, credentials=credentials.ok)
+        response = self.request_delete_model(
+            path_params=self.get_path_params().ok,
+            auth_params=self.get_auth_params().ok,
+        )
         self.assert_response_is_ok(response)
 
     def test_delete_model_unauthorized(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        if credentials.unauthorized is None:
-            self.test_case.skipTest("No unauthorized credentials provided")
-        instance: Model = self.get_instance(self.test_case)
-        response = self.delete_model(
-            id=instance.pk, credentials=credentials.unauthorized
+        auth_params = self.get_auth_params()
+        if auth_params.unauthorized is None:
+            self.test_case.skipTest("No unauthorized auth provided")
+        response = self.request_delete_model(
+            path_params=self.get_path_params().ok,
+            auth_params=auth_params.unauthorized,
         )
         self.assert_response_is_bad_request(
             response, status_code=HTTPStatus.UNAUTHORIZED
         )
 
-    def test_delete_model_not_found(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
-        random_id = (
-            uuid.uuid4() if type(instance.pk) is UUID else random.randint(1000, 9999)
-        )
-        response = self.delete_model(id=random_id, credentials=credentials.ok)
-        self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)
-
     def test_delete_model_forbidden(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        if credentials.forbidden is None:
-            self.test_case.skipTest("No forbidden credentials provided")
-        instance: Model = self.get_instance(self.test_case)
-        response = self.delete_model(id=instance.pk, credentials=credentials.forbidden)
+        auth_params = self.get_auth_params()
+        if auth_params.forbidden is None:
+            self.test_case.skipTest("No forbidden auth provided")
+        response = self.request_delete_model(
+            path_params=self.get_path_params().ok,
+            auth_params=auth_params.forbidden,
+        )
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.FORBIDDEN)
+
+    def test_delete_model_not_found(self):
+        path_params = self.get_path_params()
+        if path_params.not_found is None:
+            self.test_case.skipTest("No not found path provided")
+        response = self.request_delete_model(
+            path_params=path_params.not_found,
+            auth_params=self.get_auth_params().ok,
+        )
+        self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)

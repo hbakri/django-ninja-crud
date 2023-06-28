@@ -1,15 +1,15 @@
 import random
-from typing import Union
-
-from django.test import TestCase
+import uuid
 
 from ninja_crud.tests import (
+    AuthParams,
+    BodyParams,
     CreateModelViewTest,
-    Credentials,
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
-    Payloads,
+    PathParams,
+    QueryParams,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -20,63 +20,60 @@ from tests.test_app.views.view_collection import CollectionViewSet
 class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
     model_view_set = CollectionViewSet
 
-    def get_instance(self: Union["CollectionViewSetTest", TestCase]):
-        return self.collection_1
+    def get_path_params(self):
+        return PathParams(
+            ok={"id": self.collection_1.id}, not_found={"id": uuid.uuid4()}
+        )
 
-    def get_credentials_ok(self: Union["CollectionViewSetTest", TestCase]):
-        return Credentials(
+    def get_auth_params_ok(self):
+        return AuthParams(
             ok={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"}, unauthorized={}
         )
 
-    def get_credentials_ok_forbidden(self: Union["CollectionViewSetTest", TestCase]):
-        return Credentials(
+    def get_auth_params_ok_forbidden(self):
+        return AuthParams(
             ok={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
             unauthorized={"HTTP_AUTHORIZATION": f"Bearer {random.randint(100, 1000)}"},
             forbidden={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
         )
 
-    collection_payloads = Payloads(
+    collection_body_params = BodyParams(
         ok={"name": "new-name", "description": "new-description"},
         bad_request={"unknown_field": "unknown_field"},
         conflict={"name": "collection-2"},
     )
 
     test_list = ListModelViewTest(
-        instance_getter=get_instance,
-        credentials_getter=get_credentials_ok,
-        filters=Payloads(
+        auth_params=get_auth_params_ok,
+        query_params=QueryParams(
             ok={"name": "collection-1", "order_by": ["name"], "limit": 1},
             bad_request={"order_by": ["unknown_field"]},
         ),
     )
     test_create = CreateModelViewTest(
-        payloads=collection_payloads,
-        instance_getter=get_instance,
-        credentials_getter=get_credentials_ok,
+        auth_params=get_auth_params_ok,
+        body_params=collection_body_params,
     )
     test_retrieve = RetrieveModelViewTest(
-        instance_getter=get_instance,
-        credentials_getter=get_credentials_ok,
+        path_params=get_path_params,
+        auth_params=get_auth_params_ok,
     )
     test_update = UpdateModelViewTest(
-        payloads=collection_payloads,
-        instance_getter=get_instance,
-        credentials_getter=get_credentials_ok_forbidden,
+        path_params=get_path_params,
+        auth_params=get_auth_params_ok_forbidden,
+        body_params=collection_body_params,
     )
     test_delete = DeleteModelViewTest(
-        instance_getter=get_instance, credentials_getter=get_credentials_ok_forbidden
-    )
-
-    item_payloads = Payloads(
-        ok={"name": "new-name", "description": "new-description"},
+        path_params=get_path_params, auth_params=get_auth_params_ok_forbidden
     )
 
     test_list_items = ListModelViewTest(
-        instance_getter=get_instance,
-        credentials_getter=get_credentials_ok_forbidden,
+        path_params=get_path_params, auth_params=get_auth_params_ok_forbidden
     )
     test_create_item = CreateModelViewTest(
-        payloads=item_payloads,
-        instance_getter=get_instance,
-        credentials_getter=get_credentials_ok_forbidden,
+        path_params=get_path_params,
+        auth_params=get_auth_params_ok_forbidden,
+        body_params=BodyParams(
+            ok={"name": "new-name", "description": "new-description"},
+        ),
     )

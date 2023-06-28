@@ -1,15 +1,17 @@
 import json
 from http import HTTPStatus
-from typing import Callable, Union
-from uuid import UUID
 
-from django.db.models import Model
 from django.http import HttpResponse
-from django.test import TestCase
 from django.urls import reverse
 
-from ninja_crud import utils
-from ninja_crud.tests.test_abstract import AbstractModelViewTest, Credentials, Payloads
+from ninja_crud.tests import QueryParams
+from ninja_crud.tests.test_abstract import (
+    AbstractModelViewTest,
+    AuthParams,
+    ParamsOrCallable,
+    PathParams,
+    TestCaseType,
+)
 from ninja_crud.views.list import ListModelView
 
 
@@ -18,59 +20,49 @@ class ListModelViewTest(AbstractModelViewTest):
 
     def __init__(
         self,
-        instance_getter: Callable[[TestCase], Model],
-        credentials_getter: Callable[[TestCase], Credentials] = None,
-        filters: Payloads = None,
+        path_params: ParamsOrCallable[PathParams, TestCaseType] = None,
+        auth_params: ParamsOrCallable[AuthParams, TestCaseType] = None,
+        query_params: ParamsOrCallable[QueryParams, TestCaseType] = None,
     ) -> None:
-        super().__init__(
-            instance_getter=instance_getter, credentials_getter=credentials_getter
-        )
-        self.filters = filters
+        if path_params is None:
+            path_params = PathParams(ok={})
+        super().__init__(path_params=path_params, auth_params=auth_params)
+        self.query_params = query_params
 
-    def list_model(
-        self, id: Union[int, UUID], credentials: dict, data: dict = None
+    def get_query_params(self) -> QueryParams:
+        if callable(self.query_params):
+            return self.query_params(self.test_case)
+        return self.query_params
+
+    def request_list_model(
+        self, path_params: dict, auth_params: dict, query_params: dict = None
     ) -> HttpResponse:
         model_view: ListModelView = self.get_model_view()
-        model_name = utils.to_snake_case(self.model_view_set.model.__name__)
-        if model_view.detail:
-            related_model_name = utils.to_snake_case(model_view.related_model.__name__)
-            url_name = f"{model_name}_{related_model_name}s"
-            kwargs = {"id": id}
-        else:
-            url_name = f"{model_name}s"
-            kwargs = {}
-
+        url_name = model_view.get_url_name(self.model_view_set.model)
         response = self.client.get(
-            reverse(f"api:{url_name}", kwargs=kwargs),
-            data=data,
+            reverse(f"api:{url_name}", kwargs=path_params),
+            data=query_params if query_params is not None else {},
             content_type="application/json",
-            **credentials,
+            **auth_params,
         )
         return response
 
     def assert_response_is_ok(
-        self, response: HttpResponse, id: Union[int, UUID], data: dict = None
+        self, response: HttpResponse, path_params: dict, query_params: dict = None
     ):
         self.test_case.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
         model_view: ListModelView = self.get_model_view()
+        queryset = model_view.get_queryset(
+            self.model_view_set.model,
+            path_params["id"] if "id" in path_params else None,
+        )
 
-        if model_view.detail:
-            if model_view.get_queryset is not None:
-                queryset = model_view.get_queryset(id)
-            else:
-                queryset = model_view.related_model.objects.get_queryset()
-        else:
-            if model_view.get_queryset is not None:
-                queryset = model_view.get_queryset()
-            else:
-                queryset = self.model_view_set.model.objects.get_queryset()
-
-        if data is not None:
-            limit = data.pop("limit", 100)
-            offset = data.pop("offset", 0)
-            filter_instance = model_view.filter_schema(**data)
+        if query_params is not None:
+            limit = query_params.pop("limit", 100)
+            offset = query_params.pop("offset", 0)
+            filter_instance = model_view.filter_schema(**query_params)
             queryset = model_view.filter_queryset(queryset, filter_instance)
         else:
             limit = 100
@@ -85,48 +77,56 @@ class ListModelViewTest(AbstractModelViewTest):
         )
 
     def test_list_model_ok(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
-        response = self.list_model(id=instance.pk, credentials=credentials.ok)
-        self.assert_response_is_ok(response, id=instance.pk)
+        path_params = self.get_path_params()
+        response = self.request_list_model(
+            path_params=path_params.ok,
+            auth_params=self.get_auth_params().ok,
+        )
+        self.assert_response_is_ok(response, path_params.ok)
 
-        if self.filters is not None:
-            with self.test_case.subTest(data=self.filters.ok):
-                response = self.list_model(
-                    id=instance.pk, credentials=credentials.ok, data=self.filters.ok
-                )
-                self.assert_response_is_ok(
-                    response, id=instance.pk, data=self.filters.ok
-                )
+    def test_list_model_ok_with_query_params(self):
+        query_params = self.get_query_params()
+        if query_params is None:
+            self.test_case.skipTest("No ok query provided")
+        path_params = self.get_path_params()
+        response = self.request_list_model(
+            path_params=path_params.ok,
+            auth_params=self.get_auth_params().ok,
+            query_params=query_params.ok,
+        )
+        self.assert_response_is_ok(response, path_params.ok, query_params.ok)
 
-    def test_list_model_bad_request(self):
-        if self.filters is None or self.filters.bad_request is None:
-            self.test_case.skipTest("No bad request filters provided")
-        credentials: Credentials = self.get_credentials(self.test_case)
-        instance: Model = self.get_instance(self.test_case)
-        response = self.list_model(
-            id=instance.pk,
-            credentials=credentials.ok,
-            data=self.filters.bad_request,
+    def test_list_model_bad_request_with_query_params(self):
+        query_params = self.get_query_params()
+        if query_params is None or query_params.bad_request is None:
+            self.test_case.skipTest("No bad request query provided")
+        response = self.request_list_model(
+            path_params=self.get_path_params().ok,
+            auth_params=self.get_auth_params().ok,
+            query_params=query_params.bad_request,
         )
         self.assert_response_is_bad_request(
             response, status_code=HTTPStatus.BAD_REQUEST
         )
 
     def test_list_model_unauthorized(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        if credentials.unauthorized is None:
-            self.test_case.skipTest("No unauthorized credentials provided")
-        instance: Model = self.get_instance(self.test_case)
-        response = self.list_model(id=instance.pk, credentials=credentials.unauthorized)
+        auth_params = self.get_auth_params()
+        if auth_params.unauthorized is None:
+            self.test_case.skipTest("No unauthorized auth provided")
+        response = self.request_list_model(
+            path_params=self.get_path_params().ok,
+            auth_params=auth_params.unauthorized,
+        )
         self.assert_response_is_bad_request(
             response, status_code=HTTPStatus.UNAUTHORIZED
         )
 
     def test_list_model_forbidden(self):
-        credentials: Credentials = self.get_credentials(self.test_case)
-        if credentials.forbidden is None:
-            self.test_case.skipTest("No forbidden credentials provided")
-        instance: Model = self.get_instance(self.test_case)
-        response = self.list_model(id=instance.pk, credentials=credentials.forbidden)
+        auth_params = self.get_auth_params()
+        if auth_params.forbidden is None:
+            self.test_case.skipTest("No forbidden auth provided")
+        response = self.request_list_model(
+            path_params=self.get_path_params().ok,
+            auth_params=auth_params.forbidden,
+        )
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.FORBIDDEN)
