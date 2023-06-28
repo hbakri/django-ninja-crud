@@ -36,7 +36,7 @@ class UpdateModelView(AbstractModelView):
         @router.put(
             "/{id}",
             response={HTTPStatus.OK: output_schema},
-            url_name=model_name,
+            url_name=self.get_url_name(model),
             operation_id=operation_id,
             summary=summary,
         )
@@ -52,3 +52,7 @@ class UpdateModelView(AbstractModelView):
             if self.post_save is not None:
                 self.post_save(request, instance)
             return HTTPStatus.OK, instance
+
+    @staticmethod
+    def get_url_name(model: Type[Model]) -> str:
+        return utils.to_snake_case(model.__name__)

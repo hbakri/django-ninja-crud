@@ -18,7 +18,7 @@ class RetrieveModelView(AbstractModelView):
     ) -> None:
         super().__init__(decorators=decorators)
         self.output_schema = output_schema
-        self.get_queryset = queryset_getter
+        self.queryset_getter = queryset_getter
 
     def register_route(self, router: Router, model: Type[Model]) -> None:
         model_name = utils.to_snake_case(model.__name__)
@@ -31,15 +31,22 @@ class RetrieveModelView(AbstractModelView):
         @router.get(
             "/{id}",
             response={HTTPStatus.OK: output_schema},
-            url_name=model_name,
+            url_name=self.get_url_name(model),
             operation_id=operation_id,
             summary=summary,
         )
         @utils.merge_decorators(self.decorators)
         def retrieve_model(request: HttpRequest, id: id_type):
-            if self.get_queryset is not None:
-                queryset = self.get_queryset(id)
-            else:
-                queryset = model.objects.get_queryset()
+            queryset = self.get_queryset(model, id)
             instance = queryset.get(id=id)
             return HTTPStatus.OK, instance
+
+    def get_queryset(self, model: Type[Model], id: Any = None) -> QuerySet[Model]:
+        if self.queryset_getter is None:
+            return model.objects.get_queryset()
+        else:
+            return self.queryset_getter(id)
+
+    @staticmethod
+    def get_url_name(model: Type[Model]) -> str:
+        return utils.to_snake_case(model.__name__)

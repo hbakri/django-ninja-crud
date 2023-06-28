@@ -54,12 +54,10 @@ class ListModelViewTest(AbstractModelViewTest):
         content = json.loads(response.content)
 
         model_view: ListModelView = self.get_model_view()
-        if model_view.detail:
-            queryset = model_view.get_queryset(
-                self.model_view_set.model, path_params["id"]
-            )
-        else:
-            queryset = model_view.get_queryset(self.model_view_set.model)
+        queryset = model_view.get_queryset(
+            self.model_view_set.model,
+            path_params["id"] if "id" in path_params else None,
+        )
 
         if query_params is not None:
             limit = query_params.pop("limit", 100)
@@ -132,3 +130,13 @@ class ListModelViewTest(AbstractModelViewTest):
             auth_params=auth_params.forbidden,
         )
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.FORBIDDEN)
+
+    def test_list_model_not_found(self):
+        path_params = self.get_path_params()
+        if path_params.not_found is None:
+            self.test_case.skipTest("No not found path provided")
+        response = self.request_list_model(
+            path_params=path_params.not_found,
+            auth_params=self.get_auth_params().ok,
+        )
+        self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)

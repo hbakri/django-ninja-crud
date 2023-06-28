@@ -9,6 +9,8 @@ from ninja_crud.tests import (
     ModelViewSetTest,
     PathParams,
     QueryParams,
+    RetrieveModelViewTest,
+    UpdateModelViewTest,
 )
 from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_collection import CollectionViewSet
@@ -34,7 +36,7 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
             forbidden={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
         )
 
-    collection_payloads = BodyParams(
+    collection_body_params = BodyParams(
         ok={"name": "new-name", "description": "new-description"},
         bad_request={"unknown_field": "unknown_field"},
         conflict={"name": "collection-2"},
@@ -49,24 +51,20 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
     )
     test_create = CreateModelViewTest(
         auth_params=get_auth_params_ok,
-        body_params=collection_payloads,
+        body_params=collection_body_params,
     )
-    # test_retrieve = RetrieveModelViewTest(
-    #     path_params=get_instance,
-    #     auth_params=get_credentials_ok,
-    # )
-    # test_update = UpdateModelViewTest(
-    #     payloads=collection_payloads,
-    #     path_params=get_instance,
-    #     auth_params=get_credentials_ok_forbidden,
-    # )
+    test_retrieve = RetrieveModelViewTest(
+        path_params=get_path_params,
+        auth_params=get_auth_params_ok,
+    )
+    test_update = UpdateModelViewTest(
+        path_params=get_path_params,
+        auth_params=get_auth_params_ok_forbidden,
+        body_params=collection_body_params,
+    )
     # test_delete = DeleteModelViewTest(
     #     path_params=get_instance, auth_params=get_credentials_ok_forbidden
     # )
-
-    item_payloads = BodyParams(
-        ok={"name": "new-name", "description": "new-description"},
-    )
 
     test_list_items = ListModelViewTest(
         path_params=get_path_params,
@@ -75,5 +73,7 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
     test_create_item = CreateModelViewTest(
         path_params=get_path_params,
         auth_params=get_auth_params_ok_forbidden,
-        body_params=item_payloads,
+        body_params=BodyParams(
+            ok={"name": "new-name", "description": "new-description"},
+        ),
     )
