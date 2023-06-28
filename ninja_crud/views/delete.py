@@ -29,7 +29,7 @@ class DeleteModelView(AbstractModelView):
         @router.delete(
             "/{id}",
             response={HTTPStatus.NO_CONTENT: None},
-            url_name=model_name,
+            url_name=self.get_url_name(model),
             operation_id=operation_id,
             summary=summary,
         )
@@ -42,3 +42,7 @@ class DeleteModelView(AbstractModelView):
             if self.post_delete is not None:
                 self.post_delete(request, id)
             return HTTPStatus.NO_CONTENT, None
+
+    @staticmethod
+    def get_url_name(model: Type[Model]) -> str:
+        return utils.to_snake_case(model.__name__)

@@ -5,6 +5,7 @@ from ninja_crud.tests import (
     AuthParams,
     BodyParams,
     CreateModelViewTest,
+    DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
     PathParams,
@@ -62,9 +63,9 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
         auth_params=get_auth_params_ok_forbidden,
         body_params=collection_body_params,
     )
-    # test_delete = DeleteModelViewTest(
-    #     path_params=get_instance, auth_params=get_credentials_ok_forbidden
-    # )
+    test_delete = DeleteModelViewTest(
+        path_params=get_path_params, auth_params=get_auth_params_ok_forbidden
+    )
 
     test_list_items = ListModelViewTest(
         path_params=get_path_params,
