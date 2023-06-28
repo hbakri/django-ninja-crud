@@ -68,8 +68,7 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
     )
 
     test_list_items = ListModelViewTest(
-        path_params=get_path_params,
-        auth_params=get_auth_params_ok_forbidden,
+        path_params=get_path_params, auth_params=get_auth_params_ok_forbidden
     )
     test_create_item = CreateModelViewTest(
         path_params=get_path_params,

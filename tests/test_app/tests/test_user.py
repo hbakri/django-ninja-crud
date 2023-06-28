@@ -1,7 +1,4 @@
-from typing import Union
-
-from django.contrib.auth.models import User
-from django.test import TestCase
+import random
 
 from ninja_crud.tests import (
     BodyParams,
@@ -9,31 +6,23 @@ from ninja_crud.tests import (
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
+    PathParams,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
+from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_user import UserViewSet
 
 
-class UserViewSetTest(ModelViewSetTest, TestCase):
+class UserViewSetTest(ModelViewSetTest, BaseTestCase):
     model_view_set = UserViewSet
-    user_1: User
-    user_2: User
 
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-        cls.user_1 = User.objects.create(
-            username="user-1", email="user.1@email.com", password="password-1"
-        )
-        cls.user_2 = User.objects.create(
-            username="user-2", email="user.2@email.com", password="password-2"
+    def get_path_params(self):
+        return PathParams(
+            ok={"id": self.user_1.id}, not_found={"id": random.randint(1000, 9999)}
         )
 
-    def get_instance(self: Union["UserViewSetTest", TestCase]):
-        return self.user_1
-
-    user_payloads = BodyParams(
+    user_body_params = BodyParams(
         ok={
             "username": "new-user",
             "email": "user@email.com",
@@ -47,10 +36,10 @@ class UserViewSetTest(ModelViewSetTest, TestCase):
         },
     )
 
-    test_list = ListModelViewTest(path_params=get_instance)
-    test_create = CreateModelViewTest(
-        body_params=user_payloads, path_params=get_instance
+    test_list = ListModelViewTest()
+    test_create = CreateModelViewTest(body_params=user_body_params)
+    test_retrieve = RetrieveModelViewTest(path_params=get_path_params)
+    test_update = UpdateModelViewTest(
+        path_params=get_path_params, body_params=user_body_params
     )
-    test_retrieve = RetrieveModelViewTest(path_params=get_instance)
-    test_update = UpdateModelViewTest(payloads=user_payloads, path_params=get_instance)
-    test_delete = DeleteModelViewTest(path_params=get_instance)
+    test_delete = DeleteModelViewTest(path_params=get_path_params)
