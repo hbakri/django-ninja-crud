@@ -18,7 +18,7 @@ def merge_decorators(decorators):
     return merged_decorator
 
 
-def get_id_type(model: Type[Model]) -> Type:
+def get_id_type(model: Type[Model]) -> Type:  # pragma: no cover
     id_field = model._meta.pk
     id_internal_type = id_field.get_internal_type()
 

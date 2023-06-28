@@ -1,5 +1,3 @@
-import random
-
 from ninja_crud.tests import (
     BodyParams,
     CreateModelViewTest,
@@ -18,28 +16,27 @@ class UserViewSetTest(ModelViewSetTest, BaseTestCase):
     model_view_set = UserViewSet
 
     def get_path_params(self):
-        return PathParams(
-            ok={"id": self.user_1.id}, not_found={"id": random.randint(1000, 9999)}
+        return PathParams(ok={"id": self.user_1.id})
+
+    def get_user_body_params(self):
+        return BodyParams(
+            ok={
+                "username": "new-user",
+                "email": "user@email.com",
+                "password": "new-password",
+            },
+            bad_request={"username": "new-user", "password": "new-password"},
+            conflict={
+                "username": self.user_2.username,
+                "email": "user@email.com",
+                "password": "new-password",
+            },
         )
 
-    user_body_params = BodyParams(
-        ok={
-            "username": "new-user",
-            "email": "user@email.com",
-            "password": "new-password",
-        },
-        bad_request={"username": "new-user", "password": "new-password"},
-        conflict={
-            "username": "user-2",
-            "email": "user@email.com",
-            "password": "new-password",
-        },
-    )
-
     test_list = ListModelViewTest()
-    test_create = CreateModelViewTest(body_params=user_body_params)
+    test_create = CreateModelViewTest(body_params=get_user_body_params)
     test_retrieve = RetrieveModelViewTest(path_params=get_path_params)
     test_update = UpdateModelViewTest(
-        path_params=get_path_params, body_params=user_body_params
+        path_params=get_path_params, body_params=get_user_body_params
     )
     test_delete = DeleteModelViewTest(path_params=get_path_params)

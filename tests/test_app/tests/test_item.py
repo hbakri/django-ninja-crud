@@ -10,6 +10,7 @@ from ninja_crud.tests import (
     ListModelViewTest,
     ModelViewSetTest,
     PathParams,
+    QueryParams,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -41,6 +42,7 @@ class ItemViewSetTest(ModelViewSetTest, BaseTestCase):
 
     test_list = ListModelViewTest(
         auth_params=get_auth_params_ok,
+        query_params=lambda self: QueryParams(ok={"order_by": ["name"], "limit": 1}),
     )
     test_retrieve = RetrieveModelViewTest(
         path_params=get_path_params,

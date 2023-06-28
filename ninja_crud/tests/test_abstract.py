@@ -64,11 +64,10 @@ class AbstractModelViewTest:
         return self.path_params
 
     def get_auth_params(self) -> AuthParams:
-        if self.auth_params is None:
-            return AuthParams(ok={})
-        elif callable(self.auth_params):
+        if callable(self.auth_params):
             return self.auth_params(self.test_case)
-        return self.auth_params
+        else:
+            return self.auth_params or AuthParams(ok={})
 
     def get_tests(self) -> List[Tuple[str, Callable]]:
         return [
