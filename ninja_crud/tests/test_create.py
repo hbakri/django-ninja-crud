@@ -116,3 +116,14 @@ class CreateModelViewTest(AbstractModelViewTest):
             body_params=self.get_body_params().ok,
         )
         self.assert_response_is_bad_request(response, status_code=HTTPStatus.FORBIDDEN)
+
+    def test_create_model_not_found(self):
+        path_params = self.get_path_params()
+        if path_params.not_found is None:
+            self.test_case.skipTest("No not found path provided")
+        response = self.request_create_model(
+            path_params=path_params.not_found,
+            auth_params=self.get_auth_params().ok,
+            body_params=self.get_body_params().ok,
+        )
+        self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)
