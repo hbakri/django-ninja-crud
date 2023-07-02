@@ -23,7 +23,7 @@ By using this package, developers can write efficient and clear code, saving tim
 
 ## 📝 Requirements
 
-![Python versions](https://img.shields.io/badge/python-3.7%20|%203.8%20|%203.9%20|%203.10%20|%203.11-blue)
+![Python versions](https://img.shields.io/badge/python-3.8%20|%203.9%20|%203.10%20|%203.11-blue)
 
 ![Django versions](https://img.shields.io/badge/django-3.2%20|%204.1%20|%204.2-blue)
 
