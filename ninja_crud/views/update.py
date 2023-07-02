@@ -42,7 +42,7 @@ class UpdateModelView(AbstractModelView):
         )
         @utils.merge_decorators(self.decorators)
         def update_model(request: HttpRequest, id: id_type, payload: input_schema):
-            instance = model.objects.get(id=id)
+            instance = model.objects.get(pk=id)
             for field, value in payload.dict(exclude_unset=True).items():
                 setattr(instance, field, value)
             if self.pre_save is not None:
