@@ -89,16 +89,17 @@ class CreateModelView(AbstractModelView):
         )
         @utils.merge_decorators(self.decorators)
         def create_model(request: HttpRequest, id: id_type, payload: input_schema):
-            instance = self.related_model()
+            instance = model.objects.get(pk=id)
+            related_instance = self.related_model()
             for field, value in payload.dict(exclude_unset=True).items():
-                setattr(instance, field, value)
+                setattr(related_instance, field, value)
             if self.pre_save:
-                self.pre_save(request, id, instance)
-            instance.full_clean()
-            instance.save()
+                self.pre_save(request, instance.pk, related_instance)
+            related_instance.full_clean()
+            related_instance.save()
             if self.post_save:
-                self.post_save(request, id, instance)
-            return HTTPStatus.CREATED, instance
+                self.post_save(request, instance.pk, related_instance)
+            return HTTPStatus.CREATED, related_instance
 
     def get_url_name(self, model: Type[Model]) -> str:
         model_name = utils.to_snake_case(model.__name__)

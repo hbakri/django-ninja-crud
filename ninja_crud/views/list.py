@@ -84,7 +84,8 @@ class ListModelView(AbstractModelView):
             id: id_type,
             filters: filter_schema = Query(default=FilterSchema()),
         ):
-            queryset = self.get_queryset(model, id)
+            instance = model.objects.get(pk=id)
+            queryset = self.get_queryset(model, instance.pk)
             return self.filter_queryset(queryset=queryset, filters=filters)
 
     def get_queryset(self, model: Type[Model], id: Any = None) -> QuerySet[Model]:
