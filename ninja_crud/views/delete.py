@@ -35,7 +35,7 @@ class DeleteModelView(AbstractModelView):
         )
         @utils.merge_decorators(self.decorators)
         def delete_model(request: HttpRequest, id: id_type):
-            instance = model.objects.get(id=id)
+            instance = model.objects.get(pk=id)
             if self.pre_delete is not None:
                 self.pre_delete(request, instance)
             instance.delete()

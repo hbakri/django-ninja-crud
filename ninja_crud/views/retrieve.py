@@ -38,7 +38,7 @@ class RetrieveModelView(AbstractModelView):
         @utils.merge_decorators(self.decorators)
         def retrieve_model(request: HttpRequest, id: id_type):
             queryset = self.get_queryset(model, id)
-            instance = queryset.get(id=id)
+            instance = queryset.get(pk=id)
             return HTTPStatus.OK, instance
 
     def get_queryset(self, model: Type[Model], id: Any = None) -> QuerySet[Model]:

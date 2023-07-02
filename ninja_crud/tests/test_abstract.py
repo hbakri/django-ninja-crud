@@ -91,10 +91,10 @@ class AbstractModelViewTest:
         self.test_case.assertIsInstance(content, dict)
 
         self.test_case.assertIn("id", content)
-        self.test_case.assertTrue(queryset.filter(id=content["id"]).exists())
-        self.test_case.assertEqual(queryset.filter(id=content["id"]).count(), 1)
+        self.test_case.assertTrue(queryset.filter(pk=content["id"]).exists())
+        self.test_case.assertEqual(queryset.filter(pk=content["id"]).count(), 1)
 
-        element = queryset.get(id=content["id"])
+        element = queryset.get(pk=content["id"])
         self.assert_dict_equals_schema(content, output_schema.from_orm(element))
 
     def assert_dict_equals_schema(self, element: dict, schema: Schema):
