@@ -7,9 +7,9 @@ from django.urls import reverse
 from ninja_crud.tests import PathParams
 from ninja_crud.tests.test_abstract import (
     AbstractModelViewTest,
+    ArgOrCallable,
     AuthParams,
     BodyParams,
-    ParamsOrCallable,
     TestCaseType,
 )
 from ninja_crud.views.update import UpdateModelView
@@ -20,17 +20,13 @@ class UpdateModelViewTest(AbstractModelViewTest):
 
     def __init__(
         self,
-        body_params: ParamsOrCallable[BodyParams, TestCaseType],
-        path_params: ParamsOrCallable[PathParams, TestCaseType],
-        auth_params: ParamsOrCallable[AuthParams, TestCaseType] = None,
+        body_params: ArgOrCallable[BodyParams, TestCaseType],
+        path_params: ArgOrCallable[PathParams, TestCaseType],
+        auth_params: ArgOrCallable[AuthParams, TestCaseType] = None,
     ) -> None:
-        super().__init__(path_params=path_params, auth_params=auth_params)
-        self.body_params = body_params
-
-    def get_body_params(self) -> BodyParams:
-        if callable(self.body_params):
-            return self.body_params(self.test_case)
-        return self.body_params
+        super().__init__(
+            path_params=path_params, auth_params=auth_params, body_params=body_params
+        )
 
     def request_update_model(
         self, path_params: dict, auth_params: dict, body_params: dict

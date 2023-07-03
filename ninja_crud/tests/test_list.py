@@ -7,8 +7,8 @@ from django.urls import reverse
 from ninja_crud.tests import QueryParams
 from ninja_crud.tests.test_abstract import (
     AbstractModelViewTest,
+    ArgOrCallable,
     AuthParams,
-    ParamsOrCallable,
     PathParams,
     TestCaseType,
 )
@@ -20,19 +20,13 @@ class ListModelViewTest(AbstractModelViewTest):
 
     def __init__(
         self,
-        path_params: ParamsOrCallable[PathParams, TestCaseType] = None,
-        auth_params: ParamsOrCallable[AuthParams, TestCaseType] = None,
-        query_params: ParamsOrCallable[QueryParams, TestCaseType] = None,
+        path_params: ArgOrCallable[PathParams, TestCaseType] = None,
+        auth_params: ArgOrCallable[AuthParams, TestCaseType] = None,
+        query_params: ArgOrCallable[QueryParams, TestCaseType] = None,
     ) -> None:
-        if path_params is None:
-            path_params = PathParams(ok={})
-        super().__init__(path_params=path_params, auth_params=auth_params)
-        self.query_params = query_params
-
-    def get_query_params(self) -> QueryParams:
-        if callable(self.query_params):
-            return self.query_params(self.test_case)
-        return self.query_params
+        super().__init__(
+            path_params=path_params, query_params=query_params, auth_params=auth_params
+        )
 
     def request_list_model(
         self, path_params: dict, auth_params: dict, query_params: dict = None

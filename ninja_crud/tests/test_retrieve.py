@@ -4,12 +4,25 @@ from http import HTTPStatus
 from django.http import HttpResponse
 from django.urls import reverse
 
-from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_abstract import (
+    AbstractModelViewTest,
+    ArgOrCallable,
+    AuthParams,
+    PathParams,
+    TestCaseType,
+)
 from ninja_crud.views.retrieve import RetrieveModelView
 
 
 class RetrieveModelViewTest(AbstractModelViewTest):
     model_view = RetrieveModelView
+
+    def __init__(
+        self,
+        path_params: ArgOrCallable[PathParams, TestCaseType],
+        auth_params: ArgOrCallable[AuthParams, TestCaseType] = None,
+    ) -> None:
+        super().__init__(path_params=path_params, auth_params=auth_params)
 
     def request_retrieve_model(
         self, path_params: dict, auth_params: dict
