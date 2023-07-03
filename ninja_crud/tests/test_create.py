@@ -6,9 +6,9 @@ from django.urls import reverse
 
 from ninja_crud.tests.test_abstract import (
     AbstractModelViewTest,
+    ArgOrCallable,
     AuthParams,
     BodyParams,
-    ParamsOrCallable,
     PathParams,
     TestCaseType,
 )
@@ -20,19 +20,13 @@ class CreateModelViewTest(AbstractModelViewTest):
 
     def __init__(
         self,
-        body_params: ParamsOrCallable[BodyParams, TestCaseType],
-        path_params: ParamsOrCallable[PathParams, TestCaseType] = None,
-        auth_params: ParamsOrCallable[AuthParams, TestCaseType] = None,
+        body_params: ArgOrCallable[BodyParams, TestCaseType],
+        path_params: ArgOrCallable[PathParams, TestCaseType] = None,
+        auth_params: ArgOrCallable[AuthParams, TestCaseType] = None,
     ) -> None:
-        if path_params is None:
-            path_params = PathParams(ok={})
-        super().__init__(path_params=path_params, auth_params=auth_params)
-        self.body_params = body_params
-
-    def get_body_params(self) -> BodyParams:
-        if callable(self.body_params):
-            return self.body_params(self.test_case)
-        return self.body_params
+        super().__init__(
+            path_params=path_params, auth_params=auth_params, body_params=body_params
+        )
 
     def request_create_model(
         self, path_params: dict, auth_params: dict, body_params: dict
@@ -46,7 +40,7 @@ class CreateModelViewTest(AbstractModelViewTest):
             **auth_params,
         )
 
-    def assert_response_is_ok(self, response: HttpResponse):
+    def assert_response_is_created(self, response: HttpResponse):
         self.test_case.assertEqual(response.status_code, HTTPStatus.CREATED)
         content = json.loads(response.content)
 
@@ -67,7 +61,7 @@ class CreateModelViewTest(AbstractModelViewTest):
             auth_params=self.get_auth_params().ok,
             body_params=self.get_body_params().ok,
         )
-        self.assert_response_is_ok(response)
+        self.assert_response_is_created(response)
 
     def test_create_model_bad_request(self):
         body_params = self.get_body_params()

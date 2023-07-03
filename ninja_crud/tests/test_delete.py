@@ -3,12 +3,25 @@ from http import HTTPStatus
 from django.http import HttpResponse
 from django.urls import reverse
 
-from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_abstract import (
+    AbstractModelViewTest,
+    ArgOrCallable,
+    AuthParams,
+    PathParams,
+    TestCaseType,
+)
 from ninja_crud.views.delete import DeleteModelView
 
 
 class DeleteModelViewTest(AbstractModelViewTest):
     model_view = DeleteModelView
+
+    def __init__(
+        self,
+        path_params: ArgOrCallable[PathParams, TestCaseType],
+        auth_params: ArgOrCallable[AuthParams, TestCaseType] = None,
+    ) -> None:
+        super().__init__(path_params=path_params, auth_params=auth_params)
 
     def request_delete_model(
         self, path_params: dict, auth_params: dict
@@ -21,7 +34,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
             **auth_params,
         )
 
-    def assert_response_is_ok(self, response: HttpResponse):
+    def assert_response_is_no_content(self, response: HttpResponse):
         self.test_case.assertEqual(response.status_code, HTTPStatus.NO_CONTENT)
         self.test_case.assertEqual(response.content, b"")
 
@@ -30,7 +43,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
             path_params=self.get_path_params().ok,
             auth_params=self.get_auth_params().ok,
         )
-        self.assert_response_is_ok(response)
+        self.assert_response_is_no_content(response)
 
     def test_delete_model_unauthorized(self):
         auth_params = self.get_auth_params()

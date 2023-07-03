@@ -18,7 +18,7 @@ from ninja_crud.views import (
 
 T = TypeVar("T")
 TestCaseType = TypeVar("TestCaseType", bound=TestCase)
-ParamsOrCallable = Union[T, Callable[[TestCaseType], T]]
+ArgOrCallable = Union[T, Callable[[TestCaseType], T]]
 
 
 class PathParams(NamedTuple):
@@ -52,24 +52,39 @@ class AbstractModelViewTest:
 
     def __init__(
         self,
-        path_params: ParamsOrCallable[PathParams, TestCaseType],
-        auth_params: ParamsOrCallable[AuthParams, TestCaseType] = None,
+        path_params: ArgOrCallable[PathParams, TestCaseType] = None,
+        query_params: ArgOrCallable[QueryParams, TestCaseType] = None,
+        auth_params: ArgOrCallable[AuthParams, TestCaseType] = None,
+        body_params: ArgOrCallable[BodyParams, TestCaseType] = None,
     ) -> None:
+        if path_params is None:
+            path_params = PathParams(ok={})
+        if auth_params is None:
+            auth_params = AuthParams(ok={})
+        if body_params is None:
+            body_params = BodyParams(ok={})
+
         self.path_params = path_params
+        self.query_params = query_params
         self.auth_params = auth_params
+        self.body_params = body_params
+
+    def get_abstract_params(self, params: ArgOrCallable[T, TestCaseType]) -> T:
+        return params(self.test_case) if callable(params) else params
 
     def get_path_params(self) -> PathParams:
-        if callable(self.path_params):
-            return self.path_params(self.test_case)
-        return self.path_params
+        return self.get_abstract_params(self.path_params)
+
+    def get_query_params(self) -> QueryParams:
+        return self.get_abstract_params(self.query_params)
 
     def get_auth_params(self) -> AuthParams:
-        if callable(self.auth_params):
-            return self.auth_params(self.test_case)
-        else:
-            return self.auth_params or AuthParams(ok={})
+        return self.get_abstract_params(self.auth_params)
 
-    def get_tests(self) -> List[Tuple[str, Callable]]:
+    def get_body_params(self) -> BodyParams:
+        return self.get_abstract_params(self.body_params)
+
+    def get_test_methods(self) -> List[Tuple[str, Callable]]:
         return [
             (name, method)
             for name, method in inspect.getmembers(self, predicate=inspect.ismethod)
@@ -155,7 +170,7 @@ class ModelViewSetTestMeta(type):
                 attr_value.test_case = test_case
                 attr_value.client = new_cls.client_class()
                 attr_value.name = attr_name
-                for test_name, test_func in attr_value.get_tests():
+                for test_name, test_func in attr_value.get_test_methods():
                     method = attr_value.get_model_view()
                     model_name = new_cls.model_view_set.model.__name__.lower()
                     substring_replace = model_name
