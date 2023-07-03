@@ -1,9 +1,9 @@
 # Django Ninja CRUD
 [![example workflow](https://github.com/hbakri/django-ninja-crud/actions/workflows/tests.yml/badge.svg)](https://github.com/hbakri/django-ninja-crud/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/hbakri/django-ninja-crud/main.svg?label=coverage&logo=codecov&logoColor=white)](https://codecov.io/gh/hbakri/django-ninja-crud)
-[![PyPI version](https://img.shields.io/pypi/v/django-ninja-crud?color=g&logo=python&logoColor=white)](https://pypi.org/project/django-ninja-crud/)
-[![Downloads](https://pepy.tech/badge/django-ninja-crud)](https://pepy.tech/project/django-ninja-crud)
-[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://img.shields.io/pypi/v/django-ninja-crud?color=g&logo=pypi&logoColor=white)](https://pypi.org/project/django-ninja-crud/)
+[![Downloads](https://pepy.tech/badge/django-ninja-crud/month)](https://pepy.tech/project/django-ninja-crud)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ![Django Ninja CRUD](https://media.discordapp.net/attachments/1093869226202234930/1117550925083590677/Hicham_B._Django-ninja_cover_ce78724c-1512-41e5-86de-3ffa2cfd0ea9.png?width=2688&height=1070)
 
@@ -24,9 +24,7 @@ By using this package, developers can write efficient and clear code, saving tim
 ## 📝 Requirements
 
 ![Python versions](https://img.shields.io/badge/python-3.8%20|%203.9%20|%203.10%20|%203.11-blue)
-
 ![Django versions](https://img.shields.io/badge/django-3.2%20|%204.1%20|%204.2-blue)
-
 ![Django Ninja versions](https://img.shields.io/badge/django--ninja-0.21.0%20|%200.22.0-blue)
 
 ## 📈 Installation
@@ -98,10 +96,9 @@ A key advantage of this package is that it makes your views easy to test. Once y
 from django.test import TestCase
 from example.models import Department
 from example.views.view_department import DepartmentViewSet
-from ninja_crud.tests import CreateModelViewTest, DeleteModelViewTest,
-
-ListModelViewTest, ModelViewSetTest, Payloads, RetrieveModelViewTest,
-UpdateModelViewTest
+from ninja_crud.tests import CreateModelViewTest, DeleteModelViewTest, \
+    ListModelViewTest, ModelViewSetTest, RetrieveModelViewTest, UpdateModelViewTest, \
+    BodyParams, PathParams
 
 
 class DepartmentViewSetTest(ModelViewSetTest, TestCase):
@@ -113,27 +110,27 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         cls.department_1 = Department.objects.create(title="department-1")
         cls.department_2 = Department.objects.create(title="department-2")
 
-    def get_instance(self):
-        return self.department_1
+    def get_path_params(self):
+        return PathParams(ok={"id": self.department_1.id}, not_found={"id": 9999})
 
-    department_payloads = Payloads(
-        ok={"title": "department-updated"},
-        bad_request={"bad-key": "department-updated"},
+    body_params = BodyParams(
+        ok={"title": "new_title"},
+        bad_request={"bad-title": 1},
         conflict={"title": "department-2"},
     )
 
-    test_list = ListModelViewTest(kwargs=get_instance)
-    test_create = CreateModelViewTest(body_params=department_payloads, path_params=get_instance)
-    test_retrieve = RetrieveModelViewTest(kwargs=get_instance)
-    test_update = UpdateModelViewTest(payloads=department_payloads, kwargs=get_instance)
-    test_delete = DeleteModelViewTest(path_params=get_instance)
+    test_list = ListModelViewTest()
+    test_create = CreateModelViewTest(body_params=body_params)
+    test_retrieve = RetrieveModelViewTest(path_params=get_path_params)
+    test_update = UpdateModelViewTest(path_params=get_path_params, body_params=body_params)
+    test_delete = DeleteModelViewTest(path_params=get_path_params)
 ```
-With this package, these tests can be written in a consistent, straightforward way, making it easier to ensure your views are working as expected. Once you've written these tests, you can run them whenever you make changes to your views, giving you confidence that your changes haven't broken anything.
+With this package, these tests can be written in a consistent, straightforward way, making it easier to ensure your views are working as expected.
 
 In summary, this package simplifies the process of setting up and testing **CRUD** operations in Django Ninja, letting you focus on what makes your application unique. By providing a flexible, transparent, and configurable solution, this package is a powerful tool for accelerating web development.
 
 ## 📚 Documentation
-https://django-ninja-crud.readme.io/docs
+For more information, see the [documentation](https://django-ninja-crud.readme.io/docs).
 
 ## 🫶 Support
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/hbakri)
