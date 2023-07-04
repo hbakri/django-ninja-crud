@@ -7,7 +7,7 @@ all = true
 
 [tool.poetry]
 name = "django-ninja-crud"
-version = "0.1.3"
+version = "0.2.0"
 description = "Django Ninja CRUD is a library that allows you to create CRUD APIs in a few lines of code."
 authors = ["Hicham Bakri <hicham.bakri76@gmail.com>"]
 maintainers = ["Hicham Bakri <hicham.bakri76@gmail.com>"]
