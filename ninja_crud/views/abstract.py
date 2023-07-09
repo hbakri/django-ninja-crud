@@ -17,6 +17,10 @@ class AbstractModelView(ABC):
     ) -> None:  # pragma: no cover
         pass
 
+    @abstractmethod
+    def get_path(self) -> str:  # pragma: no cover
+        pass
+
 
 class ModelViewSet:
     model: Type[Model]

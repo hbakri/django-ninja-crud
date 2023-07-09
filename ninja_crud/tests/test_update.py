@@ -2,7 +2,6 @@ import json
 from http import HTTPStatus
 
 from django.http import HttpResponse
-from django.urls import reverse
 
 from ninja_crud.tests import PathParams
 from ninja_crud.tests.test_abstract import (
@@ -31,10 +30,9 @@ class UpdateModelViewTest(AbstractModelViewTest):
     def request_update_model(
         self, path_params: dict, auth_params: dict, body_params: dict
     ) -> HttpResponse:
-        model_view: UpdateModelView = self.get_model_view()
-        url_name = model_view.get_url_name(self.model_view_set.model)
+        path = "/" + self.urls_prefix + self.get_model_view().get_path()
         return self.client.put(
-            reverse(f"api:{url_name}", kwargs=path_params),
+            path=path.format(**path_params),
             data=body_params,
             content_type="application/json",
             **auth_params,

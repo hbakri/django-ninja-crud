@@ -49,6 +49,7 @@ class AbstractModelViewTest:
     client: Client
     model_view: Type[AbstractModelView]
     name: str
+    urls_prefix: str
 
     def __init__(
         self,
@@ -158,7 +159,8 @@ class AbstractModelViewTest:
 
 class ModelViewSetTestMeta(type):
     model_view_set: ModelViewSet
-    client_class: callable
+    client_class: Callable
+    urls_prefix: str
 
     def __new__(mcs, name, bases, dct):
         new_cls = super().__new__(mcs, name, bases, dct)
@@ -170,6 +172,7 @@ class ModelViewSetTestMeta(type):
                 attr_value.test_case = test_case
                 attr_value.client = new_cls.client_class()
                 attr_value.name = attr_name
+                attr_value.urls_prefix = new_cls.urls_prefix
                 for test_name, test_func in attr_value.get_test_methods():
                     method = attr_value.get_model_view()
                     model_name = new_cls.model_view_set.model.__name__.lower()
@@ -185,3 +188,4 @@ class ModelViewSetTestMeta(type):
 
 class ModelViewSetTest(metaclass=ModelViewSetTestMeta):
     model_view_set: ModelViewSet
+    urls_prefix: str

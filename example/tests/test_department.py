@@ -18,6 +18,8 @@ from ninja_crud.tests import (
 
 class DepartmentViewSetTest(ModelViewSetTest, TestCase):
     model_view_set = DepartmentViewSet
+    urls_prefix = "api/departments"
+
     department_1: Department
     department_2: Department
     employee: Employee

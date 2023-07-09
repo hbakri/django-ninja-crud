@@ -19,6 +19,7 @@ from tests.test_app.views.view_collection import CollectionViewSet
 
 class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
     model_view_set = CollectionViewSet
+    urls_prefix = "api/collections"
 
     def get_path_params(self):
         return PathParams(

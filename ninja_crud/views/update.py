@@ -25,34 +25,33 @@ class UpdateModelView(AbstractModelView):
         self.post_save = post_save
 
     def register_route(self, router: Router, model: Type[Model]) -> None:
-        model_name = utils.to_snake_case(model.__name__)
-        operation_id = f"update_{model_name}"
-        summary = f"Update {model.__name__}"
-
         input_schema = self.input_schema
         output_schema = self.output_schema
-        id_type = utils.get_id_type(model)
 
         @router.put(
-            "/{id}",
+            path=self.get_path(),
             response={HTTPStatus.OK: output_schema},
-            url_name=self.get_url_name(model),
-            operation_id=operation_id,
-            summary=summary,
+            operation_id=f"update_{utils.to_snake_case(model.__name__)}",
+            summary=f"Update {model.__name__}",
         )
         @utils.merge_decorators(self.decorators)
-        def update_model(request: HttpRequest, id: id_type, payload: input_schema):
+        def update_model(
+            request: HttpRequest, id: utils.get_id_type(model), payload: input_schema
+        ):
             instance = model.objects.get(pk=id)
             for field, value in payload.dict(exclude_unset=True).items():
                 setattr(instance, field, value)
+
             if self.pre_save is not None:
                 self.pre_save(request, instance)
+
             instance.full_clean()
             instance.save()
+
             if self.post_save is not None:
                 self.post_save(request, instance)
+
             return HTTPStatus.OK, instance
 
-    @staticmethod
-    def get_url_name(model: Type[Model]) -> str:
-        return utils.to_snake_case(model.__name__)
+    def get_path(self) -> str:
+        return "/{id}"
