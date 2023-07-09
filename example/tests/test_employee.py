@@ -16,6 +16,8 @@ from ninja_crud.tests import (
 
 class EmployeeViewSetTest(ModelViewSetTest, TestCase):
     model_view_set = EmployeeViewSet
+    urls_prefix = "api/employees"
+
     department_1: Department
     department_2: Department
     employee: Employee

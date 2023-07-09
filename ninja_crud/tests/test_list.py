@@ -2,7 +2,6 @@ import json
 from http import HTTPStatus
 
 from django.http import HttpResponse
-from django.urls import reverse
 
 from ninja_crud.tests import QueryParams
 from ninja_crud.tests.test_abstract import (
@@ -31,10 +30,9 @@ class ListModelViewTest(AbstractModelViewTest):
     def request_list_model(
         self, path_params: dict, auth_params: dict, query_params: dict = None
     ) -> HttpResponse:
-        model_view: ListModelView = self.get_model_view()
-        url_name = model_view.get_url_name(self.model_view_set.model)
+        path = "/" + self.urls_prefix + self.get_model_view().get_path()
         response = self.client.get(
-            reverse(f"api:{url_name}", kwargs=path_params),
+            path=path.format(**path_params),
             data=query_params if query_params is not None else {},
             content_type="application/json",
             **auth_params,

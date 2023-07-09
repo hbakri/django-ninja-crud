@@ -21,28 +21,25 @@ class DeleteModelView(AbstractModelView):
         self.post_delete = post_delete
 
     def register_route(self, router: Router, model: Type[Model]) -> None:
-        model_name = utils.to_snake_case(model.__name__)
-        operation_id = f"delete_{model_name}"
-        summary = f"Delete {model.__name__}"
-        id_type = utils.get_id_type(model)
-
         @router.delete(
-            "/{id}",
+            path=self.get_path(),
             response={HTTPStatus.NO_CONTENT: None},
-            url_name=self.get_url_name(model),
-            operation_id=operation_id,
-            summary=summary,
+            operation_id=f"delete_{utils.to_snake_case(model.__name__)}",
+            summary=f"Delete {model.__name__}",
         )
         @utils.merge_decorators(self.decorators)
-        def delete_model(request: HttpRequest, id: id_type):
+        def delete_model(request: HttpRequest, id: utils.get_id_type(model)):
             instance = model.objects.get(pk=id)
+
             if self.pre_delete is not None:
                 self.pre_delete(request, instance)
+
             instance.delete()
+
             if self.post_delete is not None:
                 self.post_delete(request, id)
+
             return HTTPStatus.NO_CONTENT, None
 
-    @staticmethod
-    def get_url_name(model: Type[Model]) -> str:
-        return utils.to_snake_case(model.__name__)
+    def get_path(self) -> str:
+        return "/{id}"

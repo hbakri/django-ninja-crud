@@ -1,7 +1,6 @@
 from http import HTTPStatus
 
 from django.http import HttpResponse
-from django.urls import reverse
 
 from ninja_crud.tests.test_abstract import (
     AbstractModelViewTest,
@@ -26,10 +25,9 @@ class DeleteModelViewTest(AbstractModelViewTest):
     def request_delete_model(
         self, path_params: dict, auth_params: dict
     ) -> HttpResponse:
-        model_view: DeleteModelView = self.get_model_view()
-        url_name = model_view.get_url_name(self.model_view_set.model)
+        path = "/" + self.urls_prefix + self.get_model_view().get_path()
         return self.client.delete(
-            reverse(f"api:{url_name}", kwargs=path_params),
+            path=path.format(**path_params),
             content_type="application/json",
             **auth_params,
         )

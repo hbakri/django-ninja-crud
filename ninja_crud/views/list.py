@@ -44,9 +44,8 @@ class ListModelView(AbstractModelView):
         filter_schema = self.filter_schema
 
         @router.get(
-            "/",
+            path=self.get_path(),
             response={HTTPStatus.OK: List[output_schema]},
-            url_name=self.get_url_name(model),
             operation_id=operation_id,
             summary=summary,
         )
@@ -60,20 +59,16 @@ class ListModelView(AbstractModelView):
 
     def register_instance_route(self, router: Router, model: Type[Model]) -> None:
         parent_model_name = utils.to_snake_case(model.__name__)
-        model_name = utils.to_snake_case(self.related_model.__name__)
-        plural_model_name = f"{model_name}s"
-        url = "/{id}/" + plural_model_name
-        operation_id = f"list_{parent_model_name}_{plural_model_name}"
+        related_model_name = utils.to_snake_case(self.related_model.__name__)
+        operation_id = f"list_{parent_model_name}_{related_model_name}s"
         summary = f"List {self.related_model.__name__}s of a {model.__name__}"
 
         output_schema = self.output_schema
         filter_schema = self.filter_schema
-        id_type = utils.get_id_type(model)
 
         @router.get(
-            url,
+            path=self.get_path(),
             response={HTTPStatus.OK: List[output_schema]},
-            url_name=self.get_url_name(model),
             operation_id=operation_id,
             summary=summary,
         )
@@ -81,7 +76,7 @@ class ListModelView(AbstractModelView):
         @paginate(LimitOffsetPagination)
         def list_models(
             request: HttpRequest,
-            id: id_type,
+            id: utils.get_id_type(model),
             filters: filter_schema = Query(default=FilterSchema()),
         ):
             instance = model.objects.get(pk=id)
@@ -109,10 +104,8 @@ class ListModelView(AbstractModelView):
         queryset = filters.filter(queryset)
         return queryset
 
-    def get_url_name(self, model: Type[Model]) -> str:
-        model_name = utils.to_snake_case(model.__name__)
+    def get_path(self) -> str:
         if self.detail:
-            related_model_name = utils.to_snake_case(self.related_model.__name__)
-            return f"{model_name}_{related_model_name}s"
+            return f"/{{id}}/{utils.to_snake_case(self.related_model.__name__)}s/"
         else:
-            return f"{model_name}s"
+            return "/"
