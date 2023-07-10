@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Type, Union
+from typing import Any, Callable, List, Type, TypeVar, Union
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -7,6 +7,14 @@ from ninja import Router, Schema
 
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
+
+ModelType = TypeVar("ModelType", bound=Model)
+SaveHook = Union[
+    Callable[[HttpRequest, ModelType], None],
+    Callable[[HttpRequest, Any, ModelType], None],
+]
+PreSaveHook = SaveHook[ModelType]
+PostSaveHook = SaveHook[ModelType]
 
 
 class CreateModelView(AbstractModelView):
@@ -17,14 +25,8 @@ class CreateModelView(AbstractModelView):
         decorators: List[Callable] = None,
         detail: bool = False,
         related_model: Type[Model] = None,
-        pre_save: Union[
-            Callable[[HttpRequest, Model], None],
-            Callable[[HttpRequest, Any, Model], None],
-        ] = None,
-        post_save: Union[
-            Callable[[HttpRequest, Model], None],
-            Callable[[HttpRequest, Any, Model], None],
-        ] = None,
+        pre_save: PreSaveHook = None,
+        post_save: PostSaveHook = None,
     ) -> None:
         super().__init__(decorators=decorators)
         self.input_schema = input_schema
