@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Type
+from typing import Any, Callable, List, Type, TypeVar
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -8,13 +8,17 @@ from ninja import Router
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
+ModelType = TypeVar("ModelType", bound=Model)
+PreDeleteHook = Callable[[HttpRequest, ModelType], None]
+PostDeleteHook = Callable[[HttpRequest, Any], None]
+
 
 class DeleteModelView(AbstractModelView):
     def __init__(
         self,
         decorators: List[Callable] = None,
-        pre_delete: Callable[[HttpRequest, Model], None] = None,
-        post_delete: Callable[[HttpRequest, Any], None] = None,
+        pre_delete: PreDeleteHook = None,
+        post_delete: PostDeleteHook = None,
     ) -> None:
         super().__init__(decorators=decorators)
         self.pre_delete = pre_delete

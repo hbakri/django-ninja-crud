@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Callable, List, Type
+from typing import Callable, List, Type, TypeVar
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -8,6 +8,10 @@ from ninja import Router, Schema
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
+ModelType = TypeVar("ModelType", bound=Model)
+PreSaveHook = Callable[[HttpRequest, ModelType], None]
+PostSaveHook = Callable[[HttpRequest, ModelType], None]
+
 
 class UpdateModelView(AbstractModelView):
     def __init__(
@@ -15,8 +19,8 @@ class UpdateModelView(AbstractModelView):
         input_schema: Type[Schema],
         output_schema: Type[Schema],
         decorators: List[Callable] = None,
-        pre_save: Callable[[HttpRequest, Model], None] = None,
-        post_save: Callable[[HttpRequest, Model], None] = None,
+        pre_save: PreSaveHook = None,
+        post_save: PostSaveHook = None,
     ) -> None:
         super().__init__(decorators=decorators)
         self.input_schema = input_schema
