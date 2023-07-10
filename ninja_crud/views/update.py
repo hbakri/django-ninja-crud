@@ -1,3 +1,4 @@
+import copy
 from http import HTTPStatus
 from typing import Callable, List, Type, TypeVar
 
@@ -9,8 +10,8 @@ from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
 ModelType = TypeVar("ModelType", bound=Model)
-PreSaveHook = Callable[[HttpRequest, ModelType], None]
-PostSaveHook = Callable[[HttpRequest, ModelType], None]
+PreSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
+PostSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
 
 
 class UpdateModelView(AbstractModelView):
@@ -43,17 +44,22 @@ class UpdateModelView(AbstractModelView):
             request: HttpRequest, id: utils.get_id_type(model), payload: input_schema
         ):
             instance = model.objects.get(pk=id)
+
+            old_instance = None
+            if self.pre_save is not None or self.post_save is not None:
+                old_instance = copy.deepcopy(instance)
+
             for field, value in payload.dict(exclude_unset=True).items():
                 setattr(instance, field, value)
 
             if self.pre_save is not None:
-                self.pre_save(request, instance)
+                self.pre_save(request, instance, old_instance)
 
             instance.full_clean()
             instance.save()
 
             if self.post_save is not None:
-                self.post_save(request, instance)
+                self.post_save(request, instance, old_instance)
 
             return HTTPStatus.OK, instance
 
