@@ -40,15 +40,13 @@ class CollectionViewSet(ModelViewSet):
     output_schema = CollectionOut
     filter_schema = CollectionFilter
 
-    @staticmethod
-    def pre_save_collection(request: HttpRequest, instance: Collection):
-        setattr(instance, "created_by", request.user)
-
     list = ListModelView(output_schema=output_schema, filter_schema=filter_schema)
     create = CreateModelView(
         input_schema=input_schema,
         output_schema=output_schema,
-        pre_save=pre_save_collection,
+        pre_save=lambda request, instance: setattr(
+            instance, "created_by", request.user
+        ),
         post_save=lambda request, instance: None,
     )
     retrieve = RetrieveModelView(output_schema=output_schema)
