@@ -5,10 +5,10 @@ from example.models import Department, Employee
 from example.views.view_employee import EmployeeViewSet
 
 from ninja_crud.tests import (
-    BodyParams,
     DeleteModelViewTest,
     ModelViewSetTest,
-    PathParams,
+    PathParameters,
+    Payloads,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -32,10 +32,12 @@ class EmployeeViewSetTest(ModelViewSetTest, TestCase):
         )
         cls.token = "supersecret"
 
-    def get_path_params(self):
-        return PathParams(ok={"id": self.employee.id}, not_found={"id": uuid.uuid4()})
+    def get_path_parameters(self):
+        return PathParameters(
+            ok={"id": self.employee.id}, not_found={"id": uuid.uuid4()}
+        )
 
-    employee_body_params = BodyParams(
+    employee_payloads = Payloads(
         ok={
             "first_name": "new_first_name",
             "last_name": "new_last_name",
@@ -44,8 +46,8 @@ class EmployeeViewSetTest(ModelViewSetTest, TestCase):
         bad_request={"first_name": 1},
     )
 
-    test_retrieve = RetrieveModelViewTest(path_params=get_path_params)
+    test_retrieve = RetrieveModelViewTest(path_parameters=get_path_parameters)
     test_update = UpdateModelViewTest(
-        path_params=get_path_params, body_params=employee_body_params
+        path_parameters=get_path_parameters, payloads=employee_payloads
     )
-    test_delete = DeleteModelViewTest(path_params=get_path_params)
+    test_delete = DeleteModelViewTest(path_parameters=get_path_parameters)

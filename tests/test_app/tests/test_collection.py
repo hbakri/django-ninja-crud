@@ -2,14 +2,14 @@ import random
 import uuid
 
 from ninja_crud.tests import (
-    AuthParams,
-    BodyParams,
+    AuthHeaders,
     CreateModelViewTest,
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
-    PathParams,
-    QueryParams,
+    PathParameters,
+    Payloads,
+    QueryParameters,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -21,60 +21,60 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
     model_view_set = CollectionViewSet
     urls_prefix = "api/collections"
 
-    def get_path_params(self):
-        return PathParams(
-            ok={"id": self.collection_1.id}, not_found={"id": uuid.uuid4()}
+    def get_path_parameters(self):
+        return PathParameters(
+            ok=[{"id": self.collection_1.id}], not_found={"id": uuid.uuid4()}
         )
 
-    def get_auth_params_ok(self):
-        return AuthParams(
-            ok={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"}, unauthorized={}
+    def get_auth_headers_ok(self):
+        return AuthHeaders(
+            ok=[{"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"}], unauthorized={}
         )
 
-    def get_auth_params_ok_forbidden(self):
-        return AuthParams(
+    def get_auth_headers_ok_forbidden(self):
+        return AuthHeaders(
             ok={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
             unauthorized={"HTTP_AUTHORIZATION": f"Bearer {random.randint(100, 1000)}"},
             forbidden={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
         )
 
-    collection_body_params = BodyParams(
+    collection_payloads = Payloads(
         ok={"name": "new-name", "description": "new-description"},
         bad_request={"unknown_field": "unknown_field"},
         conflict={"name": "collection-2"},
     )
 
     test_list = ListModelViewTest(
-        auth_params=get_auth_params_ok,
-        query_params=QueryParams(
-            ok={"name": "collection-1", "order_by": ["name"], "limit": 1},
+        auth_headers=get_auth_headers_ok,
+        query_parameters=QueryParameters(
+            ok=[{}, {"name": "collection-1", "order_by": ["name"], "limit": 1}],
             bad_request={"order_by": ["unknown_field"]},
         ),
     )
     test_create = CreateModelViewTest(
-        auth_params=get_auth_params_ok,
-        body_params=collection_body_params,
+        auth_headers=get_auth_headers_ok,
+        payloads=collection_payloads,
     )
     test_retrieve = RetrieveModelViewTest(
-        path_params=get_path_params,
-        auth_params=get_auth_params_ok,
+        path_parameters=get_path_parameters,
+        auth_headers=get_auth_headers_ok,
     )
     test_update = UpdateModelViewTest(
-        path_params=get_path_params,
-        auth_params=get_auth_params_ok_forbidden,
-        body_params=collection_body_params,
+        path_parameters=get_path_parameters,
+        auth_headers=get_auth_headers_ok_forbidden,
+        payloads=collection_payloads,
     )
     test_delete = DeleteModelViewTest(
-        path_params=get_path_params, auth_params=get_auth_params_ok_forbidden
+        path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
     )
 
     test_list_items = ListModelViewTest(
-        path_params=get_path_params, auth_params=get_auth_params_ok_forbidden
+        path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
     )
     test_create_item = CreateModelViewTest(
-        path_params=get_path_params,
-        auth_params=get_auth_params_ok_forbidden,
-        body_params=BodyParams(
+        path_parameters=get_path_parameters,
+        auth_headers=get_auth_headers_ok_forbidden,
+        payloads=Payloads(
             ok={"name": "new-name", "description": "new-description"},
         ),
     )

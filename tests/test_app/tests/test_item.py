@@ -1,16 +1,13 @@
 import uuid
-from typing import Union
-
-from django.test import TestCase
 
 from ninja_crud.tests import (
-    AuthParams,
-    BodyParams,
+    AuthHeaders,
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
-    PathParams,
-    QueryParams,
+    PathParameters,
+    Payloads,
+    QueryParameters,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -22,43 +19,43 @@ class ItemViewSetTest(ModelViewSetTest, BaseTestCase):
     model_view_set = ItemViewSet
     urls_prefix = "api/items"
 
-    def get_path_params(self):
-        return PathParams(ok={"id": self.item_1.id}, not_found={"id": uuid.uuid4()})
+    def get_path_parameters(self):
+        return PathParameters(ok={"id": self.item_1.id}, not_found={"id": uuid.uuid4()})
 
-    def get_auth_params_ok(self: Union["ItemViewSetTest", TestCase]):
-        return AuthParams(
+    def get_auth_headers_ok(self):
+        return AuthHeaders(
             ok={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"}, unauthorized={}
         )
 
-    def get_auth_params_ok_forbidden(self: Union["ItemViewSetTest", TestCase]):
-        return AuthParams(
+    def get_auth_headers_ok_forbidden(self):
+        return AuthHeaders(
             ok={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
             unauthorized={},
             forbidden={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
         )
 
-    item_body_params = BodyParams(
-        ok={"name": "new-name", "description": "new-description"},
-    )
-
     test_list = ListModelViewTest(
-        auth_params=get_auth_params_ok,
-        query_params=lambda self: QueryParams(ok={"order_by": ["name"], "limit": 1}),
+        auth_headers=get_auth_headers_ok,
+        query_parameters=lambda self: QueryParameters(
+            ok=[{}, {"order_by": ["name"], "limit": 1}]
+        ),
     )
     test_retrieve = RetrieveModelViewTest(
-        path_params=get_path_params,
-        auth_params=get_auth_params_ok_forbidden,
+        path_parameters=get_path_parameters,
+        auth_headers=get_auth_headers_ok_forbidden,
     )
     test_update = UpdateModelViewTest(
-        path_params=get_path_params,
-        auth_params=get_auth_params_ok_forbidden,
-        body_params=item_body_params,
+        path_parameters=get_path_parameters,
+        auth_headers=get_auth_headers_ok_forbidden,
+        payloads=Payloads(
+            ok={"name": "new-name", "description": "new-description"},
+        ),
     )
     test_delete = DeleteModelViewTest(
-        path_params=get_path_params, auth_params=get_auth_params_ok_forbidden
+        path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
     )
 
     test_list_tags = ListModelViewTest(
-        path_params=lambda self: PathParams(ok={"id": self.item_1.id}),
-        auth_params=get_auth_params_ok,
+        path_parameters=lambda self: PathParameters(ok={"id": self.item_1.id}),
+        auth_headers=get_auth_headers_ok,
     )

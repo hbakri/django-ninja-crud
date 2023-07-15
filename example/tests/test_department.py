@@ -5,12 +5,12 @@ from example.models import Department, Employee
 from example.views.view_department import DepartmentViewSet
 
 from ninja_crud.tests import (
-    BodyParams,
     CreateModelViewTest,
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
-    PathParams,
+    PathParameters,
+    Payloads,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -34,26 +34,26 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         )
         cls.token = "supersecret"
 
-    def get_path_params(self):
-        return PathParams(
+    def get_path_parameters(self):
+        return PathParameters(
             ok={"id": self.department_1.id}, not_found={"id": uuid.uuid4()}
         )
 
-    department_body_params = BodyParams(
+    department_payloads = Payloads(
         ok={"title": "new_title"},
         bad_request={"bad-title": 1},
         conflict={"title": "department-2"},
     )
 
     test_list = ListModelViewTest()
-    test_create = CreateModelViewTest(body_params=department_body_params)
-    test_retrieve = RetrieveModelViewTest(path_params=get_path_params)
+    test_create = CreateModelViewTest(payloads=department_payloads)
+    test_retrieve = RetrieveModelViewTest(path_parameters=get_path_parameters)
     test_update = UpdateModelViewTest(
-        path_params=get_path_params, body_params=department_body_params
+        path_parameters=get_path_parameters, payloads=department_payloads
     )
-    test_delete = DeleteModelViewTest(path_params=get_path_params)
+    test_delete = DeleteModelViewTest(path_parameters=get_path_parameters)
 
-    employee_body_params = BodyParams(
+    employee_payloads = Payloads(
         ok={
             "first_name": "new_first_name",
             "last_name": "new_last_name",
@@ -61,7 +61,7 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         bad_request={"first_name": 1},
     )
 
-    test_list_employees = ListModelViewTest(path_params=get_path_params)
+    test_list_employees = ListModelViewTest(path_parameters=get_path_parameters)
     test_create_employee = CreateModelViewTest(
-        path_params=get_path_params, body_params=employee_body_params
+        path_parameters=get_path_parameters, payloads=employee_payloads
     )

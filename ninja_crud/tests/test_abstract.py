@@ -1,13 +1,19 @@
 import inspect
 import json
 from http import HTTPStatus
-from typing import Callable, List, NamedTuple, Optional, Tuple, Type, TypeVar, Union
+from typing import Callable, List, Tuple, Type, TypeVar, Union
 
 from django.db.models import Model, QuerySet
 from django.http import HttpResponse
 from django.test import Client, TestCase
 from ninja import Schema
 
+from ninja_crud.tests.request_components import (
+    AuthHeaders,
+    PathParameters,
+    Payloads,
+    QueryParameters,
+)
 from ninja_crud.tests.utils import default_serializer
 from ninja_crud.views import (
     AbstractModelView,
@@ -21,28 +27,6 @@ TestCaseType = TypeVar("TestCaseType", bound=TestCase)
 ArgOrCallable = Union[T, Callable[[TestCaseType], T]]
 
 
-class PathParams(NamedTuple):
-    ok: dict
-    not_found: Optional[dict] = None
-
-
-class QueryParams(NamedTuple):
-    ok: dict
-    bad_request: Optional[dict] = None
-
-
-class AuthParams(NamedTuple):
-    ok: dict
-    forbidden: Optional[dict] = None
-    unauthorized: Optional[dict] = None
-
-
-class BodyParams(NamedTuple):
-    ok: dict
-    bad_request: Optional[dict] = None
-    conflict: Optional[dict] = None
-
-
 class AbstractModelViewTest:
     model_view_set: ModelViewSet
     test_case: TestCase
@@ -53,37 +37,39 @@ class AbstractModelViewTest:
 
     def __init__(
         self,
-        path_params: ArgOrCallable[PathParams, TestCaseType] = None,
-        query_params: ArgOrCallable[QueryParams, TestCaseType] = None,
-        auth_params: ArgOrCallable[AuthParams, TestCaseType] = None,
-        body_params: ArgOrCallable[BodyParams, TestCaseType] = None,
+        path_parameters: ArgOrCallable[PathParameters, TestCaseType] = None,
+        query_parameters: ArgOrCallable[QueryParameters, TestCaseType] = None,
+        auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
+        payloads: ArgOrCallable[Payloads, TestCaseType] = None,
     ) -> None:
-        if path_params is None:
-            path_params = PathParams(ok={})
-        if auth_params is None:
-            auth_params = AuthParams(ok={})
-        if body_params is None:
-            body_params = BodyParams(ok={})
+        if path_parameters is None:
+            path_parameters = PathParameters(ok={})
+        if query_parameters is None:
+            query_parameters = QueryParameters(ok={})
+        if auth_headers is None:
+            auth_headers = AuthHeaders(ok={})
+        if payloads is None:
+            payloads = Payloads(ok={})
 
-        self.path_params = path_params
-        self.query_params = query_params
-        self.auth_params = auth_params
-        self.body_params = body_params
+        self.path_parameters = path_parameters
+        self.query_parameters = query_parameters
+        self.auth_headers = auth_headers
+        self.payloads = payloads
 
-    def get_abstract_params(self, params: ArgOrCallable[T, TestCaseType]) -> T:
+    def _get_arg_or_callable(self, params: ArgOrCallable[T, TestCaseType]) -> T:
         return params(self.test_case) if callable(params) else params
 
-    def get_path_params(self) -> PathParams:
-        return self.get_abstract_params(self.path_params)
+    def get_path_parameters(self) -> PathParameters:
+        return self._get_arg_or_callable(self.path_parameters)
 
-    def get_query_params(self) -> QueryParams:
-        return self.get_abstract_params(self.query_params)
+    def get_query_parameters(self) -> QueryParameters:
+        return self._get_arg_or_callable(self.query_parameters)
 
-    def get_auth_params(self) -> AuthParams:
-        return self.get_abstract_params(self.auth_params)
+    def get_auth_headers(self) -> AuthHeaders:
+        return self._get_arg_or_callable(self.auth_headers)
 
-    def get_body_params(self) -> BodyParams:
-        return self.get_abstract_params(self.body_params)
+    def get_payloads(self) -> Payloads:
+        return self._get_arg_or_callable(self.payloads)
 
     def get_test_methods(self) -> List[Tuple[str, Callable]]:
         return [
