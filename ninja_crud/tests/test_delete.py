@@ -1,12 +1,14 @@
 from http import HTTPStatus
+from typing import Callable, List
 
 from django.http import HttpResponse
+from django.test import tag
 
 from ninja_crud.tests.test_abstract import (
     AbstractModelViewTest,
     ArgOrCallable,
-    AuthParams,
-    PathParams,
+    AuthHeaders,
+    PathParameters,
     TestCaseType,
 )
 from ninja_crud.views.delete import DeleteModelView
@@ -17,60 +19,96 @@ class DeleteModelViewTest(AbstractModelViewTest):
 
     def __init__(
         self,
-        path_params: ArgOrCallable[PathParams, TestCaseType],
-        auth_params: ArgOrCallable[AuthParams, TestCaseType] = None,
+        path_parameters: ArgOrCallable[PathParameters, TestCaseType],
+        auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
-        super().__init__(path_params=path_params, auth_params=auth_params)
+        super().__init__(path_parameters=path_parameters, auth_headers=auth_headers)
 
     def request_delete_model(
-        self, path_params: dict, auth_params: dict
+        self, path_parameters: dict, auth_headers: dict
     ) -> HttpResponse:
         path = "/" + self.urls_prefix + self.get_model_view().get_path()
         return self.client.delete(
-            path=path.format(**path_params),
+            path=path.format(**path_parameters),
             content_type="application/json",
-            **auth_params,
+            **auth_headers,
         )
 
-    def assert_response_is_no_content(self, response: HttpResponse):
+    def assert_response_is_no_content(
+        self, response: HttpResponse, path_parameters: dict
+    ):
         self.test_case.assertEqual(response.status_code, HTTPStatus.NO_CONTENT)
         self.test_case.assertEqual(response.content, b"")
 
+        queryset = self.model_view_set.model.objects.filter(id=path_parameters["id"])
+        self.test_case.assertEqual(queryset.count(), 0)
+
+    def run_sub_tests(
+        self,
+        path_parameters_list: List[dict],
+        auth_headers_list: List[dict],
+        completion_callback: Callable[[HttpResponse, dict, dict], None],
+    ):
+        for path_parameters in path_parameters_list:
+            for auth_headers in auth_headers_list:
+                with self.test_case.subTest(
+                    path_parameters=path_parameters, auth_headers=auth_headers
+                ):
+                    response = self.request_delete_model(
+                        path_parameters=path_parameters, auth_headers=auth_headers
+                    )
+                    completion_callback(response, path_parameters, auth_headers)
+
+    @tag("delete")
     def test_delete_model_ok(self):
-        response = self.request_delete_model(
-            path_params=self.get_path_params().ok,
-            auth_params=self.get_auth_params().ok,
+        path_parameters = self.get_path_parameters()
+        auth_headers = self.get_auth_headers()
+        self.run_sub_tests(
+            path_parameters_list=path_parameters.ok,
+            auth_headers_list=auth_headers.ok,
+            completion_callback=lambda response, path_parameters_, _: self.assert_response_is_no_content(
+                response, path_parameters=path_parameters_
+            ),
         )
-        self.assert_response_is_no_content(response)
 
+    @tag("delete")
     def test_delete_model_unauthorized(self):
-        auth_params = self.get_auth_params()
-        if auth_params.unauthorized is None:
-            self.test_case.skipTest("No unauthorized auth provided")
-        response = self.request_delete_model(
-            path_params=self.get_path_params().ok,
-            auth_params=auth_params.unauthorized,
-        )
-        self.assert_response_is_bad_request(
-            response, status_code=HTTPStatus.UNAUTHORIZED
+        path_parameters = self.get_path_parameters()
+        auth_headers = self.get_auth_headers()
+        if auth_headers.unauthorized is None:
+            self.test_case.skipTest("No 'unauthorized' auth headers provided")
+        self.run_sub_tests(
+            path_parameters_list=path_parameters.ok,
+            auth_headers_list=auth_headers.unauthorized,
+            completion_callback=lambda response, _, __: self.assert_response_is_bad_request(
+                response, status_code=HTTPStatus.UNAUTHORIZED
+            ),
         )
 
+    @tag("delete")
     def test_delete_model_forbidden(self):
-        auth_params = self.get_auth_params()
-        if auth_params.forbidden is None:
-            self.test_case.skipTest("No forbidden auth provided")
-        response = self.request_delete_model(
-            path_params=self.get_path_params().ok,
-            auth_params=auth_params.forbidden,
+        path_parameters = self.get_path_parameters()
+        auth_headers = self.get_auth_headers()
+        if auth_headers.forbidden is None:
+            self.test_case.skipTest("No 'forbidden' auth headers provided")
+        self.run_sub_tests(
+            path_parameters_list=path_parameters.ok,
+            auth_headers_list=auth_headers.forbidden,
+            completion_callback=lambda response, _, __: self.assert_response_is_bad_request(
+                response, status_code=HTTPStatus.FORBIDDEN
+            ),
         )
-        self.assert_response_is_bad_request(response, status_code=HTTPStatus.FORBIDDEN)
 
+    @tag("delete")
     def test_delete_model_not_found(self):
-        path_params = self.get_path_params()
-        if path_params.not_found is None:
-            self.test_case.skipTest("No not found path provided")
-        response = self.request_delete_model(
-            path_params=path_params.not_found,
-            auth_params=self.get_auth_params().ok,
+        path_parameters = self.get_path_parameters()
+        auth_headers = self.get_auth_headers()
+        if path_parameters.not_found is None:
+            self.test_case.skipTest("No 'not_found' path parameters provided")
+        self.run_sub_tests(
+            path_parameters_list=path_parameters.not_found,
+            auth_headers_list=auth_headers.ok,
+            completion_callback=lambda response, _, __: self.assert_response_is_bad_request(
+                response, status_code=HTTPStatus.NOT_FOUND
+            ),
         )
-        self.assert_response_is_bad_request(response, status_code=HTTPStatus.NOT_FOUND)

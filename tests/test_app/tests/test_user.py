@@ -1,10 +1,10 @@
 from ninja_crud.tests import (
-    BodyParams,
     CreateModelViewTest,
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
-    PathParams,
+    PathParameters,
+    Payloads,
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
@@ -16,11 +16,11 @@ class UserViewSetTest(ModelViewSetTest, BaseTestCase):
     model_view_set = UserViewSet
     urls_prefix = "api/users"
 
-    def get_path_params(self):
-        return PathParams(ok={"id": self.user_1.id})
+    def get_path_parameters(self):
+        return PathParameters(ok={"id": self.user_1.id})
 
-    def get_user_body_params(self):
-        return BodyParams(
+    def get_user_payloads(self):
+        return Payloads(
             ok={
                 "username": "new-user",
                 "email": "user@email.com",
@@ -35,9 +35,9 @@ class UserViewSetTest(ModelViewSetTest, BaseTestCase):
         )
 
     test_list = ListModelViewTest()
-    test_create = CreateModelViewTest(body_params=get_user_body_params)
-    test_retrieve = RetrieveModelViewTest(path_params=get_path_params)
+    test_create = CreateModelViewTest(payloads=get_user_payloads)
+    test_retrieve = RetrieveModelViewTest(path_parameters=get_path_parameters)
     test_update = UpdateModelViewTest(
-        path_params=get_path_params, body_params=get_user_body_params
+        path_parameters=get_path_parameters, payloads=get_user_payloads
     )
-    test_delete = DeleteModelViewTest(path_params=get_path_params)
+    test_delete = DeleteModelViewTest(path_parameters=get_path_parameters)

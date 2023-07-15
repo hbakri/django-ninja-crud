@@ -1,10 +1,10 @@
 from .test_abstract import (
     AbstractModelViewTest,
-    AuthParams,
-    BodyParams,
+    AuthHeaders,
     ModelViewSetTest,
-    PathParams,
-    QueryParams,
+    PathParameters,
+    Payloads,
+    QueryParameters,
 )
 from .test_create import CreateModelViewTest
 from .test_delete import DeleteModelViewTest
@@ -15,10 +15,10 @@ from .test_update import UpdateModelViewTest
 __all__ = [
     "AbstractModelViewTest",
     "ModelViewSetTest",
-    "PathParams",
-    "QueryParams",
-    "AuthParams",
-    "BodyParams",
+    "PathParameters",
+    "QueryParameters",
+    "AuthHeaders",
+    "Payloads",
     "ListModelViewTest",
     "CreateModelViewTest",
     "RetrieveModelViewTest",
