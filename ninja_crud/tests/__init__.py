@@ -1,4 +1,5 @@
 from .request_components import AuthHeaders, PathParameters, Payloads, QueryParameters
+from .request_composer import RequestComposer
 from .test_abstract import AbstractModelViewTest, ModelViewSetTest
 from .test_create import CreateModelViewTest
 from .test_delete import DeleteModelViewTest
@@ -18,4 +19,5 @@ __all__ = [
     "RetrieveModelViewTest",
     "UpdateModelViewTest",
     "DeleteModelViewTest",
+    "RequestComposer",
 ]
