@@ -6,12 +6,13 @@ from django.test import tag
 
 from ninja_crud.tests import QueryParameters
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters
-from ninja_crud.tests.request_composer import RequestComposer
-from ninja_crud.tests.test_abstract import (
-    AbstractModelViewTest,
+from ninja_crud.tests.request_composer import (
     ArgOrCallable,
+    RequestComposer,
     TestCaseType,
 )
+from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_helper import TestHelper
 from ninja_crud.views.list import ListModelView
 
 
@@ -21,8 +22,8 @@ class ListModelViewTest(AbstractModelViewTest):
     def __init__(
         self,
         path_parameters: ArgOrCallable[PathParameters, TestCaseType] = None,
-        auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
         query_parameters: ArgOrCallable[QueryParameters, TestCaseType] = None,
+        auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
         self.request_composer = RequestComposer(
             request_method=self.request_list_model,
@@ -65,12 +66,20 @@ class ListModelViewTest(AbstractModelViewTest):
             filter_instance = model_view.filter_schema(**query_parameters)
             queryset = model_view.filter_queryset(queryset, filter_instance)
 
-        self.assert_content_equals_schema_list(
-            content,
+        TestHelper.assert_content_equals_schema_list(
+            test_case=self.test_case,
+            content=content,
             queryset=queryset,
             output_schema=model_view.output_schema,
             limit=limit,
             offset=offset,
+        )
+
+    def assert_response_is_bad_request(
+        self, response: HttpResponse, status_code: HTTPStatus
+    ):
+        TestHelper.assert_response_is_bad_request(
+            self.test_case, response, status_code=status_code
         )
 
     @tag("list")

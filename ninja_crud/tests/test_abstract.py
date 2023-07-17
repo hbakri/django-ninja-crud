@@ -1,14 +1,8 @@
 import inspect
-import json
-from http import HTTPStatus
-from typing import Callable, List, Tuple, Type, TypeVar, Union
+from typing import Callable, List, Tuple, Type
 
-from django.db.models import Model, QuerySet
-from django.http import HttpResponse
 from django.test import Client, TestCase
-from ninja import Schema
 
-from ninja_crud.tests.utils import default_serializer
 from ninja_crud.views import (
     AbstractModelView,
     CreateModelView,
@@ -16,18 +10,14 @@ from ninja_crud.views import (
     ModelViewSet,
 )
 
-T = TypeVar("T")
-TestCaseType = TypeVar("TestCaseType", bound=TestCase)
-ArgOrCallable = Union[T, Callable[[TestCaseType], T]]
-
 
 class AbstractModelViewTest:
     model_view_set: ModelViewSet
+    urls_prefix: str
     test_case: TestCase
     client: Client
     model_view: Type[AbstractModelView]
     name: str
-    urls_prefix: str
 
     def get_test_methods(self) -> List[Tuple[str, Callable]]:
         return [
@@ -45,66 +35,11 @@ class AbstractModelViewTest:
             ):
                 return attr_value
 
-    def assert_content_equals_schema(
-        self, content: dict, queryset: QuerySet[Model], output_schema: Type[Schema]
-    ):
-        self.test_case.assertIsInstance(content, dict)
-
-        self.test_case.assertIn("id", content)
-        self.test_case.assertTrue(queryset.filter(pk=content["id"]).exists())
-        self.test_case.assertEqual(queryset.filter(pk=content["id"]).count(), 1)
-
-        element = queryset.get(pk=content["id"])
-        self.assert_dict_equals_schema(content, output_schema.from_orm(element))
-
-    def assert_dict_equals_schema(self, element: dict, schema: Schema):
-        copied_element = {}
-        for key, value in element.items():
-            copied_element[key] = value
-
-        self.test_case.assertDictEqual(
-            copied_element,
-            json.loads(json.dumps(schema.dict(), default=default_serializer)),
-        )
-
-    def assert_content_equals_schema_list(
-        self,
-        content: List[dict],
-        queryset: QuerySet[Model],
-        output_schema: Type[Schema],
-        limit: int,
-        offset: int,
-    ):
-        self.test_case.assertIsInstance(content, dict)
-
-        self.test_case.assertIn("count", content)
-        count = content["count"]
-        self.test_case.assertIsInstance(count, int)
-        self.test_case.assertEqual(count, queryset.count())
-
-        self.test_case.assertIn("items", content)
-        items = content["items"]
-        self.test_case.assertIsInstance(items, list)
-
-        queryset_items = queryset[offset : offset + limit]
-        self.test_case.assertEqual(len(items), queryset_items.count())
-
-        for item in items:
-            self.assert_content_equals_schema(item, queryset, output_schema)
-
-    def assert_response_is_bad_request(
-        self, response: HttpResponse, status_code: HTTPStatus
-    ):
-        self.test_case.assertEqual(response.status_code, status_code)
-        content = json.loads(response.content)
-        self.test_case.assertIsInstance(content, dict)
-        self.test_case.assertIn("detail", content)
-
 
 class ModelViewSetTestMeta(type):
     model_view_set: ModelViewSet
-    client_class: Callable
     urls_prefix: str
+    client_class: Callable[[], Client]
 
     def __new__(mcs, name, bases, dct):
         new_cls = super().__new__(mcs, name, bases, dct)
@@ -113,18 +48,20 @@ class ModelViewSetTestMeta(type):
             attr_value = getattr(new_cls, attr_name)
             if isinstance(attr_value, AbstractModelViewTest):
                 attr_value.model_view_set = new_cls.model_view_set
+                attr_value.urls_prefix = new_cls.urls_prefix
                 attr_value.test_case = test_case
                 attr_value.client = new_cls.client_class()
                 attr_value.name = attr_name
-                attr_value.urls_prefix = new_cls.urls_prefix
                 for test_name, test_func in attr_value.get_test_methods():
-                    method = attr_value.get_model_view()
+                    model_view = attr_value.get_model_view()
                     model_name = new_cls.model_view_set.model.__name__.lower()
                     substring_replace = model_name
-                    if isinstance(method, (ListModelView, CreateModelView)):
-                        if method.detail:
-                            related_model_name = method.related_model.__name__.lower()
-                            substring_replace = f"{model_name}_{related_model_name}"
+                    if (
+                        isinstance(model_view, (ListModelView, CreateModelView))
+                        and model_view.detail
+                    ):
+                        related_model_name = model_view.related_model.__name__.lower()
+                        substring_replace = f"{model_name}_{related_model_name}"
                     new_test_name = test_name.replace("model", substring_replace)
                     setattr(new_cls, new_test_name, test_func)
         return new_cls

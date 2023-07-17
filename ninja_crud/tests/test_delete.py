@@ -4,12 +4,13 @@ from django.http import HttpResponse
 from django.test import tag
 
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters
-from ninja_crud.tests.request_composer import RequestComposer
-from ninja_crud.tests.test_abstract import (
-    AbstractModelViewTest,
+from ninja_crud.tests.request_composer import (
     ArgOrCallable,
+    RequestComposer,
     TestCaseType,
 )
+from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_helper import TestHelper
 from ninja_crud.views.delete import DeleteModelView
 
 
@@ -49,6 +50,13 @@ class DeleteModelViewTest(AbstractModelViewTest):
 
         queryset = self.model_view_set.model.objects.filter(id=path_parameters["id"])
         self.test_case.assertEqual(queryset.count(), 0)
+
+    def assert_response_is_bad_request(
+        self, response: HttpResponse, status_code: HTTPStatus
+    ):
+        TestHelper.assert_response_is_bad_request(
+            self.test_case, response, status_code=status_code
+        )
 
     @tag("delete")
     def test_delete_model_ok(self):

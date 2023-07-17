@@ -5,12 +5,13 @@ from django.http import HttpResponse
 from django.test import tag
 
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters, Payloads
-from ninja_crud.tests.request_composer import RequestComposer
-from ninja_crud.tests.test_abstract import (
-    AbstractModelViewTest,
+from ninja_crud.tests.request_composer import (
     ArgOrCallable,
+    RequestComposer,
     TestCaseType,
 )
+from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_helper import TestHelper
 from ninja_crud.views.create import CreateModelView
 
 
@@ -54,10 +55,18 @@ class CreateModelViewTest(AbstractModelViewTest):
             model = model_view.related_model
         else:
             model = self.model_view_set.model
-        self.assert_content_equals_schema(
-            content,
+        TestHelper.assert_content_equals_schema(
+            test_case=self.test_case,
+            content=content,
             queryset=model.objects.get_queryset(),
             output_schema=model_view.output_schema,
+        )
+
+    def assert_response_is_bad_request(
+        self, response: HttpResponse, status_code: HTTPStatus
+    ):
+        TestHelper.assert_response_is_bad_request(
+            self.test_case, response, status_code=status_code
         )
 
     @tag("create")

@@ -5,12 +5,13 @@ from django.http import HttpResponse
 from django.test import tag
 
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters
-from ninja_crud.tests.request_composer import RequestComposer
-from ninja_crud.tests.test_abstract import (
-    AbstractModelViewTest,
+from ninja_crud.tests.request_composer import (
     ArgOrCallable,
+    RequestComposer,
     TestCaseType,
 )
+from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_helper import TestHelper
 from ninja_crud.views.retrieve import RetrieveModelView
 
 
@@ -50,10 +51,18 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         queryset = model_view.get_queryset(
             self.model_view_set.model, path_parameters["id"]
         )
-        self.assert_content_equals_schema(
-            content,
+        TestHelper.assert_content_equals_schema(
+            test_case=self.test_case,
+            content=content,
             queryset=queryset,
             output_schema=model_view.output_schema,
+        )
+
+    def assert_response_is_bad_request(
+        self, response: HttpResponse, status_code: HTTPStatus
+    ):
+        TestHelper.assert_response_is_bad_request(
+            self.test_case, response, status_code=status_code
         )
 
     @tag("retrieve")
@@ -69,8 +78,8 @@ class RetrieveModelViewTest(AbstractModelViewTest):
     def test_retrieve_model_unauthorized(self):
         self.request_composer.test_view_auth_headers_unauthorized(
             test_case=self.test_case,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.UNAUTHORIZED
+            completion_callback=lambda response, _, __, ___, ____: TestHelper.assert_response_is_bad_request(
+                self.test_case, response, status_code=HTTPStatus.UNAUTHORIZED
             ),
         )
 
@@ -78,8 +87,8 @@ class RetrieveModelViewTest(AbstractModelViewTest):
     def test_retrieve_model_forbidden(self):
         self.request_composer.test_view_auth_headers_forbidden(
             test_case=self.test_case,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.FORBIDDEN
+            completion_callback=lambda response, _, __, ___, ____: TestHelper.assert_response_is_bad_request(
+                self.test_case, response, status_code=HTTPStatus.FORBIDDEN
             ),
         )
 
@@ -87,7 +96,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
     def test_retrieve_model_not_found(self):
         self.request_composer.test_view_path_parameters_not_found(
             test_case=self.test_case,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.NOT_FOUND
+            completion_callback=lambda response, _, __, ___, ____: TestHelper.assert_response_is_bad_request(
+                self.test_case, response, status_code=HTTPStatus.NOT_FOUND
             ),
         )
