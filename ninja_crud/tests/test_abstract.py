@@ -8,12 +8,6 @@ from django.http import HttpResponse
 from django.test import Client, TestCase
 from ninja import Schema
 
-from ninja_crud.tests.request_components import (
-    AuthHeaders,
-    PathParameters,
-    Payloads,
-    QueryParameters,
-)
 from ninja_crud.tests.utils import default_serializer
 from ninja_crud.views import (
     AbstractModelView,
@@ -34,42 +28,6 @@ class AbstractModelViewTest:
     model_view: Type[AbstractModelView]
     name: str
     urls_prefix: str
-
-    def __init__(
-        self,
-        path_parameters: ArgOrCallable[PathParameters, TestCaseType] = None,
-        query_parameters: ArgOrCallable[QueryParameters, TestCaseType] = None,
-        auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
-        payloads: ArgOrCallable[Payloads, TestCaseType] = None,
-    ) -> None:
-        if path_parameters is None:
-            path_parameters = PathParameters(ok={})
-        if query_parameters is None:
-            query_parameters = QueryParameters(ok={})
-        if auth_headers is None:
-            auth_headers = AuthHeaders(ok={})
-        if payloads is None:
-            payloads = Payloads(ok={})
-
-        self.path_parameters = path_parameters
-        self.query_parameters = query_parameters
-        self.auth_headers = auth_headers
-        self.payloads = payloads
-
-    def _get_arg_or_callable(self, params: ArgOrCallable[T, TestCaseType]) -> T:
-        return params(self.test_case) if callable(params) else params
-
-    def get_path_parameters(self) -> PathParameters:
-        return self._get_arg_or_callable(self.path_parameters)
-
-    def get_query_parameters(self) -> QueryParameters:
-        return self._get_arg_or_callable(self.query_parameters)
-
-    def get_auth_headers(self) -> AuthHeaders:
-        return self._get_arg_or_callable(self.auth_headers)
-
-    def get_payloads(self) -> Payloads:
-        return self._get_arg_or_callable(self.payloads)
 
     def get_test_methods(self) -> List[Tuple[str, Callable]]:
         return [

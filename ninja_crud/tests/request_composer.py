@@ -105,7 +105,7 @@ class RequestComposer:
             completion_callback=completion_callback,
         )
 
-    def test_view_bad_request(
+    def test_view_payloads_bad_request(
         self, test_case: TestCase, completion_callback: CompletionCallback
     ):
         path_parameters = self.get_path_parameters(test_case)
@@ -123,7 +123,7 @@ class RequestComposer:
             completion_callback=completion_callback,
         )
 
-    def test_view_conflict(
+    def test_view_payloads_conflict(
         self, test_case: TestCase, completion_callback: CompletionCallback
     ):
         path_parameters = self.get_path_parameters(test_case)
@@ -141,7 +141,25 @@ class RequestComposer:
             completion_callback=completion_callback,
         )
 
-    def test_view_unauthorized(
+    def test_view_query_parameters_bad_request(
+        self, test_case: TestCase, completion_callback: CompletionCallback
+    ):
+        path_parameters = self.get_path_parameters(test_case)
+        query_parameters = self.get_query_parameters(test_case)
+        auth_headers = self.get_auth_headers(test_case)
+        payloads = self.get_payloads(test_case)
+        if query_parameters.bad_request is None:
+            test_case.skipTest("No 'bad_request' query parameters provided")
+        self.run_combinatorial_tests(
+            test_case=test_case,
+            path_parameters_list=path_parameters.ok,
+            query_parameters_list=query_parameters.bad_request,
+            auth_headers_list=auth_headers.ok,
+            payloads_list=payloads.ok,
+            completion_callback=completion_callback,
+        )
+
+    def test_view_auth_headers_unauthorized(
         self, test_case: TestCase, completion_callback: CompletionCallback
     ):
         path_parameters = self.get_path_parameters(test_case)
@@ -159,7 +177,7 @@ class RequestComposer:
             completion_callback=completion_callback,
         )
 
-    def test_view_forbidden(
+    def test_view_auth_headers_forbidden(
         self, test_case: TestCase, completion_callback: CompletionCallback
     ):
         path_parameters = self.get_path_parameters(test_case)
@@ -177,7 +195,7 @@ class RequestComposer:
             completion_callback=completion_callback,
         )
 
-    def test_view_not_found(
+    def test_view_path_parameters_not_found(
         self, test_case: TestCase, completion_callback: CompletionCallback
     ):
         path_parameters = self.get_path_parameters(test_case)

@@ -22,7 +22,6 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         path_parameters: ArgOrCallable[PathParameters, TestCaseType],
         auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
-        super().__init__(path_parameters=path_parameters, auth_headers=auth_headers)
         self.request_composer = RequestComposer(
             request_method=self.request_retrieve_model,
             path_parameters=path_parameters,
@@ -61,14 +60,14 @@ class RetrieveModelViewTest(AbstractModelViewTest):
     def test_retrieve_model_ok(self):
         self.request_composer.test_view_ok(
             test_case=self.test_case,
-            completion_callback=lambda response, path_parameters_, _, __, ___: self.assert_response_is_ok(
-                response, path_parameters=path_parameters_
+            completion_callback=lambda response, path_parameters, _, __, ___: self.assert_response_is_ok(
+                response, path_parameters=path_parameters
             ),
         )
 
     @tag("retrieve")
     def test_retrieve_model_unauthorized(self):
-        self.request_composer.test_view_unauthorized(
+        self.request_composer.test_view_auth_headers_unauthorized(
             test_case=self.test_case,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.UNAUTHORIZED
@@ -77,7 +76,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
 
     @tag("retrieve")
     def test_retrieve_model_forbidden(self):
-        self.request_composer.test_view_forbidden(
+        self.request_composer.test_view_auth_headers_forbidden(
             test_case=self.test_case,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.FORBIDDEN
@@ -86,7 +85,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
 
     @tag("retrieve")
     def test_retrieve_model_not_found(self):
-        self.request_composer.test_view_not_found(
+        self.request_composer.test_view_path_parameters_not_found(
             test_case=self.test_case,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.NOT_FOUND

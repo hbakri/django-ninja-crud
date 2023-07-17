@@ -23,11 +23,6 @@ class UpdateModelViewTest(AbstractModelViewTest):
         payloads: ArgOrCallable[Payloads, TestCaseType],
         auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
-        super().__init__(
-            path_parameters=path_parameters,
-            auth_headers=auth_headers,
-            payloads=payloads,
-        )
         self.request_composer = RequestComposer(
             request_method=self.request_update_model,
             path_parameters=path_parameters,
@@ -65,14 +60,14 @@ class UpdateModelViewTest(AbstractModelViewTest):
     def test_update_model_ok(self):
         self.request_composer.test_view_ok(
             test_case=self.test_case,
-            completion_callback=lambda response, _, __, ___, payload_: self.assert_response_is_ok(
-                response, payload=payload_
+            completion_callback=lambda response, _, __, ___, payload: self.assert_response_is_ok(
+                response, payload=payload
             ),
         )
 
     @tag("update")
     def test_update_model_bad_request(self):
-        self.request_composer.test_view_bad_request(
+        self.request_composer.test_view_payloads_bad_request(
             test_case=self.test_case,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.BAD_REQUEST
@@ -81,7 +76,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
 
     @tag("update")
     def test_update_model_conflict(self):
-        self.request_composer.test_view_conflict(
+        self.request_composer.test_view_payloads_conflict(
             test_case=self.test_case,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.CONFLICT
@@ -90,7 +85,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
 
     @tag("update")
     def test_update_model_unauthorized(self):
-        self.request_composer.test_view_unauthorized(
+        self.request_composer.test_view_auth_headers_unauthorized(
             test_case=self.test_case,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.UNAUTHORIZED
@@ -99,7 +94,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
 
     @tag("update")
     def test_update_model_forbidden(self):
-        self.request_composer.test_view_forbidden(
+        self.request_composer.test_view_auth_headers_forbidden(
             test_case=self.test_case,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.FORBIDDEN
@@ -108,7 +103,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
 
     @tag("update")
     def test_update_model_not_found(self):
-        self.request_composer.test_view_not_found(
+        self.request_composer.test_view_path_parameters_not_found(
             test_case=self.test_case,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.NOT_FOUND
