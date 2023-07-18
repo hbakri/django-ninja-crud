@@ -3,6 +3,7 @@ from http import HTTPStatus
 from django.http import HttpResponse
 from django.test import tag
 
+from ninja_crud.tests.assertion_helper import TestAssertionHelper
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters
 from ninja_crud.tests.request_composer import (
     ArgOrCallable,
@@ -10,7 +11,6 @@ from ninja_crud.tests.request_composer import (
     TestCaseType,
 )
 from ninja_crud.tests.test_abstract import AbstractModelViewTest
-from ninja_crud.tests.test_helper import TestHelper
 from ninja_crud.views.delete import DeleteModelView
 
 
@@ -54,7 +54,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
     def assert_response_is_bad_request(
         self, response: HttpResponse, status_code: HTTPStatus
     ):
-        TestHelper.assert_response_is_bad_request(
+        TestAssertionHelper.assert_response_is_bad_request(
             self.test_case, response, status_code=status_code
         )
 

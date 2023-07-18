@@ -4,6 +4,7 @@ from http import HTTPStatus
 from django.http import HttpResponse
 from django.test import tag
 
+from ninja_crud.tests.assertion_helper import TestAssertionHelper
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters, Payloads
 from ninja_crud.tests.request_composer import (
     ArgOrCallable,
@@ -11,7 +12,6 @@ from ninja_crud.tests.request_composer import (
     TestCaseType,
 )
 from ninja_crud.tests.test_abstract import AbstractModelViewTest
-from ninja_crud.tests.test_helper import TestHelper
 from ninja_crud.views.create import CreateModelView
 
 
@@ -55,7 +55,7 @@ class CreateModelViewTest(AbstractModelViewTest):
             model = model_view.related_model
         else:
             model = self.model_view_set.model
-        TestHelper.assert_content_equals_schema(
+        TestAssertionHelper.assert_content_equals_schema(
             test_case=self.test_case,
             content=content,
             queryset=model.objects.get_queryset(),
@@ -65,7 +65,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     def assert_response_is_bad_request(
         self, response: HttpResponse, status_code: HTTPStatus
     ):
-        TestHelper.assert_response_is_bad_request(
+        TestAssertionHelper.assert_response_is_bad_request(
             self.test_case, response, status_code=status_code
         )
 

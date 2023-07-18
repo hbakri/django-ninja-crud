@@ -19,7 +19,7 @@ def default_serializer(obj):
         raise TypeError(f"Type {type(obj)} not serializable")
 
 
-class TestHelper:
+class TestAssertionHelper:
     @staticmethod
     def assert_content_equals_schema(
         test_case: TestCase,
@@ -34,7 +34,7 @@ class TestHelper:
         test_case.assertEqual(queryset.filter(pk=content["id"]).count(), 1)
 
         element = queryset.get(pk=content["id"])
-        TestHelper.assert_dict_equals_schema(
+        TestAssertionHelper.assert_dict_equals_schema(
             test_case, content, output_schema.from_orm(element)
         )
 
@@ -82,6 +82,6 @@ class TestHelper:
         test_case.assertEqual(len(items), queryset_items.count())
 
         for item in items:
-            TestHelper.assert_content_equals_schema(
+            TestAssertionHelper.assert_content_equals_schema(
                 test_case, item, queryset, output_schema
             )
