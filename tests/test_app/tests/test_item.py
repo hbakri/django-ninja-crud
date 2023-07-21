@@ -16,7 +16,7 @@ from tests.test_app.views.view_item import ItemViewSet
 
 
 class ItemViewSetTest(ModelViewSetTest, BaseTestCase):
-    model_view_set = ItemViewSet
+    model_view_set_class = ItemViewSet
     urls_prefix = "api/items"
 
     def get_path_parameters(self):

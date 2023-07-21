@@ -17,7 +17,7 @@ from ninja_crud.tests import (
 
 
 class DepartmentViewSetTest(ModelViewSetTest, TestCase):
-    model_view_set = DepartmentViewSet
+    model_view_set_class = DepartmentViewSet
     urls_prefix = "api/departments"
 
     department_1: Department
