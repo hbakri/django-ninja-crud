@@ -17,6 +17,7 @@ from ninja_crud.views.update import UpdateModelView
 
 class UpdateModelViewTest(AbstractModelViewTest):
     model_view_class = UpdateModelView
+    model_view: UpdateModelView
 
     def __init__(
         self,
@@ -38,7 +39,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.urls_prefix + self.get_model_view().get_path()
+        path = "/" + self.urls_prefix + self.model_view.get_path()
         return self.client.put(
             path=path.format(**path_parameters),
             data=payload,
@@ -50,12 +51,11 @@ class UpdateModelViewTest(AbstractModelViewTest):
         self.test_case.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
-        model_view: UpdateModelView = self.get_model_view()
         TestAssertionHelper.assert_content_equals_schema(
             test_case=self.test_case,
             content=content,
             queryset=self.model_view_set.model.objects.get_queryset(),
-            output_schema=model_view.output_schema,
+            output_schema=self.model_view.output_schema,
         )
 
     def assert_response_is_bad_request(

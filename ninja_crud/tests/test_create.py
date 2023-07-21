@@ -17,6 +17,7 @@ from ninja_crud.views.create import CreateModelView
 
 class CreateModelViewTest(AbstractModelViewTest):
     model_view_class = CreateModelView
+    model_view: CreateModelView
 
     def __init__(
         self,
@@ -38,7 +39,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.urls_prefix + self.get_model_view().get_path()
+        path = "/" + self.urls_prefix + self.model_view.get_path()
         return self.client.post(
             path=path.format(**path_parameters),
             data=payload,
@@ -50,16 +51,15 @@ class CreateModelViewTest(AbstractModelViewTest):
         self.test_case.assertEqual(response.status_code, HTTPStatus.CREATED)
         content = json.loads(response.content)
 
-        model_view: CreateModelView = self.get_model_view()
-        if model_view.detail:
-            model = model_view.related_model
+        if self.model_view.detail:
+            model = self.model_view.related_model
         else:
             model = self.model_view_set.model
         TestAssertionHelper.assert_content_equals_schema(
             test_case=self.test_case,
             content=content,
             queryset=model.objects.get_queryset(),
-            output_schema=model_view.output_schema,
+            output_schema=self.model_view.output_schema,
         )
 
     def assert_response_is_bad_request(
