@@ -40,7 +40,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         payload: dict,
     ) -> HttpResponse:
         path = "/" + self.urls_prefix + self.model_view.get_path()
-        return self.client.post(
+        return self.test_case.client_class().post(
             path=path.format(**path_parameters),
             data=payload,
             content_type="application/json",

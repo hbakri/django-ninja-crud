@@ -1,7 +1,3 @@
-from typing import Callable
-
-from django.test import Client
-
 from ninja_crud.tests.test_abstract import AbstractModelViewTest
 from ninja_crud.views import CreateModelView, ListModelView, ModelViewSet
 
@@ -9,7 +5,6 @@ from ninja_crud.views import CreateModelView, ListModelView, ModelViewSet
 class ModelViewSetTestMeta(type):
     model_view_set_class: ModelViewSet
     urls_prefix: str
-    client_class: Callable[[], Client]
 
     def __new__(mcs, name, bases, dct):
         new_cls = super().__new__(mcs, name, bases, dct)
@@ -20,7 +15,6 @@ class ModelViewSetTestMeta(type):
                 attr_value.model_view_set = new_cls.model_view_set_class
                 attr_value.urls_prefix = new_cls.urls_prefix
                 attr_value.test_case = test_case
-                attr_value.client = new_cls.client_class()
                 attr_value.model_view = attr_value.get_model_view(
                     model_view_set=new_cls.model_view_set_class,
                     test_attr_name=attr_name,
