@@ -17,7 +17,7 @@ from ninja_crud.views.list import ListModelView
 
 
 class ListModelViewTest(AbstractModelViewTest):
-    model_view = ListModelView
+    model_view_class = ListModelView
 
     def __init__(
         self,

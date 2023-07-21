@@ -11,7 +11,7 @@ class AbstractModelViewTest:
     urls_prefix: str
     test_case: TestCase
     client: Client
-    model_view: Type[AbstractModelView]
+    model_view_class: Type[AbstractModelView]
     name: str
 
     def get_test_methods(self) -> List[Tuple[str, Callable]]:
@@ -25,7 +25,7 @@ class AbstractModelViewTest:
         for attr_name in dir(self.model_view_set):
             attr_value = getattr(self.model_view_set, attr_name)
             if (
-                isinstance(attr_value, self.model_view)
+                isinstance(attr_value, self.model_view_class)
                 and self.name == f"test_{attr_name}"
             ):
                 return attr_value

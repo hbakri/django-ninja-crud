@@ -16,7 +16,7 @@ from ninja_crud.views.retrieve import RetrieveModelView
 
 
 class RetrieveModelViewTest(AbstractModelViewTest):
-    model_view = RetrieveModelView
+    model_view_class = RetrieveModelView
 
     def __init__(
         self,

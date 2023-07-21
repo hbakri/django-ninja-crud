@@ -16,7 +16,7 @@ from ninja_crud.views.create import CreateModelView
 
 
 class CreateModelViewTest(AbstractModelViewTest):
-    model_view = CreateModelView
+    model_view_class = CreateModelView
 
     def __init__(
         self,
