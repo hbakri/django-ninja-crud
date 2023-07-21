@@ -15,7 +15,7 @@ from ninja_crud.views.delete import DeleteModelView
 
 
 class DeleteModelViewTest(AbstractModelViewTest):
-    model_view = DeleteModelView
+    model_view_class = DeleteModelView
 
     def __init__(
         self,

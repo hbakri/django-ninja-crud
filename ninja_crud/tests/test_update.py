@@ -16,7 +16,7 @@ from ninja_crud.views.update import UpdateModelView
 
 
 class UpdateModelViewTest(AbstractModelViewTest):
-    model_view = UpdateModelView
+    model_view_class = UpdateModelView
 
     def __init__(
         self,
