@@ -37,7 +37,7 @@ class AbstractModelViewTest:
 
 
 class ModelViewSetTestMeta(type):
-    model_view_set: ModelViewSet
+    model_view_set_class: ModelViewSet
     urls_prefix: str
     client_class: Callable[[], Client]
 
@@ -47,14 +47,14 @@ class ModelViewSetTestMeta(type):
         for attr_name in dir(new_cls):
             attr_value = getattr(new_cls, attr_name)
             if isinstance(attr_value, AbstractModelViewTest):
-                attr_value.model_view_set = new_cls.model_view_set
+                attr_value.model_view_set = new_cls.model_view_set_class
                 attr_value.urls_prefix = new_cls.urls_prefix
                 attr_value.test_case = test_case
                 attr_value.client = new_cls.client_class()
                 attr_value.name = attr_name
                 for test_name, test_func in attr_value.get_test_methods():
                     model_view = attr_value.get_model_view()
-                    model_name = new_cls.model_view_set.model.__name__.lower()
+                    model_name = new_cls.model_view_set_class.model.__name__.lower()
                     substring_replace = model_name
                     if (
                         isinstance(model_view, (ListModelView, CreateModelView))
@@ -68,5 +68,5 @@ class ModelViewSetTestMeta(type):
 
 
 class ModelViewSetTest(metaclass=ModelViewSetTestMeta):
-    model_view_set: ModelViewSet
+    model_view_set_class: ModelViewSet
     urls_prefix: str
