@@ -41,7 +41,7 @@ class ListModelViewTest(AbstractModelViewTest):
         payload: dict,
     ) -> HttpResponse:
         path = "/" + self.urls_prefix + self.model_view.get_path()
-        response = self.client.get(
+        response = self.test_case.client_class().get(
             path=path.format(**path_parameters),
             data=query_parameters or {},
             content_type="application/json",

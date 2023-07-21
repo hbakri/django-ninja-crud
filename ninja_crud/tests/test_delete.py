@@ -37,7 +37,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
         payload: dict,
     ) -> HttpResponse:
         path = "/" + self.urls_prefix + self.model_view.get_path()
-        return self.client.delete(
+        return self.test_case.client_class().delete(
             path=path.format(**path_parameters),
             content_type="application/json",
             **auth_headers,

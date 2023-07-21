@@ -1,18 +1,18 @@
 import inspect
 from typing import Callable, List, Tuple, Type
 
-from django.test import Client, TestCase
+from django.test import TestCase
 
 from ninja_crud.views import AbstractModelView, ModelViewSet
 
 
 class AbstractModelViewTest:
+    model_view_class: Type[AbstractModelView]
+    model_view: AbstractModelView
+
     model_view_set: ModelViewSet
     urls_prefix: str
     test_case: TestCase
-    client: Client
-    model_view_class: Type[AbstractModelView]
-    model_view: AbstractModelView
 
     def get_test_methods(self) -> List[Tuple[str, Callable]]:
         return [
