@@ -12,7 +12,7 @@ class AbstractModelViewTest:
     test_case: TestCase
     client: Client
     model_view_class: Type[AbstractModelView]
-    name: str
+    model_view: AbstractModelView
 
     def get_test_methods(self) -> List[Tuple[str, Callable]]:
         return [
@@ -21,11 +21,13 @@ class AbstractModelViewTest:
             if name.startswith("test")
         ]
 
-    def get_model_view(self):
-        for attr_name in dir(self.model_view_set):
-            attr_value = getattr(self.model_view_set, attr_name)
+    def get_model_view(
+        self, model_view_set: ModelViewSet, test_attr_name: str
+    ) -> AbstractModelView:
+        for attr_name in dir(model_view_set):
+            attr_value = getattr(model_view_set, attr_name)
             if (
                 isinstance(attr_value, self.model_view_class)
-                and self.name == f"test_{attr_name}"
+                and test_attr_name == f"test_{attr_name}"
             ):
                 return attr_value

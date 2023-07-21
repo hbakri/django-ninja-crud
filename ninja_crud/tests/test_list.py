@@ -18,6 +18,7 @@ from ninja_crud.views.list import ListModelView
 
 class ListModelViewTest(AbstractModelViewTest):
     model_view_class = ListModelView
+    model_view: ListModelView
 
     def __init__(
         self,
@@ -39,7 +40,7 @@ class ListModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.urls_prefix + self.get_model_view().get_path()
+        path = "/" + self.urls_prefix + self.model_view.get_path()
         response = self.client.get(
             path=path.format(**path_parameters),
             data=query_parameters or {},
@@ -54,23 +55,22 @@ class ListModelViewTest(AbstractModelViewTest):
         self.test_case.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
-        model_view: ListModelView = self.get_model_view()
-        queryset = model_view.get_queryset(
+        queryset = self.model_view.get_queryset(
             self.model_view_set.model,
             path_parameters["id"] if "id" in path_parameters else None,
         )
 
         limit = query_parameters.pop("limit", 100)
         offset = query_parameters.pop("offset", 0)
-        if model_view.filter_schema is not None:
-            filter_instance = model_view.filter_schema(**query_parameters)
-            queryset = model_view.filter_queryset(queryset, filter_instance)
+        if self.model_view.filter_schema is not None:
+            filter_instance = self.model_view.filter_schema(**query_parameters)
+            queryset = self.model_view.filter_queryset(queryset, filter_instance)
 
         TestAssertionHelper.assert_content_equals_schema_list(
             test_case=self.test_case,
             content=content,
             queryset=queryset,
-            output_schema=model_view.output_schema,
+            output_schema=self.model_view.output_schema,
             limit=limit,
             offset=offset,
         )

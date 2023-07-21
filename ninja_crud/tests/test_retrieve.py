@@ -17,6 +17,7 @@ from ninja_crud.views.retrieve import RetrieveModelView
 
 class RetrieveModelViewTest(AbstractModelViewTest):
     model_view_class = RetrieveModelView
+    model_view: RetrieveModelView
 
     def __init__(
         self,
@@ -36,7 +37,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.urls_prefix + self.get_model_view().get_path()
+        path = "/" + self.urls_prefix + self.model_view.get_path()
         return self.client.get(
             path=path.format(**path_parameters),
             content_type="application/json",
@@ -47,15 +48,14 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         self.test_case.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
-        model_view: RetrieveModelView = self.get_model_view()
-        queryset = model_view.get_queryset(
+        queryset = self.model_view.get_queryset(
             self.model_view_set.model, path_parameters["id"]
         )
         TestAssertionHelper.assert_content_equals_schema(
             test_case=self.test_case,
             content=content,
             queryset=queryset,
-            output_schema=model_view.output_schema,
+            output_schema=self.model_view.output_schema,
         )
 
     def assert_response_is_bad_request(

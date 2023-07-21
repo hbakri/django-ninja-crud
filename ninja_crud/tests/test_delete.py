@@ -16,6 +16,7 @@ from ninja_crud.views.delete import DeleteModelView
 
 class DeleteModelViewTest(AbstractModelViewTest):
     model_view_class = DeleteModelView
+    model_view: DeleteModelView
 
     def __init__(
         self,
@@ -35,7 +36,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.urls_prefix + self.get_model_view().get_path()
+        path = "/" + self.urls_prefix + self.model_view.get_path()
         return self.client.delete(
             path=path.format(**path_parameters),
             content_type="application/json",
