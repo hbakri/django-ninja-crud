@@ -1,5 +1,5 @@
 import logging
-from typing import Type
+from typing import List, Type
 
 from ninja_crud.tests.test_abstract import AbstractModelViewTest
 from ninja_crud.views import AbstractModelView, ModelViewSet
@@ -29,7 +29,7 @@ class ModelViewSetTestMatcher:
     @staticmethod
     def assert_all_model_views_are_associated(
         model_view_set_class: Type[ModelViewSet],
-        associated_model_views: list[AbstractModelView],
+        associated_model_views: List[AbstractModelView],
     ) -> None:
         for attr_name in dir(model_view_set_class):
             attr_value = getattr(model_view_set_class, attr_name)
