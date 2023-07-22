@@ -56,7 +56,7 @@ class ListModelViewTest(AbstractModelViewTest):
         content = json.loads(response.content)
 
         queryset = self.model_view.get_queryset(
-            self.model_view_set.model,
+            self.model_view_set_class.model,
             path_parameters["id"] if "id" in path_parameters else None,
         )
 

@@ -10,7 +10,7 @@ class AbstractModelViewTest:
     model_view_class: Type[AbstractModelView]
     model_view: AbstractModelView
 
-    model_view_set: ModelViewSet
+    model_view_set_class: Type[ModelViewSet]
     urls_prefix: str
     test_case: TestCase
 
@@ -22,10 +22,10 @@ class AbstractModelViewTest:
         ]
 
     def get_model_view(
-        self, model_view_set: ModelViewSet, test_attr_name: str
+        self, model_view_set_class: Type[ModelViewSet], test_attr_name: str
     ) -> AbstractModelView:
-        for attr_name in dir(model_view_set):
-            attr_value = getattr(model_view_set, attr_name)
+        for attr_name in dir(model_view_set_class):
+            attr_value = getattr(model_view_set_class, attr_name)
             if (
                 isinstance(attr_value, self.model_view_class)
                 and test_attr_name == f"test_{attr_name}"
