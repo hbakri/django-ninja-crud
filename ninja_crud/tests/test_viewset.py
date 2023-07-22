@@ -1,9 +1,11 @@
+from typing import Type
+
 from ninja_crud.tests.test_abstract import AbstractModelViewTest
 from ninja_crud.views import CreateModelView, ListModelView, ModelViewSet
 
 
 class ModelViewSetTestMeta(type):
-    model_view_set_class: ModelViewSet
+    model_view_set_class: Type[ModelViewSet]
     urls_prefix: str
 
     def __new__(mcs, name, bases, dct):
@@ -12,11 +14,11 @@ class ModelViewSetTestMeta(type):
         for attr_name in dir(new_cls):
             attr_value = getattr(new_cls, attr_name)
             if isinstance(attr_value, AbstractModelViewTest):
-                attr_value.model_view_set = new_cls.model_view_set_class
+                attr_value.model_view_set_class = new_cls.model_view_set_class
                 attr_value.urls_prefix = new_cls.urls_prefix
                 attr_value.test_case = test_case
                 attr_value.model_view = attr_value.get_model_view(
-                    model_view_set=new_cls.model_view_set_class,
+                    model_view_set_class=new_cls.model_view_set_class,
                     test_attr_name=attr_name,
                 )
                 for test_name, test_func in attr_value.get_test_methods():
@@ -38,5 +40,5 @@ class ModelViewSetTestMeta(type):
 
 
 class ModelViewSetTest(metaclass=ModelViewSetTestMeta):
-    model_view_set_class: ModelViewSet
+    model_view_set_class: Type[ModelViewSet]
     urls_prefix: str
