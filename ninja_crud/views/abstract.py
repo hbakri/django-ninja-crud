@@ -20,14 +20,3 @@ class AbstractModelView(ABC):
     @abstractmethod
     def get_path(self) -> str:  # pragma: no cover
         pass
-
-
-class ModelViewSet:
-    model: Type[Model]
-
-    @classmethod
-    def register_routes(cls, router: Router) -> None:
-        for attr_name in dir(cls):
-            attr_value = getattr(cls, attr_name)
-            if isinstance(attr_value, AbstractModelView):
-                attr_value.register_route(router, cls.model)
