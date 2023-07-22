@@ -36,14 +36,14 @@ class CreateModelView(AbstractModelView):
         self.pre_save = pre_save
         self.post_save = post_save
 
-    def register_route(self, router: Router, model: Type[Model]) -> None:
+    def register_route(self, router: Router, model_class: Type[Model]) -> None:
         if self.detail:
-            self.register_instance_route(router, model)
+            self.register_instance_route(router, model_class)
         else:
-            self.register_collection_route(router, model)
+            self.register_collection_route(router, model_class)
 
-    def register_collection_route(self, router: Router, model: Type[Model]) -> None:
-        model_name = utils.to_snake_case(model.__name__)
+    def register_collection_route(self, router: Router, model_class: Type[Model]) -> None:
+        model_name = utils.to_snake_case(model_class.__name__)
         operation_id = f"create_{model_name}"
 
         input_schema = self.input_schema
@@ -53,11 +53,11 @@ class CreateModelView(AbstractModelView):
             path=self.get_path(),
             response={HTTPStatus.CREATED: output_schema},
             operation_id=operation_id,
-            summary=f"Create {model.__name__}",
+            summary=f"Create {model_class.__name__}",
         )
         @utils.merge_decorators(self.decorators)
         def create_model(request: HttpRequest, payload: input_schema):
-            instance = model()
+            instance = model_class()
             for field, value in payload.dict(exclude_unset=True).items():
                 setattr(instance, field, value)
 
@@ -72,8 +72,8 @@ class CreateModelView(AbstractModelView):
 
             return HTTPStatus.CREATED, instance
 
-    def register_instance_route(self, router: Router, model: Type[Model]) -> None:
-        parent_model_name = utils.to_snake_case(model.__name__)
+    def register_instance_route(self, router: Router, model_class: Type[Model]) -> None:
+        parent_model_name = utils.to_snake_case(model_class.__name__)
         model_name = utils.to_snake_case(self.related_model.__name__)
         operation_id = f"create_{parent_model_name}_{model_name}"
 
@@ -88,9 +88,9 @@ class CreateModelView(AbstractModelView):
         )
         @utils.merge_decorators(self.decorators)
         def create_model(
-            request: HttpRequest, id: utils.get_id_type(model), payload: input_schema
+            request: HttpRequest, id: utils.get_id_type(model_class), payload: input_schema
         ):
-            instance = model.objects.get(pk=id)
+            instance = model_class.objects.get(pk=id)
             related_instance = self.related_model()
             for field, value in payload.dict(exclude_unset=True).items():
                 setattr(related_instance, field, value)

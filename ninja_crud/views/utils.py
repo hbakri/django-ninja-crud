@@ -18,8 +18,8 @@ def merge_decorators(decorators):
     return merged_decorator
 
 
-def get_id_type(model: Type[Model]) -> Type:  # pragma: no cover
-    id_field = model._meta.pk
+def get_id_type(model_class: Type[Model]) -> Type:  # pragma: no cover
+    id_field = model_class._meta.pk
     id_internal_type = id_field.get_internal_type()
 
     if id_internal_type == "UUIDField":

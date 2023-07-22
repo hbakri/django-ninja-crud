@@ -29,21 +29,21 @@ class UpdateModelView(AbstractModelView):
         self.pre_save = pre_save
         self.post_save = post_save
 
-    def register_route(self, router: Router, model: Type[Model]) -> None:
+    def register_route(self, router: Router, model_class: Type[Model]) -> None:
         input_schema = self.input_schema
         output_schema = self.output_schema
 
         @router.put(
             path=self.get_path(),
             response={HTTPStatus.OK: output_schema},
-            operation_id=f"update_{utils.to_snake_case(model.__name__)}",
-            summary=f"Update {model.__name__}",
+            operation_id=f"update_{utils.to_snake_case(model_class.__name__)}",
+            summary=f"Update {model_class.__name__}",
         )
         @utils.merge_decorators(self.decorators)
         def update_model(
-            request: HttpRequest, id: utils.get_id_type(model), payload: input_schema
+            request: HttpRequest, id: utils.get_id_type(model_class), payload: input_schema
         ):
-            instance = model.objects.get(pk=id)
+            instance = model_class.objects.get(pk=id)
 
             old_instance = None
             if self.pre_save is not None or self.post_save is not None:

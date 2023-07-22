@@ -54,7 +54,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         if self.model_view.detail:
             model = self.model_view.related_model
         else:
-            model = self.model_view_set_class.model
+            model = self.model_view_set_class.model_class
         TestAssertionHelper.assert_content_equals_schema(
             test_case=self.test_case,
             content=content,

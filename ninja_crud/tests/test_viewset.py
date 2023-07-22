@@ -28,7 +28,7 @@ class ModelViewSetTestMeta(type):
                 )
                 associated_model_views.append(attr_value.model_view)
                 for test_name, test_func in attr_value.get_test_methods():
-                    model_name = new_cls.model_view_set_class.model.__name__.lower()
+                    model_name = new_cls.model_view_set_class.model_class.__name__.lower()
                     substring_replace = model_name
                     if (
                         isinstance(
