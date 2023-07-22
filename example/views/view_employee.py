@@ -11,7 +11,7 @@ from ninja_crud.views import (
 
 
 class EmployeeViewSet(ModelViewSet):
-    model = Employee
+    model_class = Employee
     input_schema = EmployeeIn
     output_schema = EmployeeOut
 

@@ -29,16 +29,16 @@ class ListModelView(AbstractModelView):
         self.related_model = related_model
         self.detail = detail
 
-    def register_route(self, router: Router, model: Type[Model]) -> None:
+    def register_route(self, router: Router, model_class: Type[Model]) -> None:
         if self.detail:
-            self.register_instance_route(router, model)
+            self.register_instance_route(router, model_class)
         else:
-            self.register_collection_route(router, model)
+            self.register_collection_route(router, model_class)
 
-    def register_collection_route(self, router: Router, model: Type[Model]) -> None:
-        model_name = utils.to_snake_case(model.__name__)
+    def register_collection_route(self, router: Router, model_class: Type[Model]) -> None:
+        model_name = utils.to_snake_case(model_class.__name__)
         operation_id = f"list_{model_name}s"
-        summary = f"List {model.__name__}s"
+        summary = f"List {model_class.__name__}s"
 
         output_schema = self.output_schema
         filter_schema = self.filter_schema
@@ -54,14 +54,14 @@ class ListModelView(AbstractModelView):
         def list_models(
             request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
         ):
-            queryset = self.get_queryset(model)
+            queryset = self.get_queryset(model_class)
             return self.filter_queryset(queryset=queryset, filters=filters)
 
-    def register_instance_route(self, router: Router, model: Type[Model]) -> None:
-        parent_model_name = utils.to_snake_case(model.__name__)
+    def register_instance_route(self, router: Router, model_class: Type[Model]) -> None:
+        parent_model_name = utils.to_snake_case(model_class.__name__)
         related_model_name = utils.to_snake_case(self.related_model.__name__)
         operation_id = f"list_{parent_model_name}_{related_model_name}s"
-        summary = f"List {self.related_model.__name__}s of a {model.__name__}"
+        summary = f"List {self.related_model.__name__}s of a {model_class.__name__}"
 
         output_schema = self.output_schema
         filter_schema = self.filter_schema
@@ -76,14 +76,14 @@ class ListModelView(AbstractModelView):
         @paginate(LimitOffsetPagination)
         def list_models(
             request: HttpRequest,
-            id: utils.get_id_type(model),
+            id: utils.get_id_type(model_class),
             filters: filter_schema = Query(default=FilterSchema()),
         ):
-            instance = model.objects.get(pk=id)
-            queryset = self.get_queryset(model, instance.pk)
+            instance = model_class.objects.get(pk=id)
+            queryset = self.get_queryset(model_class, instance.pk)
             return self.filter_queryset(queryset=queryset, filters=filters)
 
-    def get_queryset(self, model: Type[Model], id: Any = None) -> QuerySet[Model]:
+    def get_queryset(self, model_class: Type[Model], id: Any = None) -> QuerySet[Model]:
         if self.detail:
             if self.queryset_getter is not None:
                 return self.queryset_getter(id)
@@ -93,7 +93,7 @@ class ListModelView(AbstractModelView):
             if self.queryset_getter is not None:
                 return self.queryset_getter()
             else:
-                return model.objects.get_queryset()
+                return model_class.objects.get_queryset()
 
     @staticmethod
     def filter_queryset(queryset: QuerySet[Model], filters: FilterSchema):

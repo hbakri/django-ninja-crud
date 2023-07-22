@@ -13,7 +13,7 @@ from tests.test_app.schemas import UserIn, UserOut
 
 
 class UserViewSet(ModelViewSet):
-    model = User
+    model_class = User
     input_schema = UserIn
     output_schema = UserOut
 

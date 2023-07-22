@@ -32,7 +32,6 @@ class ModelViewSetTestMeta(type):
                     )
                 )
                 associated_model_views.append(attr_value.model_view)
-
                 for test_method_name, test_method in attr_value.get_test_methods():
                     new_test_method_name = f"{test_method_name}__{attr_name}"
                     setattr(new_cls, new_test_method_name, test_method)
