@@ -18,7 +18,7 @@ class ModelViewSetTestMeta(type):
                 f"{new_cls.__name__} must inherit from both ModelViewSetTest and django.test.TestCase"
             )  # pragma: no cover
 
-        model_view_set_test: Union[TestCase, ModelViewSetTest] = new_cls()
+        model_view_set_test: Union[ModelViewSetTest, TestCase] = new_cls()
         associated_model_views = []
         for attr_name in dir(new_cls):
             attr_value = getattr(new_cls, attr_name)
