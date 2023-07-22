@@ -20,14 +20,3 @@ class AbstractModelViewTest:
             for name, method in inspect.getmembers(self, predicate=inspect.ismethod)
             if name.startswith("test")
         ]
-
-    def get_model_view(
-        self, model_view_set_class: Type[ModelViewSet], test_attr_name: str
-    ) -> AbstractModelView:
-        for attr_name in dir(model_view_set_class):
-            attr_value = getattr(model_view_set_class, attr_name)
-            if (
-                isinstance(attr_value, self.model_view_class)
-                and test_attr_name == f"test_{attr_name}"
-            ):
-                return attr_value
