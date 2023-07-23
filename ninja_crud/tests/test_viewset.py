@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from ninja_crud.tests.test_abstract import AbstractModelViewTest
 from ninja_crud.tests.test_matcher import ModelViewSetTestMatcher
-from ninja_crud.views import CreateModelView, ListModelView, ModelViewSet
+from ninja_crud.views import ModelViewSet
 
 
 class ModelViewSetTestMeta(type):
@@ -32,23 +32,10 @@ class ModelViewSetTestMeta(type):
                     )
                 )
                 associated_model_views.append(attr_value.model_view)
-                for test_name, test_func in attr_value.get_test_methods():
-                    model_name = (
-                        model_view_set_test.model_view_set_class.model.__name__.lower()
-                    )
-                    substring_replace = model_name
-                    if (
-                        isinstance(
-                            attr_value.model_view, (ListModelView, CreateModelView)
-                        )
-                        and attr_value.model_view.detail
-                    ):
-                        related_model_name = (
-                            attr_value.model_view.related_model.__name__.lower()
-                        )
-                        substring_replace = f"{model_name}_{related_model_name}"
-                    new_test_name = test_name.replace("model", substring_replace)
-                    setattr(new_cls, new_test_name, test_func)
+
+                for test_method_name, test_method in attr_value.get_test_methods():
+                    new_test_method_name = f"{test_method_name}__{attr_name}"
+                    setattr(new_cls, new_test_method_name, test_method)
 
         if hasattr(new_cls, "model_view_set_class"):
             ModelViewSetTestMatcher.assert_all_model_views_are_associated(
