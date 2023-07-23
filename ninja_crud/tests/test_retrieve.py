@@ -49,7 +49,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         content = json.loads(response.content)
 
         queryset = self.model_view.get_queryset(
-            self.model_view_set_test.model_view_set_class.model, path_parameters["id"]
+            self.model_view_set_test.model_view_set_class.model_class, path_parameters["id"]
         )
         TestAssertionHelper.assert_content_equals_schema(
             test_case=self.model_view_set_test,
