@@ -54,7 +54,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
         TestAssertionHelper.assert_content_equals_schema(
             test_case=self.model_view_set_test,
             content=content,
-            queryset=self.model_view_set_test.model_view_set_class.model.objects.get_queryset(),
+            queryset=self.model_view_set_test.model_view_set_class.model_class.objects.get_queryset(),
             output_schema=self.model_view.output_schema,
         )
 

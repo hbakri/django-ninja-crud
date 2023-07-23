@@ -24,16 +24,16 @@ class DeleteModelView(AbstractModelView):
         self.pre_delete = pre_delete
         self.post_delete = post_delete
 
-    def register_route(self, router: Router, model: Type[Model]) -> None:
+    def register_route(self, router: Router, model_class: Type[Model]) -> None:
         @router.delete(
             path=self.get_path(),
             response={HTTPStatus.NO_CONTENT: None},
-            operation_id=f"delete_{utils.to_snake_case(model.__name__)}",
-            summary=f"Delete {model.__name__}",
+            operation_id=f"delete_{utils.to_snake_case(model_class.__name__)}",
+            summary=f"Delete {model_class.__name__}",
         )
         @utils.merge_decorators(self.decorators)
-        def delete_model(request: HttpRequest, id: utils.get_id_type(model)):
-            instance = model.objects.get(pk=id)
+        def delete_model(request: HttpRequest, id: utils.get_id_type(model_class)):
+            instance = model_class.objects.get(pk=id)
 
             if self.pre_delete is not None:
                 self.pre_delete(request, instance)

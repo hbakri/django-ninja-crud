@@ -13,7 +13,7 @@ class AbstractModelView(ABC):
 
     @abstractmethod
     def register_route(
-        self, router: Router, model: Type[Model]
+        self, router: Router, model_class: Type[Model]
     ) -> None:  # pragma: no cover
         pass
 
