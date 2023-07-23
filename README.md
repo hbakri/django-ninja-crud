@@ -73,7 +73,7 @@ from ninja_crud.views import ModelViewSet, ListModelView, CreateModelView, \
 
 
 class DepartmentViewSet(ModelViewSet):
-    model_class = Department
+    model = Department
     input_schema = DepartmentIn
     output_schema = DepartmentOut
 
