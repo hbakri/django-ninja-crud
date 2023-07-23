@@ -37,7 +37,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
         payload: dict,
     ) -> HttpResponse:
         path = "/" + self.urls_prefix + self.model_view.get_path()
-        return self.test_case.client_class().delete(
+        return self.model_view_set_test.client_class().delete(
             path=path.format(**path_parameters),
             content_type="application/json",
             **auth_headers,
@@ -46,25 +46,27 @@ class DeleteModelViewTest(AbstractModelViewTest):
     def assert_response_is_no_content(
         self, response: HttpResponse, path_parameters: dict
     ):
-        self.test_case.assertEqual(response.status_code, HTTPStatus.NO_CONTENT)
-        self.test_case.assertEqual(response.content, b"")
+        self.model_view_set_test.assertEqual(
+            response.status_code, HTTPStatus.NO_CONTENT
+        )
+        self.model_view_set_test.assertEqual(response.content, b"")
 
         queryset = self.model_view_set_class.model.objects.filter(
             id=path_parameters["id"]
         )
-        self.test_case.assertEqual(queryset.count(), 0)
+        self.model_view_set_test.assertEqual(queryset.count(), 0)
 
     def assert_response_is_bad_request(
         self, response: HttpResponse, status_code: HTTPStatus
     ):
         TestAssertionHelper.assert_response_is_bad_request(
-            self.test_case, response, status_code=status_code
+            self.model_view_set_test, response, status_code=status_code
         )
 
     @tag("delete")
     def test_delete_model_ok(self):
         self.request_composer.test_view_ok(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, path_parameters, _, __, ___: self.assert_response_is_no_content(
                 response, path_parameters=path_parameters
             ),
@@ -73,7 +75,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
     @tag("delete")
     def test_delete_model_unauthorized(self):
         self.request_composer.test_view_auth_headers_unauthorized(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.UNAUTHORIZED
             ),
@@ -82,7 +84,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
     @tag("delete")
     def test_delete_model_forbidden(self):
         self.request_composer.test_view_auth_headers_forbidden(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.FORBIDDEN
             ),
@@ -91,7 +93,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
     @tag("delete")
     def test_delete_model_not_found(self):
         self.request_composer.test_view_path_parameters_not_found(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.NOT_FOUND
             ),

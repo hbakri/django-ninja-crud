@@ -1,9 +1,12 @@
 import inspect
-from typing import Callable, List, Tuple, Type
+from typing import TYPE_CHECKING, Callable, List, Tuple, Type, Union
 
 from django.test import TestCase
 
 from ninja_crud.views import AbstractModelView, ModelViewSet
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ninja_crud.tests.test_viewset import ModelViewSetTest
 
 
 class AbstractModelViewTest:
@@ -12,7 +15,7 @@ class AbstractModelViewTest:
 
     model_view_set_class: Type[ModelViewSet]
     urls_prefix: str
-    test_case: TestCase
+    model_view_set_test: Union["ModelViewSetTest", TestCase]
 
     def get_test_methods(self) -> List[Tuple[str, Callable]]:
         return [

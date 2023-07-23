@@ -40,7 +40,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         payload: dict,
     ) -> HttpResponse:
         path = "/" + self.urls_prefix + self.model_view.get_path()
-        return self.test_case.client_class().post(
+        return self.model_view_set_test.client_class().post(
             path=path.format(**path_parameters),
             data=payload,
             content_type="application/json",
@@ -48,7 +48,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         )
 
     def assert_response_is_created(self, response: HttpResponse, payload: dict):
-        self.test_case.assertEqual(response.status_code, HTTPStatus.CREATED)
+        self.model_view_set_test.assertEqual(response.status_code, HTTPStatus.CREATED)
         content = json.loads(response.content)
 
         if self.model_view.detail:
@@ -56,7 +56,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         else:
             model = self.model_view_set_class.model
         TestAssertionHelper.assert_content_equals_schema(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             content=content,
             queryset=model.objects.get_queryset(),
             output_schema=self.model_view.output_schema,
@@ -66,13 +66,13 @@ class CreateModelViewTest(AbstractModelViewTest):
         self, response: HttpResponse, status_code: HTTPStatus
     ):
         TestAssertionHelper.assert_response_is_bad_request(
-            self.test_case, response, status_code=status_code
+            self.model_view_set_test, response, status_code=status_code
         )
 
     @tag("create")
     def test_create_model_ok(self):
         self.request_composer.test_view_ok(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, payload: self.assert_response_is_created(
                 response, payload=payload
             ),
@@ -81,7 +81,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_bad_request(self):
         self.request_composer.test_view_payloads_bad_request(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.BAD_REQUEST
             ),
@@ -90,7 +90,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_conflict(self):
         self.request_composer.test_view_payloads_conflict(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.CONFLICT
             ),
@@ -99,7 +99,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_unauthorized(self):
         self.request_composer.test_view_auth_headers_unauthorized(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.UNAUTHORIZED
             ),
@@ -108,7 +108,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_forbidden(self):
         self.request_composer.test_view_auth_headers_forbidden(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.FORBIDDEN
             ),
@@ -117,7 +117,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_not_found(self):
         self.request_composer.test_view_path_parameters_not_found(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.NOT_FOUND
             ),

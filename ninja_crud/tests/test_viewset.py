@@ -27,7 +27,7 @@ class ModelViewSetTestMeta(type):
                     model_view_set_test.model_view_set_class
                 )
                 attr_value.urls_prefix = model_view_set_test.urls_prefix
-                attr_value.test_case = model_view_set_test
+                attr_value.model_view_set_test = model_view_set_test
                 attr_value.model_view = (
                     ModelViewSetTestMatcher.get_associated_model_view(
                         model_view_set_class=model_view_set_test.model_view_set_class,
