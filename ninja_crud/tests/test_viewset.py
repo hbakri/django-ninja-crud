@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Type, Union
 
 from django.test import TestCase
@@ -8,6 +10,34 @@ from ninja_crud.views import ModelViewSet
 
 
 class ModelViewSetTestMeta(type):
+    @staticmethod
+    def validate_model_view_set_class(
+        new_cls: ModelViewSetTestMeta,
+    ):  # pragma: no cover
+        cls_attr_name = "model_view_set_class"
+        if not hasattr(new_cls, cls_attr_name):
+            raise ValueError(
+                f"{new_cls.__name__}.{cls_attr_name} class attribute must be set"
+            )
+        cls_attr_value = getattr(new_cls, cls_attr_name)
+        if not issubclass(cls_attr_value, ModelViewSet):
+            raise ValueError(
+                f"{new_cls.__name__}.{cls_attr_name} must be a subclass of ModelViewSet"
+            )
+
+    @staticmethod
+    def validate_urls_prefix(new_cls: ModelViewSetTestMeta):  # pragma: no cover
+        cls_attr_name = "urls_prefix"
+        if not hasattr(new_cls, cls_attr_name):
+            raise ValueError(
+                f"{new_cls.__name__}.{cls_attr_name} class attribute must be set"
+            )
+        cls_attr_value = getattr(new_cls, cls_attr_name)
+        if not isinstance(cls_attr_value, str):
+            raise ValueError(
+                f"{new_cls.__name__}.{cls_attr_name} must be a string, not {type(cls_attr_value).__name__}"
+            )
+
     def __new__(mcs, name, bases, dct):
         new_cls = super().__new__(mcs, name, bases, dct)
 
@@ -17,6 +47,9 @@ class ModelViewSetTestMeta(type):
             raise TypeError(
                 f"{new_cls.__name__} must inherit from both ModelViewSetTest and django.test.TestCase"
             )  # pragma: no cover
+
+        mcs.validate_model_view_set_class(new_cls)
+        mcs.validate_urls_prefix(new_cls)
 
         model_view_set_test: Union[ModelViewSetTest, TestCase] = new_cls()
         associated_model_views = []
