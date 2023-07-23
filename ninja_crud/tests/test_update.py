@@ -40,7 +40,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
         payload: dict,
     ) -> HttpResponse:
         path = "/" + self.urls_prefix + self.model_view.get_path()
-        return self.test_case.client_class().put(
+        return self.model_view_set_test.client_class().put(
             path=path.format(**path_parameters),
             data=payload,
             content_type="application/json",
@@ -48,11 +48,11 @@ class UpdateModelViewTest(AbstractModelViewTest):
         )
 
     def assert_response_is_ok(self, response: HttpResponse, payload: dict):
-        self.test_case.assertEqual(response.status_code, HTTPStatus.OK)
+        self.model_view_set_test.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
         TestAssertionHelper.assert_content_equals_schema(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             content=content,
             queryset=self.model_view_set_class.model.objects.get_queryset(),
             output_schema=self.model_view.output_schema,
@@ -62,13 +62,13 @@ class UpdateModelViewTest(AbstractModelViewTest):
         self, response: HttpResponse, status_code: HTTPStatus
     ):
         TestAssertionHelper.assert_response_is_bad_request(
-            self.test_case, response, status_code=status_code
+            self.model_view_set_test, response, status_code=status_code
         )
 
     @tag("update")
     def test_update_model_ok(self):
         self.request_composer.test_view_ok(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, payload: self.assert_response_is_ok(
                 response, payload=payload
             ),
@@ -77,7 +77,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
     @tag("update")
     def test_update_model_bad_request(self):
         self.request_composer.test_view_payloads_bad_request(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.BAD_REQUEST
             ),
@@ -86,7 +86,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
     @tag("update")
     def test_update_model_conflict(self):
         self.request_composer.test_view_payloads_conflict(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.CONFLICT
             ),
@@ -95,7 +95,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
     @tag("update")
     def test_update_model_unauthorized(self):
         self.request_composer.test_view_auth_headers_unauthorized(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.UNAUTHORIZED
             ),
@@ -104,7 +104,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
     @tag("update")
     def test_update_model_forbidden(self):
         self.request_composer.test_view_auth_headers_forbidden(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.FORBIDDEN
             ),
@@ -113,7 +113,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
     @tag("update")
     def test_update_model_not_found(self):
         self.request_composer.test_view_path_parameters_not_found(
-            test_case=self.test_case,
+            test_case=self.model_view_set_test,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.NOT_FOUND
             ),
