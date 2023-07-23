@@ -40,7 +40,7 @@ class ListModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.urls_prefix + self.model_view.get_path()
+        path = "/" + self.model_view_set_test.urls_prefix + self.model_view.get_path()
         response = self.model_view_set_test.client_class().get(
             path=path.format(**path_parameters),
             data=query_parameters or {},
@@ -56,7 +56,7 @@ class ListModelViewTest(AbstractModelViewTest):
         content = json.loads(response.content)
 
         queryset = self.model_view.get_queryset(
-            self.model_view_set_class.model,
+            self.model_view_set_test.model_view_set_class.model,
             path_parameters["id"] if "id" in path_parameters else None,
         )
 

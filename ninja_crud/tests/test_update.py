@@ -39,7 +39,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.urls_prefix + self.model_view.get_path()
+        path = "/" + self.model_view_set_test.urls_prefix + self.model_view.get_path()
         return self.model_view_set_test.client_class().put(
             path=path.format(**path_parameters),
             data=payload,
@@ -54,7 +54,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
         TestAssertionHelper.assert_content_equals_schema(
             test_case=self.model_view_set_test,
             content=content,
-            queryset=self.model_view_set_class.model.objects.get_queryset(),
+            queryset=self.model_view_set_test.model_view_set_class.model.objects.get_queryset(),
             output_schema=self.model_view.output_schema,
         )
 
