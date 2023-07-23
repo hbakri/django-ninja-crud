@@ -39,7 +39,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.urls_prefix + self.model_view.get_path()
+        path = "/" + self.model_view_set_test.urls_prefix + self.model_view.get_path()
         return self.model_view_set_test.client_class().post(
             path=path.format(**path_parameters),
             data=payload,
@@ -54,7 +54,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         if self.model_view.detail:
             model = self.model_view.related_model
         else:
-            model = self.model_view_set_class.model
+            model = self.model_view_set_test.model_view_set_class.model
         TestAssertionHelper.assert_content_equals_schema(
             test_case=self.model_view_set_test,
             content=content,

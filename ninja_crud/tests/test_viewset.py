@@ -23,10 +23,6 @@ class ModelViewSetTestMeta(type):
         for attr_name in dir(new_cls):
             attr_value = getattr(new_cls, attr_name)
             if isinstance(attr_value, AbstractModelViewTest):
-                attr_value.model_view_set_class = (
-                    model_view_set_test.model_view_set_class
-                )
-                attr_value.urls_prefix = model_view_set_test.urls_prefix
                 attr_value.model_view_set_test = model_view_set_test
                 attr_value.model_view = (
                     ModelViewSetTestMatcher.get_associated_model_view(
