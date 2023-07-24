@@ -28,12 +28,14 @@ class UpdateModelView(AbstractModelView):
         self.output_schema = output_schema
         self.pre_save = pre_save
         self.post_save = post_save
+        self.http_method = "PUT"
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         input_schema = self.input_schema
         output_schema = self.output_schema
 
-        @router.put(
+        @router.api_operation(
+            methods=[self.http_method],
             path=self.get_path(),
             response={HTTPStatus.OK: output_schema},
             operation_id=f"update_{utils.to_snake_case(model_class.__name__)}",
@@ -41,7 +43,9 @@ class UpdateModelView(AbstractModelView):
         )
         @utils.merge_decorators(self.decorators)
         def update_model(
-            request: HttpRequest, id: utils.get_id_type(model_class), payload: input_schema
+            request: HttpRequest,
+            id: utils.get_id_type(model_class),
+            payload: input_schema,
         ):
             instance = model_class.objects.get(pk=id)
 
