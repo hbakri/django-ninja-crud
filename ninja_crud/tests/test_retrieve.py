@@ -37,7 +37,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.model_view_set_test.urls_prefix + self.model_view.get_path()
+        path = "/" + self.model_view_set_test.base_path + self.model_view.get_path()
         return self.model_view_set_test.client_class().get(
             path=path.format(**path_parameters),
             content_type="application/json",
@@ -49,7 +49,8 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         content = json.loads(response.content)
 
         queryset = self.model_view.get_queryset(
-            self.model_view_set_test.model_view_set_class.model_class, path_parameters["id"]
+            self.model_view_set_test.model_view_set_class.model_class,
+            path_parameters["id"],
         )
         TestAssertionHelper.assert_content_equals_schema(
             test_case=self.model_view_set_test,

@@ -39,7 +39,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.model_view_set_test.urls_prefix + self.model_view.get_path()
+        path = "/" + self.model_view_set_test.base_path + self.model_view.get_path()
         return self.model_view_set_test.client_class().put(
             path=path.format(**path_parameters),
             data=payload,
