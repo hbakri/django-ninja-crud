@@ -20,7 +20,9 @@ class ModelViewSetTestMeta(type):
                 f"{new_cls.__name__}.{cls_attr_name} class attribute must be set"
             )
         cls_attr_value = getattr(new_cls, cls_attr_name)
-        if not issubclass(cls_attr_value, ModelViewSet):
+        if not isinstance(cls_attr_value, type) or not issubclass(
+            cls_attr_value, ModelViewSet
+        ):
             raise ValueError(
                 f"{new_cls.__name__}.{cls_attr_name} must be a subclass of ModelViewSet"
             )
