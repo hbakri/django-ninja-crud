@@ -26,7 +26,7 @@ class ModelViewSetTestMeta(type):
             )
 
     @staticmethod
-    def validate_urls_prefix(new_cls: ModelViewSetTestMeta):  # pragma: no cover
+    def validate_base_path(new_cls: ModelViewSetTestMeta):  # pragma: no cover
         cls_attr_name = "base_path"
         if not hasattr(new_cls, cls_attr_name):
             raise ValueError(
@@ -49,7 +49,7 @@ class ModelViewSetTestMeta(type):
             )  # pragma: no cover
 
         mcs.validate_model_view_set_class(new_cls)
-        mcs.validate_urls_prefix(new_cls)
+        mcs.validate_base_path(new_cls)
 
         model_view_set_test: Union[ModelViewSetTest, TestCase] = new_cls()
         associated_model_views = []
