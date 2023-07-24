@@ -2,8 +2,7 @@ from typing import Callable, List, Type
 
 from ninja import Schema
 
-from ninja_crud.views import UpdateModelView
-from ninja_crud.views.update import PostSaveHook, PreSaveHook
+from ninja_crud.views.update import PostSaveHook, PreSaveHook, UpdateModelView
 
 
 class PatchModelView(UpdateModelView):

@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 
-from ninja_crud.tests import AuthHeaders, PathParameters, Payloads
+from ninja_crud.tests.request_components import AuthHeaders, PathParameters, Payloads
 from ninja_crud.tests.request_composer import ArgOrCallable, TestCaseType
 from ninja_crud.tests.test_update import UpdateModelViewTest
 from ninja_crud.views.patch import PatchModelView
