@@ -1,5 +1,7 @@
 from django.http import HttpResponse
 
+from ninja_crud.tests import AuthHeaders, PathParameters, Payloads
+from ninja_crud.tests.request_composer import ArgOrCallable, TestCaseType
 from ninja_crud.tests.test_update import UpdateModelViewTest
 from ninja_crud.views.patch import PatchModelView
 
@@ -8,7 +10,16 @@ class PatchModelViewTest(UpdateModelViewTest):
     model_view_class = PatchModelView
     model_view: PatchModelView
 
-    def request_update_model(
+    def __init__(
+        self,
+        path_parameters: ArgOrCallable[PathParameters, TestCaseType],
+        payloads: ArgOrCallable[Payloads, TestCaseType],
+        auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
+    ) -> None:
+        super().__init__(path_parameters, payloads, auth_headers)
+        self.request_composer.request_method = self.request_patch_model
+
+    def request_patch_model(
         self,
         path_parameters: dict,
         query_parameters: dict,
