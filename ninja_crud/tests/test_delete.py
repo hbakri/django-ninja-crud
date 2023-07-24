@@ -36,7 +36,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.model_view_set_test.urls_prefix + self.model_view.get_path()
+        path = "/" + self.model_view_set_test.base_path + self.model_view.get_path()
         return self.model_view_set_test.client_class().delete(
             path=path.format(**path_parameters),
             content_type="application/json",
@@ -51,8 +51,10 @@ class DeleteModelViewTest(AbstractModelViewTest):
         )
         self.model_view_set_test.assertEqual(response.content, b"")
 
-        queryset = self.model_view_set_test.model_view_set_class.model_class.objects.filter(
-            id=path_parameters["id"]
+        queryset = (
+            self.model_view_set_test.model_view_set_class.model_class.objects.filter(
+                id=path_parameters["id"]
+            )
         )
         self.model_view_set_test.assertEqual(queryset.count(), 0)
 

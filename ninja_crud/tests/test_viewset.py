@@ -27,7 +27,7 @@ class ModelViewSetTestMeta(type):
 
     @staticmethod
     def validate_urls_prefix(new_cls: ModelViewSetTestMeta):  # pragma: no cover
-        cls_attr_name = "urls_prefix"
+        cls_attr_name = "base_path"
         if not hasattr(new_cls, cls_attr_name):
             raise ValueError(
                 f"{new_cls.__name__}.{cls_attr_name} class attribute must be set"
@@ -80,4 +80,4 @@ class ModelViewSetTestMeta(type):
 
 class ModelViewSetTest(metaclass=ModelViewSetTestMeta):
     model_view_set_class: Type[ModelViewSet]
-    urls_prefix: str
+    base_path: str

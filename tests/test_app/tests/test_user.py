@@ -14,7 +14,7 @@ from tests.test_app.views.view_user import UserViewSet
 
 class UserViewSetTest(ModelViewSetTest, BaseTestCase):
     model_view_set_class = UserViewSet
-    urls_prefix = "api/users"
+    base_path = "api/users"
 
     def get_path_parameters(self):
         return PathParameters(ok={"id": self.user_1.id})
