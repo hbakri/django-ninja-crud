@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Type, TypeVar, Union
+from typing import Any, Callable, List, Optional, Type, TypeVar, Union
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -27,6 +27,7 @@ class CreateModelView(AbstractModelView):
         related_model: Type[Model] = None,
         pre_save: PreSaveHook = None,
         post_save: PostSaveHook = None,
+        router_kwargs: Optional[dict] = None,
     ) -> None:
         super().__init__(decorators=decorators)
         self.input_schema = input_schema
@@ -35,6 +36,7 @@ class CreateModelView(AbstractModelView):
         self.related_model = related_model
         self.pre_save = pre_save
         self.post_save = post_save
+        self.router_kwargs = router_kwargs or {}
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         if self.detail:
@@ -54,6 +56,7 @@ class CreateModelView(AbstractModelView):
             response={HTTPStatus.CREATED: output_schema},
             operation_id=operation_id,
             summary=f"Create {model_class.__name__}",
+            **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
         def create_model(request: HttpRequest, payload: input_schema):
@@ -85,6 +88,7 @@ class CreateModelView(AbstractModelView):
             response={HTTPStatus.CREATED: output_schema},
             operation_id=operation_id,
             summary=f"Create {self.related_model.__name__}",
+            **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
         def create_model(
