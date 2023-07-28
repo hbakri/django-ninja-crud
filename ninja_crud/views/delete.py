@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Type, TypeVar
+from typing import Any, Callable, List, Optional, Type, TypeVar
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -19,10 +19,12 @@ class DeleteModelView(AbstractModelView):
         decorators: List[Callable] = None,
         pre_delete: PreDeleteHook = None,
         post_delete: PostDeleteHook = None,
+        router_kwargs: Optional[dict] = None,
     ) -> None:
         super().__init__(decorators=decorators)
         self.pre_delete = pre_delete
         self.post_delete = post_delete
+        self.router_kwargs = router_kwargs or {}
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         @router.delete(
@@ -30,6 +32,7 @@ class DeleteModelView(AbstractModelView):
             response={HTTPStatus.NO_CONTENT: None},
             operation_id=f"delete_{utils.to_snake_case(model_class.__name__)}",
             summary=f"Delete {model_class.__name__}",
+            **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
         def delete_model(request: HttpRequest, id: utils.get_id_type(model_class)):
