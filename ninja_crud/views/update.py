@@ -1,6 +1,6 @@
 import copy
 from http import HTTPStatus
-from typing import Callable, List, Type, TypeVar
+from typing import Callable, List, Optional, Type, TypeVar
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -22,6 +22,7 @@ class UpdateModelView(AbstractModelView):
         decorators: List[Callable] = None,
         pre_save: PreSaveHook = None,
         post_save: PostSaveHook = None,
+        router_kwargs: Optional[dict] = None,
     ) -> None:
         super().__init__(decorators=decorators)
         self.input_schema = input_schema
@@ -29,6 +30,7 @@ class UpdateModelView(AbstractModelView):
         self.pre_save = pre_save
         self.post_save = post_save
         self.http_method = "PUT"
+        self.router_kwargs = router_kwargs or {}
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         input_schema = self.input_schema
@@ -40,6 +42,7 @@ class UpdateModelView(AbstractModelView):
             response={HTTPStatus.OK: output_schema},
             operation_id=f"update_{utils.to_snake_case(model_class.__name__)}",
             summary=f"Update {model_class.__name__}",
+            **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
         def update_model(
