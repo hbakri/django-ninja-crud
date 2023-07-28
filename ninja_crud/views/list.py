@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Type, Union
+from typing import Any, Callable, List, Optional, Type, Union
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
@@ -21,6 +21,7 @@ class ListModelView(AbstractModelView):
         related_model: Type[Model] = None,
         detail: bool = False,
         decorators: List[Callable] = None,
+        router_kwargs: Optional[dict] = None,
     ) -> None:
         super().__init__(decorators=decorators)
         self.output_schema = output_schema
@@ -28,6 +29,7 @@ class ListModelView(AbstractModelView):
         self.queryset_getter = queryset_getter
         self.related_model = related_model
         self.detail = detail
+        self.router_kwargs = router_kwargs or {}
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         if self.detail:
@@ -48,6 +50,7 @@ class ListModelView(AbstractModelView):
             response={HTTPStatus.OK: List[output_schema]},
             operation_id=operation_id,
             summary=summary,
+            **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
         @paginate(LimitOffsetPagination)
@@ -71,6 +74,7 @@ class ListModelView(AbstractModelView):
             response={HTTPStatus.OK: List[output_schema]},
             operation_id=operation_id,
             summary=summary,
+            **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
         @paginate(LimitOffsetPagination)
