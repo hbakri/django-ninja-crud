@@ -1,0 +1,15 @@
+site_name: 'Django Ninja CRUD'
+site_description: '🥋 Fast Django CRUD APIs with Django Ninja.'
+site_author: 'Hicham Bakri'
+nav:
+  - Introduction: introduction.md
+  - Installation: installation.md
+  - Setup: setup.md
+  - Examples: examples.md
+  - Core Concepts: core_concepts.md
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          rendering:
+            show_source: true

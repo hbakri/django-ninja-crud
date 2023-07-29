@@ -45,6 +45,8 @@ django-ninja = ">= 0.21"
 [tool.poetry.group.dev.dependencies]
 coverage = "^6.5.0"
 pre-commit = "^2.20.0"
+mkdocs = "^1.5.1"
+mkdocstrings = "^0.22.0"
 
 [build-system]
 requires = ["poetry-core"]
