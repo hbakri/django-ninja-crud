@@ -38,15 +38,14 @@ classifiers = [
 packages = [{ include = "ninja_crud" },]
 
 [tool.poetry.dependencies]
-python = ">= 3.8"
-Django = ">= 3.2"
-django-ninja = ">= 0.21"
+python = ">=3.7,<4.0"
+Django = ">=3.2"
+django-ninja = ">=0.21,<1.0"
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^6.5.0"
 pre-commit = "^2.20.0"
-mkdocs = "^1.5.1"
-mkdocstrings = "^0.22.0"
+pydoc-markdown = "^4.8.2"
 
 [build-system]
 requires = ["poetry-core"]
