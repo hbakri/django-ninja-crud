@@ -8,7 +8,7 @@ from tests.test_app.models import Item
 from tests.test_app.schemas import ItemIn, ItemOut
 
 
-class UpdateModelViewSetTest(TestCase):
+class UpdateModelViewTest(TestCase):
     def test_register_route_router_kwargs(self):
         router_mock = MagicMock()
         model_view = UpdateModelView(
