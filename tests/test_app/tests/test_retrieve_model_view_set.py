@@ -19,4 +19,4 @@ class TestRetrieveModelViewSet(TestCase):
         model_view.register_route(router_mock, Item)
 
         router_mock.get.assert_called_once()
-        router_mock.get.call_args[1]["exclude_unset"] is True
+        self.assertTrue(router_mock.get.call_args[1]["exclude_unset"])

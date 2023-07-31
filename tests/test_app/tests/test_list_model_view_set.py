@@ -19,7 +19,7 @@ class TestListModelViewSet(TestCase):
         model_view.register_collection_route(router_mock, Item)
 
         router_mock.get.assert_called_once()
-        router_mock.get.call_args[1]["exclude_unset"] is True
+        self.assertTrue(router_mock.get.call_args[1]["exclude_unset"])
 
     def test_register_instance_route_router_kwargs(self):
         router_mock = MagicMock()
@@ -32,4 +32,4 @@ class TestListModelViewSet(TestCase):
         model_view.register_instance_route(router_mock, Item)
 
         router_mock.get.assert_called_once()
-        router_mock.get.call_args[1]["exclude_none"] is True
+        self.assertTrue(router_mock.get.call_args[1]["exclude_none"])

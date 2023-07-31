@@ -20,4 +20,4 @@ class TestUpdateModelViewSet(TestCase):
         model_view.register_route(router_mock, Item)
 
         router_mock.api_operation.assert_called_once()
-        router_mock.api_operation.call_args[1]["exclude_unset"] is True
+        self.assertTrue(router_mock.api_operation.call_args[1]["exclude_unset"])
