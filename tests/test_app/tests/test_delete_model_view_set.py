@@ -7,7 +7,7 @@ from ninja_crud.views import DeleteModelView
 from tests.test_app.models import Collection, Item
 
 
-class TestDeleteModelViewSet(TestCase):
+class DeleteModelViewSetTest(TestCase):
     def test_register_route_router_kwargs(self):
         router_mock = MagicMock()
         model_view = DeleteModelView(router_kwargs={"exclude_unset": True})
