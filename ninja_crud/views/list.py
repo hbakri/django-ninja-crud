@@ -36,7 +36,9 @@ class ListModelView(AbstractModelView):
         else:
             self.register_collection_route(router, model_class)
 
-    def register_collection_route(self, router: Router, model_class: Type[Model]) -> None:
+    def register_collection_route(
+        self, router: Router, model_class: Type[Model]
+    ) -> None:
         model_name = utils.to_snake_case(model_class.__name__)
         operation_id = f"list_{model_name}s"
         summary = f"List {model_class.__name__}s"

@@ -43,7 +43,9 @@ class CreateModelView(AbstractModelView):
         else:
             self.register_collection_route(router, model_class)
 
-    def register_collection_route(self, router: Router, model_class: Type[Model]) -> None:
+    def register_collection_route(
+        self, router: Router, model_class: Type[Model]
+    ) -> None:
         model_name = utils.to_snake_case(model_class.__name__)
         operation_id = f"create_{model_name}"
 
@@ -91,7 +93,9 @@ class CreateModelView(AbstractModelView):
         )
         @utils.merge_decorators(self.decorators)
         def create_model(
-            request: HttpRequest, id: utils.get_id_type(model_class), payload: input_schema
+            request: HttpRequest,
+            id: utils.get_id_type(model_class),
+            payload: input_schema,
         ):
             instance = model_class.objects.get(pk=id)
             related_instance = self.related_model()

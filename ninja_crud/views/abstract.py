@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Callable, List, Type, Optional
+from typing import Callable, List, Optional, Type
 
 from django.db.models import Model
 from ninja import Router
 
 
 class AbstractModelView(ABC):
-    def __init__(self, decorators: List[Callable] = None, router_kwargs: Optional[dict] = None) -> None:
+    def __init__(
+        self, decorators: List[Callable] = None, router_kwargs: Optional[dict] = None
+    ) -> None:
         if decorators is None:
             decorators = []
         self.decorators = decorators
