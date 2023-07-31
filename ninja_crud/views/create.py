@@ -29,14 +29,13 @@ class CreateModelView(AbstractModelView):
         post_save: PostSaveHook = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
-        super().__init__(decorators=decorators)
+        super().__init__(decorators=decorators, router_kwargs=router_kwargs)
         self.input_schema = input_schema
         self.output_schema = output_schema
         self.detail = detail
         self.related_model = related_model
         self.pre_save = pre_save
         self.post_save = post_save
-        self.router_kwargs = router_kwargs or {}
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         if self.detail:

@@ -17,10 +17,9 @@ class RetrieveModelView(AbstractModelView):
         decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
-        super().__init__(decorators=decorators)
+        super().__init__(decorators=decorators, router_kwargs=router_kwargs)
         self.output_schema = output_schema
         self.queryset_getter = queryset_getter
-        self.router_kwargs = router_kwargs or {}
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         @router.get(

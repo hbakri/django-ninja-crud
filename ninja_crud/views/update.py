@@ -24,13 +24,12 @@ class UpdateModelView(AbstractModelView):
         post_save: PostSaveHook = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
-        super().__init__(decorators=decorators)
+        super().__init__(decorators=decorators, router_kwargs=router_kwargs)
         self.input_schema = input_schema
         self.output_schema = output_schema
         self.pre_save = pre_save
         self.post_save = post_save
         self.http_method = "PUT"
-        self.router_kwargs = router_kwargs or {}
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         input_schema = self.input_schema

@@ -21,10 +21,9 @@ class DeleteModelView(AbstractModelView):
         post_delete: PostDeleteHook = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
-        super().__init__(decorators=decorators)
+        super().__init__(decorators=decorators, router_kwargs=router_kwargs)
         self.pre_delete = pre_delete
         self.post_delete = post_delete
-        self.router_kwargs = router_kwargs or {}
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         @router.delete(
