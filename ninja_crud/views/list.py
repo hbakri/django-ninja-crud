@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Type, Union
+from typing import Any, Callable, List, Optional, Type, Union
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
@@ -21,8 +21,9 @@ class ListModelView(AbstractModelView):
         related_model: Type[Model] = None,
         detail: bool = False,
         decorators: List[Callable] = None,
+        router_kwargs: Optional[dict] = None,
     ) -> None:
-        super().__init__(decorators=decorators)
+        super().__init__(decorators=decorators, router_kwargs=router_kwargs)
         self.output_schema = output_schema
         self.filter_schema = filter_schema
         self.queryset_getter = queryset_getter
@@ -35,7 +36,9 @@ class ListModelView(AbstractModelView):
         else:
             self.register_collection_route(router, model_class)
 
-    def register_collection_route(self, router: Router, model_class: Type[Model]) -> None:
+    def register_collection_route(
+        self, router: Router, model_class: Type[Model]
+    ) -> None:
         model_name = utils.to_snake_case(model_class.__name__)
         operation_id = f"list_{model_name}s"
         summary = f"List {model_class.__name__}s"
@@ -48,6 +51,7 @@ class ListModelView(AbstractModelView):
             response={HTTPStatus.OK: List[output_schema]},
             operation_id=operation_id,
             summary=summary,
+            **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
         @paginate(LimitOffsetPagination)
@@ -71,6 +75,7 @@ class ListModelView(AbstractModelView):
             response={HTTPStatus.OK: List[output_schema]},
             operation_id=operation_id,
             summary=summary,
+            **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
         @paginate(LimitOffsetPagination)

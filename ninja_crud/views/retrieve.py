@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Type
+from typing import Any, Callable, List, Optional, Type
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
@@ -15,8 +15,9 @@ class RetrieveModelView(AbstractModelView):
         output_schema: Type[Schema],
         queryset_getter: Callable[[Any], QuerySet[Model]] = None,
         decorators: List[Callable] = None,
+        router_kwargs: Optional[dict] = None,
     ) -> None:
-        super().__init__(decorators=decorators)
+        super().__init__(decorators=decorators, router_kwargs=router_kwargs)
         self.output_schema = output_schema
         self.queryset_getter = queryset_getter
 
@@ -26,6 +27,7 @@ class RetrieveModelView(AbstractModelView):
             response=self.output_schema,
             operation_id=f"retrieve_{utils.to_snake_case(model_class.__name__)}",
             summary=f"Retrieve {model_class.__name__}",
+            **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
         def retrieve_model(request: HttpRequest, id: utils.get_id_type(model_class)):

@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Type, TypeVar, Union
+from typing import Any, Callable, List, Optional, Type, TypeVar, Union
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -27,8 +27,9 @@ class CreateModelView(AbstractModelView):
         related_model: Type[Model] = None,
         pre_save: PreSaveHook = None,
         post_save: PostSaveHook = None,
+        router_kwargs: Optional[dict] = None,
     ) -> None:
-        super().__init__(decorators=decorators)
+        super().__init__(decorators=decorators, router_kwargs=router_kwargs)
         self.input_schema = input_schema
         self.output_schema = output_schema
         self.detail = detail
@@ -42,7 +43,9 @@ class CreateModelView(AbstractModelView):
         else:
             self.register_collection_route(router, model_class)
 
-    def register_collection_route(self, router: Router, model_class: Type[Model]) -> None:
+    def register_collection_route(
+        self, router: Router, model_class: Type[Model]
+    ) -> None:
         model_name = utils.to_snake_case(model_class.__name__)
         operation_id = f"create_{model_name}"
 
@@ -54,6 +57,7 @@ class CreateModelView(AbstractModelView):
             response={HTTPStatus.CREATED: output_schema},
             operation_id=operation_id,
             summary=f"Create {model_class.__name__}",
+            **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
         def create_model(request: HttpRequest, payload: input_schema):
@@ -85,10 +89,13 @@ class CreateModelView(AbstractModelView):
             response={HTTPStatus.CREATED: output_schema},
             operation_id=operation_id,
             summary=f"Create {self.related_model.__name__}",
+            **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
         def create_model(
-            request: HttpRequest, id: utils.get_id_type(model_class), payload: input_schema
+            request: HttpRequest,
+            id: utils.get_id_type(model_class),
+            payload: input_schema,
         ):
             instance = model_class.objects.get(pk=id)
             related_instance = self.related_model()

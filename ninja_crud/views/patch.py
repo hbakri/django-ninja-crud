@@ -1,4 +1,4 @@
-from typing import Callable, List, Type
+from typing import Callable, List, Optional, Type
 
 from ninja import Schema
 
@@ -13,6 +13,7 @@ class PatchModelView(UpdateModelView):
         decorators: List[Callable] = None,
         pre_save: PreSaveHook = None,
         post_save: PostSaveHook = None,
+        router_kwargs: Optional[dict] = None,
     ) -> None:
         optional_input_schema = self.generate_optional_schema(input_schema)
         super().__init__(
@@ -21,6 +22,7 @@ class PatchModelView(UpdateModelView):
             decorators=decorators,
             pre_save=pre_save,
             post_save=post_save,
+            router_kwargs=router_kwargs,
         )
         self.http_method = "PATCH"
 
