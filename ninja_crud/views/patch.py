@@ -27,7 +27,7 @@ class PatchModelView(UpdateModelView):
         self.http_method = "PATCH"
 
     @staticmethod
-    def generate_optional_schema(schema_class: Type[Schema]) -> Type[Schema]:
+    def generate_partial_schema(schema_class: Type[Schema]) -> Type[Schema]:
         class OptionalSchema(schema_class):
             ...
 
