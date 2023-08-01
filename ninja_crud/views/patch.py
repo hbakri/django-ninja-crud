@@ -15,7 +15,7 @@ class PatchModelView(UpdateModelView):
         post_save: PostSaveHook = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
-        optional_input_schema = self.generate_optional_schema(input_schema)
+        optional_input_schema = self.generate_partial_schema(input_schema)
         super().__init__(
             input_schema=optional_input_schema,
             output_schema=output_schema,
@@ -27,7 +27,7 @@ class PatchModelView(UpdateModelView):
         self.http_method = "PATCH"
 
     @staticmethod
-    def generate_optional_schema(schema_class: Type[Schema]) -> Type[Schema]:
+    def generate_partial_schema(schema_class: Type[Schema]) -> Type[Schema]:
         class OptionalSchema(schema_class):
             ...
 
