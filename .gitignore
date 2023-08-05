@@ -167,3 +167,4 @@ Icon
 # Pydoc-markdown
 docs/reference/views/*.md
 docs/reference/tests/*.md
+docs/_Sidebar.md
