@@ -1,0 +1,47 @@
+name: documentation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-publish-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install poetry
+        poetry install --no-root
+
+    - name: Generate documentation
+      run: |
+          poetry run python docs/generate_docs.py
+          poetry run python docs/generate_wiki_sidebar.py docs docs/_Sidebar.md
+
+    - name: Publish documentation to GitHub Wiki
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_REPOSITORY: ${{ github.repository }}
+      run: |
+        git clone https://github.com/${GH_USERNAME}/${GH_REPOSITORY}.wiki.git wiki
+        find wiki -name '*.md' -exec rm -f {} +
+        find docs -name '*.md' -exec cp --parents \{\} wiki/ \;
+        cd wiki
+
+        git config user.name "GitHub Actions"
+        git config user.email "actions@users.noreply.github.com"
+        git add .
+        git commit -m "Update documentation" || exit 0
+        git push "https://${GH_TOKEN}@github.com/${GH_REPOSITORY}.wiki.git" || exit 0
