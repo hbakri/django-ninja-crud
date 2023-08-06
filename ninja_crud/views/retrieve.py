@@ -8,6 +8,8 @@ from ninja import Router, Schema
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
+QuerysetGetter = Callable[[Any], QuerySet[Model]]
+
 
 class RetrieveModelView(AbstractModelView):
     """
@@ -15,7 +17,9 @@ class RetrieveModelView(AbstractModelView):
 
     Attributes:
         output_schema (Type[Schema]): The schema used to serialize the retrieved instance.
-        queryset_getter (Callable[[Any], QuerySet[Model]], optional): A function that takes an object ID and returns a QuerySet for retrieving the object. Defaults to None, in which case the model's default manager is used.
+        queryset_getter (QuerysetGetter, optional): A function that takes an object ID and returns a QuerySet
+            for retrieving the object. Defaults to None, in which case the model's default manager is used.
+            Should be a function with the signature (id: Any) -> QuerySet[Model].
         decorators (List[Callable], optional): A list of decorators to apply to the view function.
         router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
     """
@@ -23,7 +27,7 @@ class RetrieveModelView(AbstractModelView):
     def __init__(
         self,
         output_schema: Type[Schema],
-        queryset_getter: Callable[[Any], QuerySet[Model]] = None,
+        queryset_getter: QuerysetGetter = None,
         decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -32,7 +36,9 @@ class RetrieveModelView(AbstractModelView):
 
         Args:
             output_schema (Type[Schema]): The schema used to serialize the retrieved object.
-            queryset_getter (Callable[[Any], QuerySet[Model]], optional): A function to get the QuerySet for retrieving the object. Defaults to None.
+            queryset_getter (QuerysetGetter, optional): A function that takes an object ID and returns a QuerySet
+                for retrieving the object. Defaults to None, in which case the model's default manager is used.
+                Should be a function with the signature (id: Any) -> QuerySet[Model].
             decorators (List[Callable], optional): A list of decorators to apply to the view function.
             router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
         """

@@ -9,8 +9,17 @@ from ninja import Router, Schema
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
+# Type alias for a Django Model instance.
+# It's a generic type that is bound to Django's base Model class,
+# meaning it can represent any Django Model instance.
 ModelType = TypeVar("ModelType", bound=Model)
+
+# Type alias for a callable to be invoked before saving the updated instance
+# Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None
 PreSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
+
+# Type alias for a callable to be invoked after saving the updated instance
+# Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None
 PostSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
 
 
