@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 import yaml
@@ -5,23 +6,28 @@ import yaml
 project_name = "ninja_crud"
 modules = [
     "views.abstract",
-    "views.list",
-    "views.create",
     "views.retrieve",
     "views.update",
     "views.patch",
     "views.delete",
-    "views.viewset",
 ]
 
 template_path = "docs/pydoc-markdown.yml"
 with open(template_path, "r") as file:
     template = yaml.load(file, Loader=yaml.FullLoader)
 
-for module in modules:
-    template["renderer"]["filename"] = f"docs/reference/{module.replace('.', '/')}.md"
+root_dir = os.path.abspath(os.path.join(os.getcwd()))
 
+for module in modules:
+    output_path = f"docs/reference/{module.replace('.', '/')}.md"
+    template["renderer"]["filename"] = output_path
+
+    # Create necessary directories if they don't exist
+    output_dir = os.path.dirname(output_path)
+    os.makedirs(output_dir, exist_ok=True)
+
+    module_path = os.path.join(root_dir, f"{project_name}/{module.replace('.', '/')}")
     yaml_config_str = yaml.dump(template)
     subprocess.run(
-        ["pydoc-markdown", "-m", f"{project_name}.{module}", yaml_config_str]
+        ["poetry", "run", "pydoc-markdown", "-m", module_path, yaml_config_str]
     )

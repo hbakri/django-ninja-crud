@@ -1,4 +1,21 @@
 renderer:
   type: markdown
+  insert_header_anchors: false
   descriptive_class_title: false
+  descriptive_module_title: false
   render_toc: false
+  render_module_header: false
+  signature_in_header: false
+  signature_with_decorators: true
+  data_code_block: true
+
+  add_method_class_prefix: false
+  add_member_class_prefix: false
+  docstrings_as_blockquote: true
+  use_fixed_header_levels: true
+  header_level_by_type:
+    Module: 1
+    Class: 1
+    Method: 3
+    Function: 3
+    Data: 3
