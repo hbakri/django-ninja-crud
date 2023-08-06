@@ -11,22 +11,23 @@ def get_markdown_title(filepath):
     return None
 
 
-def generate_sidebar(directory, wiki_path, indentation, file_output):
-    for item in sorted(os.listdir(directory)):
+def generate_sidebar(path, level, file_output):
+    if level == 1:
+        file_output.write("# Table of Contents\n")
+
+    for item in sorted(os.listdir(path)):
         if item == "_Sidebar.md":
             continue
-        path = os.path.join(directory, item)
-        if os.path.isdir(path):
-            separator = "-" if indentation else "##"
-            file_output.write(f"{indentation}{separator} {item}\n")
-            generate_sidebar(
-                path, f"{wiki_path}/{item}", indentation + "  ", file_output
-            )
-        elif os.path.isfile(path):
+        new_path = os.path.join(path, item)
+        if os.path.isdir(new_path):
+            separator = "#" * (level + 1)
+            file_output.write(f"{separator} {item.capitalize()}\n")
+            generate_sidebar(path=new_path, level=level + 1, file_output=file_output)
+        elif os.path.isfile(new_path):
             name, ext = os.path.splitext(item)
             if ext == ".md":
-                title = get_markdown_title(path) or name
-                file_output.write(f"{indentation}- [{title}]({name})\n")
+                title = get_markdown_title(new_path) or name
+                file_output.write(f"  - [{title}]({name})\n")
 
 
 if __name__ == "__main__":
@@ -34,4 +35,4 @@ if __name__ == "__main__":
     sidebar_path = sys.argv[2]
 
     with open(sidebar_path, "w") as sidebar_file:
-        generate_sidebar(docs_directory, docs_directory, "", sidebar_file)
+        generate_sidebar(docs_directory, level=1, file_output=sidebar_file)
