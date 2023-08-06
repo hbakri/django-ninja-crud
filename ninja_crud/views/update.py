@@ -30,11 +30,11 @@ class UpdateModelView(AbstractModelView):
     Attributes:
         input_schema (Type[Schema]): The schema used to validate the input data.
         output_schema (Type[Schema]): The schema used to serialize the updated instance.
-        decorators (List[Callable], optional): A list of decorators to apply to the view function.
         pre_save (PreSaveHook, optional): A callable to be invoked before saving the updated instance. Should be a
             function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
         post_save (PostSaveHook, optional): A callable to be invoked after saving the updated instance. Should be a
             function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
+        decorators (List[Callable], optional): A list of decorators to apply to the view function.
         router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
         http_method (str): The HTTP method used for this view, defaulting to "PUT". This is an internal attribute and
             not intended to be modified directly.
@@ -44,9 +44,9 @@ class UpdateModelView(AbstractModelView):
         self,
         input_schema: Type[Schema],
         output_schema: Type[Schema],
-        decorators: List[Callable] = None,
         pre_save: PreSaveHook = None,
         post_save: PostSaveHook = None,
+        decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
@@ -55,11 +55,11 @@ class UpdateModelView(AbstractModelView):
         Args:
             input_schema (Type[Schema]): The schema for validating the input data for the update.
             output_schema (Type[Schema]): The schema for serializing the updated instance.
-            decorators (List[Callable], optional): A list of decorators to apply to the view function.
             pre_save (PreSaveHook, optional): A callable to be invoked before saving the updated instance. Should be a
                 function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
             post_save (PostSaveHook, optional): A callable to be invoked after saving the updated instance. Should be a
                 function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
+            decorators (List[Callable], optional): A list of decorators to apply to the view function.
             router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
         """
 

@@ -27,30 +27,30 @@ class DeleteModelView(AbstractModelView):
     A view class that handles deleting a specific instance of a model.
 
     Attributes:
-        decorators (List[Callable], optional): A list of decorators to apply to the view function.
         pre_delete (PreDeleteHook, optional): A function to call before deleting the instance.
             Should have the signature (request: HttpRequest, instance: Model) -> None.
         post_delete (PostDeleteHook, optional): A function to call after deleting the instance.
             Should have the signature (request: HttpRequest, id: Any) -> None.
+        decorators (List[Callable], optional): A list of decorators to apply to the view function.
         router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
     """
 
     def __init__(
         self,
-        decorators: List[Callable] = None,
         pre_delete: PreDeleteHook = None,
         post_delete: PostDeleteHook = None,
+        decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
         Initializes the DeleteModelView with the given decorators and optional pre- and post-delete hooks.
 
         Args:
-            decorators (List[Callable], optional): A list of decorators to apply to the view function.
             pre_delete (PreDeleteHook, optional): A function to call before deleting the instance.
                 Should have the signature (request: HttpRequest, instance: Model) -> None.
             post_delete (PostDeleteHook, optional): A function to call after deleting the instance.
                 Should have the signature (request: HttpRequest, id: Any) -> None.
+            decorators (List[Callable], optional): A list of decorators to apply to the view function.
             router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
         """
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)

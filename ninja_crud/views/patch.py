@@ -23,9 +23,9 @@ class PatchModelView(UpdateModelView):
         self,
         input_schema: Type[Schema],
         output_schema: Type[Schema],
-        decorators: List[Callable] = None,
         pre_save: PreSaveHook = None,
         post_save: PostSaveHook = None,
+        decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
@@ -36,11 +36,11 @@ class PatchModelView(UpdateModelView):
         Args:
             input_schema (Type[Schema]): The schema for validating the input data for the partial update.
             output_schema (Type[Schema]): The schema for serializing the updated instance.
-            decorators (List[Callable], optional): A list of decorators to apply to the view function.
             pre_save (PreSaveHook, optional): A callable to be invoked before saving the updated instance. Should be a
                 function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
             post_save (PostSaveHook, optional): A callable to be invoked after saving the updated instance. Should be a
                 function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
+            decorators (List[Callable], optional): A list of decorators to apply to the view function.
             router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
         """
 
