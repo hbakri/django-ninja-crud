@@ -15,7 +15,8 @@ class PatchModelView(UpdateModelView):
     Attributes are inherited from UpdateModelView, and the behavior of methods is the same except as noted below.
 
     Attributes:
-        http_method (str): The HTTP method used for this view, defaulting to "PATCH". This is an internal attribute and not intended to be modified directly.
+        http_method (str): The HTTP method used for this view, defaulting to "PATCH".
+            This is an internal attribute and not intended to be modified directly.
     """
 
     def __init__(
@@ -33,11 +34,13 @@ class PatchModelView(UpdateModelView):
         All fields in the input schema are made optional, allowing clients to submit only the fields they want to update.
 
         Args:
-            input_schema (Type[Schema]): The schema to validate the input data.
-            output_schema (Type[Schema]): The schema to serialize the updated object.
+            input_schema (Type[Schema]): The schema for validating the input data for the partial update.
+            output_schema (Type[Schema]): The schema for serializing the updated instance.
             decorators (List[Callable], optional): A list of decorators to apply to the view function.
-            pre_save (PreSaveHook, optional): A hook to call before saving the updated object. Should have the signature (request: HttpRequest, instance: ModelType, old_instance: ModelType) -> None.
-            post_save (PostSaveHook, optional): A hook to call after saving the updated object. Should have the signature (request: HttpRequest, instance: ModelType, old_instance: ModelType) -> None.
+            pre_save (PreSaveHook, optional): A callable to be invoked before saving the updated instance. Should be a
+                function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
+            post_save (PostSaveHook, optional): A callable to be invoked after saving the updated instance. Should be a
+                function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
             router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
         """
 

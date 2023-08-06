@@ -8,8 +8,17 @@ from ninja import Router
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
+# Type alias for a Django Model instance.
+# It's a generic type that is bound to Django's base Model class,
+# meaning it can represent any Django Model instance.
 ModelType = TypeVar("ModelType", bound=Model)
+
+# Type alias for a callable to be invoked before deleting the instance.
+# Should have the signature (request: HttpRequest, instance: Model) -> None.
 PreDeleteHook = Callable[[HttpRequest, ModelType], None]
+
+# Type alias for a callable to be invoked after deleting the instance.
+# Should have the signature (request: HttpRequest, id: Any) -> None.
 PostDeleteHook = Callable[[HttpRequest, Any], None]
 
 
@@ -19,8 +28,10 @@ class DeleteModelView(AbstractModelView):
 
     Attributes:
         decorators (List[Callable], optional): A list of decorators to apply to the view function.
-        pre_delete (PreDeleteHook, optional): A function to call before deleting the instance. Should have the signature (request: HttpRequest, instance: ModelType).
-        post_delete (PostDeleteHook, optional): A function to call after deleting the instance. Should have the signature (request: HttpRequest, id: Any).
+        pre_delete (PreDeleteHook, optional): A function to call before deleting the instance.
+            Should have the signature (request: HttpRequest, instance: Model) -> None.
+        post_delete (PostDeleteHook, optional): A function to call after deleting the instance.
+            Should have the signature (request: HttpRequest, id: Any) -> None.
         router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
     """
 
@@ -36,8 +47,10 @@ class DeleteModelView(AbstractModelView):
 
         Args:
             decorators (List[Callable], optional): A list of decorators to apply to the view function.
-            pre_delete (PreDeleteHook, optional): A function to call before deleting the instance. Should have the signature (request: HttpRequest, instance: ModelType).
-            post_delete (PostDeleteHook, optional): A function to call after deleting the instance. Should have the signature (request: HttpRequest, id: Any).
+            pre_delete (PreDeleteHook, optional): A function to call before deleting the instance.
+                Should have the signature (request: HttpRequest, instance: Model) -> None.
+            post_delete (PostDeleteHook, optional): A function to call after deleting the instance.
+                Should have the signature (request: HttpRequest, id: Any) -> None.
             router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
         """
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)

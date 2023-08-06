@@ -14,12 +14,12 @@ from ninja_crud.views.abstract import AbstractModelView
 # meaning it can represent any Django Model instance.
 ModelType = TypeVar("ModelType", bound=Model)
 
-# Type alias for a callable to be invoked before saving the updated instance
-# Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None
+# Type alias for a callable to be invoked before saving the updated instance.
+# Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
 PreSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
 
-# Type alias for a callable to be invoked after saving the updated instance
-# Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None
+# Type alias for a callable to be invoked after saving the updated instance.
+# Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
 PostSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
 
 
@@ -32,9 +32,9 @@ class UpdateModelView(AbstractModelView):
         output_schema (Type[Schema]): The schema used to serialize the updated instance.
         decorators (List[Callable], optional): A list of decorators to apply to the view function.
         pre_save (PreSaveHook, optional): A callable to be invoked before saving the updated instance. Should be a
-            function with the signature (request: HttpRequest, instance: ModelType, old_instance: ModelType) -> None.
+            function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
         post_save (PostSaveHook, optional): A callable to be invoked after saving the updated instance. Should be a
-            function with the signature (request: HttpRequest, instance: ModelType, old_instance: ModelType) -> None.
+            function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
         router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
         http_method (str): The HTTP method used for this view, defaulting to "PUT". This is an internal attribute and
             not intended to be modified directly.
@@ -56,8 +56,10 @@ class UpdateModelView(AbstractModelView):
             input_schema (Type[Schema]): The schema for validating the input data for the update.
             output_schema (Type[Schema]): The schema for serializing the updated instance.
             decorators (List[Callable], optional): A list of decorators to apply to the view function.
-            pre_save (PreSaveHook, optional): A hook called before the instance is saved. Receives the request, the instance about to be saved, and the original instance as it was before modifications.
-            post_save (PostSaveHook, optional): A hook called after the instance is saved. Receives the request, the saved instance, and the original instance as it was before modifications.
+            pre_save (PreSaveHook, optional): A callable to be invoked before saving the updated instance. Should be a
+                function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
+            post_save (PostSaveHook, optional): A callable to be invoked after saving the updated instance. Should be a
+                function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
             router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
         """
 
