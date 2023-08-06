@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type
+from typing import Any, Callable, List, Optional, Type, TypeVar
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
@@ -8,7 +8,14 @@ from ninja import Router, Schema
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
-QuerysetGetter = Callable[[Any], QuerySet[Model]]
+# Type alias for a Django Model instance.
+# It's a generic type that is bound to Django's base Model class,
+# meaning it can represent any Django Model instance.
+ModelType = TypeVar("ModelType", bound=Model)
+
+# Type alias for a callable that accepts any id and returns a Django QuerySet for retrieving the object.
+# Should have the signature (id: Any) -> QuerySet[Model].
+QuerysetGetter = Callable[[Any], QuerySet[ModelType]]
 
 
 class RetrieveModelView(AbstractModelView):
