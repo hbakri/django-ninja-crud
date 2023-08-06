@@ -1,6 +1,8 @@
+# Examples
+
 In this section, we'll walk through some quick examples of how to use Django Ninja CRUD. The goal is to illustrate how simple it is to define data operations and tests with this tool.
 
-# 👨‍🎨 Usage
+## 👨‍🎨 Usage
 
 Let's imagine you're building a system for a university and you have a model called `Department`. Each department in your university has a unique `title`.
 
@@ -57,7 +59,7 @@ DepartmentViewSet.register_routes(router)
 
 This piece of code sets up a system where you can list all departments, create a new department, retrieve the details of a specific department, update a department, and delete a department. And all of this with just a simple class declaration!
 
-# 🥷 Testing
+## 🥷 Testing
 
 A key advantage of Django Ninja CRUD is that it makes your views easy to test. Once you've set up your **CRUD** operations, you can write tests to ensure they're working as expected. Here's an example of how you might test the `Department` operations:
 
