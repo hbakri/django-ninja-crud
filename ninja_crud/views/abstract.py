@@ -18,7 +18,7 @@ class AbstractModelView(ABC):
         self, decorators: List[Callable] = None, router_kwargs: Optional[dict] = None
     ) -> None:
         """
-        Constructor for the AbstractModelView class.
+        Initializes the AbstractModelView with the given decorators and optional router keyword arguments.
 
         Args:
             decorators (List[Callable], optional): A list of decorators to apply to the view function.
