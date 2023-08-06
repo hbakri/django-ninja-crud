@@ -13,7 +13,7 @@ def get_markdown_title(filepath):
 
 def generate_sidebar(path, level, file_output):
     if level == 1:
-        file_output.write("# Table of Contents\n\n")
+        file_output.write("# Table of Contents\n")
 
     for item in sorted(os.listdir(path)):
         if item == "_Sidebar.md":
