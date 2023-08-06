@@ -30,18 +30,31 @@ jobs:
           poetry run python docs/generate_docs.py
           poetry run python docs/generate_wiki_sidebar.py docs docs/_Sidebar.md
 
-    - name: Publish documentation to GitHub Wiki
+    - name: Clone wiki repository
+      env:
+        GH_REPOSITORY: ${{ github.repository }}
+      run: |
+        git clone https://github.com/${GH_REPOSITORY}.wiki.git wiki
+
+    - name: Remove old markdown files
+      run: |
+        find wiki -name '*.md' -exec rm -f {} +
+
+    - name: Copy new markdown files
+      run: |
+        find docs -name '*.md' -exec cp --parents \{\} wiki/ \;
+
+    - name: Configure git
+      run: |
+        cd wiki
+        git config user.name "GitHub Actions"
+        git config user.email "actions@users.noreply.github.com"
+
+    - name: Commit and push changes
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
         GH_REPOSITORY: ${{ github.repository }}
       run: |
-        git clone https://github.com/${GH_USERNAME}/${GH_REPOSITORY}.wiki.git wiki
-        find wiki -name '*.md' -exec rm -f {} +
-        find docs -name '*.md' -exec cp --parents \{\} wiki/ \;
-        cd wiki
-
-        git config user.name "GitHub Actions"
-        git config user.email "actions@users.noreply.github.com"
         git add .
         git commit -m "Update documentation" || exit 0
         git push "https://${GH_TOKEN}@github.com/${GH_REPOSITORY}.wiki.git" || exit 0
