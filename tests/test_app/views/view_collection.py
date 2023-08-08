@@ -10,7 +10,7 @@ from ninja_crud.views import (
     DeleteModelView,
     ListModelView,
     ModelViewSet,
-    PatchModelView,
+    PartialUpdateModelView,
     RetrieveModelView,
     UpdateModelView,
 )
@@ -56,7 +56,7 @@ class CollectionViewSet(ModelViewSet):
         output_schema=output_schema,
         decorators=[user_is_creator],
     )
-    patch = PatchModelView(
+    partial_update = PartialUpdateModelView(
         input_schema=input_schema,
         output_schema=output_schema,
         decorators=[user_is_creator],

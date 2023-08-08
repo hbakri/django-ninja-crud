@@ -1,17 +1,16 @@
 from unittest.mock import MagicMock
 
-from django.db import models
 from django.test import TestCase
 
-from ninja_crud.views import PatchModelView
+from ninja_crud.views import PartialUpdateModelView
 from tests.test_app.models import Item
 from tests.test_app.schemas import ItemIn, ItemOut
 
 
-class PatchModelViewTest(TestCase):
+class PartialUpdateModelViewTest(TestCase):
     def test_register_route_router_kwargs(self):
         router_mock = MagicMock()
-        model_view = PatchModelView(
+        model_view = PartialUpdateModelView(
             input_schema=ItemIn,
             output_schema=ItemOut,
             router_kwargs={"exclude_unset": True},

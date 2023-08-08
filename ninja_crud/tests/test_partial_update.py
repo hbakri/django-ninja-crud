@@ -3,12 +3,12 @@ from django.http import HttpResponse
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters, Payloads
 from ninja_crud.tests.request_composer import ArgOrCallable, TestCaseType
 from ninja_crud.tests.test_update import UpdateModelViewTest
-from ninja_crud.views.patch import PatchModelView
+from ninja_crud.views import PartialUpdateModelView
 
 
-class PatchModelViewTest(UpdateModelViewTest):
-    model_view_class = PatchModelView
-    model_view: PatchModelView
+class PartialUpdateModelViewTest(UpdateModelViewTest):
+    model_view_class = PartialUpdateModelView
+    model_view: PartialUpdateModelView
 
     def __init__(
         self,
@@ -17,9 +17,9 @@ class PatchModelViewTest(UpdateModelViewTest):
         auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
         super().__init__(path_parameters, payloads, auth_headers)
-        self.request_composer.request_method = self.request_patch_model
+        self.request_composer.request_method = self.request_partial_update_model
 
-    def request_patch_model(
+    def request_partial_update_model(
         self,
         path_parameters: dict,
         query_parameters: dict,
