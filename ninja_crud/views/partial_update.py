@@ -44,7 +44,7 @@ class PartialUpdateModelView(UpdateModelView):
             router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
         """
 
-        optional_input_schema = self.generate_optional_schema(input_schema)
+        optional_input_schema = self.generate_partial_schema(input_schema)
         super().__init__(
             input_schema=optional_input_schema,
             output_schema=output_schema,
@@ -56,7 +56,7 @@ class PartialUpdateModelView(UpdateModelView):
         self.http_method = "PATCH"
 
     @staticmethod
-    def generate_optional_schema(schema_class: Type[Schema]) -> Type[Schema]:
+    def generate_partial_schema(schema_class: Type[Schema]) -> Type[Schema]:
         """
         Creates a new schema class based on the given schema_class, with all fields set as optional.
 
@@ -67,11 +67,11 @@ class PartialUpdateModelView(UpdateModelView):
             Type[Schema]: A new schema class with all fields made optional.
         """
 
-        class OptionalSchema(schema_class):
-            ...
+        class PartialSchema(schema_class):
+            pass
 
-        for field in OptionalSchema.__fields__.values():
+        for field in PartialSchema.__fields__.values():
             field.required = False
 
-        OptionalSchema.__name__ = f"Optional{schema_class.__name__}"
-        return OptionalSchema
+        PartialSchema.__name__ = f"Partial{schema_class.__name__}"
+        return PartialSchema
