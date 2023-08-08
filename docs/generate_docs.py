@@ -8,7 +8,7 @@ modules = [
     "views.abstract",
     "views.retrieve",
     "views.update",
-    "views.patch",
+    "views.partial_update",
     "views.delete",
 ]
 

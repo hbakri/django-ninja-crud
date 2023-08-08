@@ -5,7 +5,7 @@ from ninja import Schema
 from ninja_crud.views.update import PostSaveHook, PreSaveHook, UpdateModelView
 
 
-class PatchModelView(UpdateModelView):
+class PartialUpdateModelView(UpdateModelView):
     """
     A view class that handles partially updating a specific instance of a model.
 
@@ -29,7 +29,7 @@ class PatchModelView(UpdateModelView):
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
-        Initializes the PatchModelView with the specified schemas, decorators, and hooks.
+        Initializes the PartialUpdateModelView with the specified schemas, decorators, and hooks.
 
         All fields in the input schema are made optional, allowing clients to submit only the fields they want to update.
 

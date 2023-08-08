@@ -7,7 +7,7 @@ from ninja_crud.tests import (
     DeleteModelViewTest,
     ListModelViewTest,
     ModelViewSetTest,
-    PatchModelViewTest,
+    PartialUpdateModelViewTest,
     PathParameters,
     Payloads,
     QueryParameters,
@@ -65,7 +65,7 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
         auth_headers=get_auth_headers_ok_forbidden,
         payloads=collection_payloads,
     )
-    test_patch = PatchModelViewTest(
+    test_partial_update = PartialUpdateModelViewTest(
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok_forbidden,
         payloads=Payloads(
