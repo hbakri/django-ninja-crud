@@ -43,7 +43,7 @@ class ListModelViewTest(AbstractModelViewTest):
         path = "/" + self.model_view_set_test.base_path + self.model_view.get_path()
         response = self.model_view_set_test.client_class().get(
             path=path.format(**path_parameters),
-            data=query_parameters or {},
+            data=query_parameters,
             content_type="application/json",
             **auth_headers,
         )
