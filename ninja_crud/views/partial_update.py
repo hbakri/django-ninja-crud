@@ -44,9 +44,8 @@ class PartialUpdateModelView(UpdateModelView):
             router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
         """
 
-        optional_input_schema = self.generate_partial_schema(input_schema)
         super().__init__(
-            input_schema=optional_input_schema,
+            input_schema=self.generate_partial_schema(input_schema),
             output_schema=output_schema,
             decorators=decorators,
             pre_save=pre_save,
