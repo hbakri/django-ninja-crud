@@ -8,14 +8,13 @@ from ninja import Router, Schema
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
-# Type alias for a Django Model instance.
-# It's a generic type that is bound to Django's base Model class,
-# meaning it can represent any Django Model instance.
+# Type alias for any instance of a Django Model.
+# This generic type is bound to Django's base Model class.
 ModelType = TypeVar("ModelType", bound=Model)
 
-# Type alias for a callable that accepts any id and returns a Django QuerySet for retrieving the object.
-# Should have the signature (id: Any) -> QuerySet[Model].
-QuerysetGetter = Callable[[Any], QuerySet[ModelType]]
+# Type alias for a callable returning a Django QuerySet to retrieve the object.
+# Expected signature: (id: Any) -> QuerySet[Model]
+RetrieveQuerySetGetter = Callable[[Any], QuerySet[ModelType]]
 
 
 class RetrieveModelView(AbstractModelView):
@@ -24,7 +23,7 @@ class RetrieveModelView(AbstractModelView):
 
     Attributes:
         output_schema (Type[Schema]): The schema used to serialize the retrieved instance.
-        queryset_getter (QuerysetGetter, optional): A function that takes an object ID and returns a QuerySet
+        queryset_getter (RetrieveQuerySetGetter, optional): A function that takes an object ID and returns a QuerySet
             for retrieving the object. Defaults to None, in which case the model's default manager is used.
             Should be a function with the signature (id: Any) -> QuerySet[Model].
         decorators (List[Callable], optional): A list of decorators to apply to the view function.
@@ -34,7 +33,7 @@ class RetrieveModelView(AbstractModelView):
     def __init__(
         self,
         output_schema: Type[Schema],
-        queryset_getter: QuerysetGetter = None,
+        queryset_getter: RetrieveQuerySetGetter = None,
         decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -43,7 +42,7 @@ class RetrieveModelView(AbstractModelView):
 
         Args:
             output_schema (Type[Schema]): The schema used to serialize the retrieved object.
-            queryset_getter (QuerysetGetter, optional): A function that takes an object ID and returns a QuerySet
+            queryset_getter (RetrieveQuerySetGetter, optional): A function that takes an object ID and returns a QuerySet
                 for retrieving the object. Defaults to None, in which case the model's default manager is used.
                 Should be a function with the signature (id: Any) -> QuerySet[Model].
             decorators (List[Callable], optional): A list of decorators to apply to the view function.
