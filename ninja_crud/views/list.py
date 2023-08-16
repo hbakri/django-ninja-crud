@@ -17,7 +17,7 @@ ModelType = TypeVar("ModelType", bound=Model)
 # Type alias for a callable that returns a Django QuerySet for retrieving the object.
 # Should have the signature () -> QuerySet[Model] if detail=False,
 # or (id: Any) -> QuerySet[Model] if detail=True.
-QuerysetGetter = Union[
+ListQuerySetGetter = Union[
     Callable[[], QuerySet[ModelType]], Callable[[Any], QuerySet[ModelType]]
 ]
 
@@ -27,7 +27,7 @@ class ListModelView(AbstractModelView):
         self,
         output_schema: Type[Schema],
         filter_schema: Type[FilterSchema] = None,
-        queryset_getter: QuerysetGetter = None,
+        queryset_getter: ListQuerySetGetter = None,
         related_model: Type[Model] = None,
         detail: bool = False,
         decorators: List[Callable] = None,
