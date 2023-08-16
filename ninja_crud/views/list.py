@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type, Union
+from typing import Any, Callable, List, Optional, Type, TypeVar, Union
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
@@ -9,15 +9,25 @@ from ninja.pagination import LimitOffsetPagination, paginate
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
+# Type alias for any instance of a Django Model.
+# This generic type is bound to Django's base Model class.
+ModelType = TypeVar("ModelType", bound=Model)
+
+# Type alias for a callable returning a Django QuerySet to fetch objects.
+# Expected signatures:
+# - For detail=False: () -> QuerySet[Model]
+# - For detail=True:  (id: Any) -> QuerySet[Model]
+ListQuerySetGetter = Union[
+    Callable[[], QuerySet[ModelType]], Callable[[Any], QuerySet[ModelType]]
+]
+
 
 class ListModelView(AbstractModelView):
     def __init__(
         self,
         output_schema: Type[Schema],
         filter_schema: Type[FilterSchema] = None,
-        queryset_getter: Union[
-            Callable[[], QuerySet[Model]], Callable[[Any], QuerySet[Model]]
-        ] = None,
+        queryset_getter: ListQuerySetGetter = None,
         related_model: Type[Model] = None,
         detail: bool = False,
         decorators: List[Callable] = None,
