@@ -9,14 +9,14 @@ from ninja.pagination import LimitOffsetPagination, paginate
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 
-# Type alias for a Django Model instance.
-# It's a generic type that is bound to Django's base Model class,
-# meaning it can represent any Django Model instance.
+# Type alias for any instance of a Django Model.
+# This generic type is bound to Django's base Model class.
 ModelType = TypeVar("ModelType", bound=Model)
 
-# Type alias for a callable that returns a Django QuerySet for retrieving the object.
-# Should have the signature () -> QuerySet[Model] if detail=False,
-# or (id: Any) -> QuerySet[Model] if detail=True.
+# Type alias for a callable returning a Django QuerySet to fetch objects.
+# Expected signatures:
+# - For detail=False: () -> QuerySet[Model]
+# - For detail=True:  (id: Any) -> QuerySet[Model]
 ListQuerySetGetter = Union[
     Callable[[], QuerySet[ModelType]], Callable[[Any], QuerySet[ModelType]]
 ]
