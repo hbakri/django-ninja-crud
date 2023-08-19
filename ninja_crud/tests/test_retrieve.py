@@ -48,7 +48,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         self.model_view_set_test.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
-        queryset = self.model_view.get_queryset(
+        queryset = self.model_view._get_queryset(
             self.model_view_set_test.model_view_set_class.model_class,
             path_parameters["id"],
         )

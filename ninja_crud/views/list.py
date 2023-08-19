@@ -26,12 +26,17 @@ class ListModelView(AbstractModelView):
         router_kwargs: Optional[dict] = None,
     ) -> None:
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
+
+        if detail and queryset_getter is None:
+            raise ValueError(
+                "Expected 'queryset_getter' when 'detail=True', but found None."
+            )
+        QuerySetGetterValidator.validate(queryset_getter, detail)
+
         self.output_schema = output_schema
         self.filter_schema = filter_schema
         self.queryset_getter = queryset_getter
         self.detail = detail
-
-        QuerySetGetterValidator.validate(queryset_getter, detail)
         self._related_model = queryset_getter(None).model if detail else None
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:

@@ -20,6 +20,7 @@ class ListModelViewTest(TestCase):
         router_mock.get.assert_called_once()
         self.assertTrue(router_mock.get.call_args[1]["exclude_unset"])
 
+    # noinspection PyTypeChecker
     def test_queryset_getter_validator(self):
         # queryset_getter must be provided if detail=True
         with self.assertRaises(ValueError):

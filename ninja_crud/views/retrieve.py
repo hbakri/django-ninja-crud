@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type, TypeVar
+from typing import Any, Callable, List, Optional, Type
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
@@ -7,14 +7,10 @@ from ninja import Router, Schema
 
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
-
-# Type alias for any instance of a Django Model.
-# This generic type is bound to Django's base Model class.
-ModelType = TypeVar("ModelType", bound=Model)
-
-# Type alias for a callable returning a Django QuerySet to retrieve the object.
-# Expected signature: (id: Any) -> QuerySet[Model]
-RetrieveQuerySetGetter = Callable[[Any], QuerySet[ModelType]]
+from ninja_crud.views.types import DetailQuerySetGetter
+from ninja_crud.views.validators.queryset_getter_validator import (
+    QuerySetGetterValidator,
+)
 
 
 class RetrieveModelView(AbstractModelView):
@@ -23,7 +19,7 @@ class RetrieveModelView(AbstractModelView):
 
     Attributes:
         output_schema (Type[Schema]): The schema used to serialize the retrieved instance.
-        queryset_getter (RetrieveQuerySetGetter, optional): A function that takes an object ID and returns a QuerySet
+        queryset_getter (DetailQuerySetGetter, optional): A function that takes an object ID and returns a QuerySet
             for retrieving the object. Defaults to None, in which case the model's default manager is used.
             Should be a function with the signature (id: Any) -> QuerySet[Model].
         decorators (List[Callable], optional): A list of decorators to apply to the view function.
@@ -33,7 +29,7 @@ class RetrieveModelView(AbstractModelView):
     def __init__(
         self,
         output_schema: Type[Schema],
-        queryset_getter: RetrieveQuerySetGetter = None,
+        queryset_getter: DetailQuerySetGetter = None,
         decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -42,7 +38,7 @@ class RetrieveModelView(AbstractModelView):
 
         Args:
             output_schema (Type[Schema]): The schema used to serialize the retrieved object.
-            queryset_getter (RetrieveQuerySetGetter, optional): A function that takes an object ID and returns a QuerySet
+            queryset_getter (DetailQuerySetGetter, optional): A function that takes an object ID and returns a QuerySet
                 for retrieving the object. Defaults to None, in which case the model's default manager is used.
                 Should be a function with the signature (id: Any) -> QuerySet[Model].
             decorators (List[Callable], optional): A list of decorators to apply to the view function.
@@ -50,6 +46,9 @@ class RetrieveModelView(AbstractModelView):
         """
 
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
+
+        QuerySetGetterValidator.validate(queryset_getter, detail=True)
+
         self.output_schema = output_schema
         self.queryset_getter = queryset_getter
 
@@ -71,26 +70,14 @@ class RetrieveModelView(AbstractModelView):
         )
         @utils.merge_decorators(self.decorators)
         def retrieve_model(request: HttpRequest, id: utils.get_id_type(model_class)):
-            queryset = self.get_queryset(model_class, id)
-            instance = queryset.get(pk=id)
-            return HTTPStatus.OK, instance
+            queryset = self._get_queryset(model_class, id)
+            return HTTPStatus.OK, queryset.get(pk=id)
 
-    def get_queryset(self, model_class: Type[Model], id: Any) -> QuerySet[Model]:
-        """
-        Gets the QuerySet for retrieving the object.
-
-        Args:
-            model_class (Type[Model]): The Django model class for which the QuerySet should be obtained.
-            id (Any): An object ID to use with the queryset_getter.
-
-        Returns:
-            QuerySet[Model]: A QuerySet for retrieving the object.
-        """
-
-        if self.queryset_getter is None:
-            return model_class.objects.get_queryset()
-        else:
+    def _get_queryset(self, model_class: Type[Model], id: Any) -> QuerySet[Model]:
+        if self.queryset_getter:
             return self.queryset_getter(id)
+        else:
+            return model_class.objects.get_queryset()
 
     def get_path(self) -> str:
         """
