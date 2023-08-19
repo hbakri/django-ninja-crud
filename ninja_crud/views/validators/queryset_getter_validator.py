@@ -1,4 +1,4 @@
-from inspect import Parameter, signature
+from inspect import signature
 from types import MappingProxyType
 from typing import Union
 
@@ -39,7 +39,7 @@ class QuerySetGetterValidator:
 
     @staticmethod
     def _validate_for_detail(
-        parameters: MappingProxyType[str, Parameter],
+        parameters: MappingProxyType,
         queryset_getter: DetailQuerySetGetter,
     ) -> None:
         if len(parameters) != 1:
@@ -51,7 +51,7 @@ class QuerySetGetterValidator:
 
     @staticmethod
     def _validate_for_collection(
-        parameters: MappingProxyType[str, Parameter],
+        parameters: MappingProxyType,
         queryset_getter: CollectionQuerySetGetter,
     ) -> None:
         if len(parameters) != 0:
