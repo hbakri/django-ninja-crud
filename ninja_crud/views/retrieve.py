@@ -27,6 +27,7 @@ class RetrieveModelView(AbstractModelView):
     class DepartmentViewSet(ModelViewSet):
         model_class = Department
 
+        # GET /departments/{id}/
         retrieve = RetrieveModelView(output_schema=DepartmentOut)
     ```
     """
