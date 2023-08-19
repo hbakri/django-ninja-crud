@@ -25,7 +25,6 @@ class DepartmentViewSet(ModelViewSet):
 
     list_employees = ListModelView(
         detail=True,
-        related_model=Employee,
         output_schema=EmployeeOut,
         queryset_getter=lambda id: Employee.objects.filter(department_id=id),
     )

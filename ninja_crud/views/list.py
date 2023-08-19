@@ -1,5 +1,6 @@
+import functools
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type, TypeVar, Union
+from typing import Any, Callable, List, Optional, Type, Union
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
@@ -8,18 +9,10 @@ from ninja.pagination import LimitOffsetPagination, paginate
 
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
-
-# Type alias for any instance of a Django Model.
-# This generic type is bound to Django's base Model class.
-ModelType = TypeVar("ModelType", bound=Model)
-
-# Type alias for a callable returning a Django QuerySet to fetch objects.
-# Expected signatures:
-# - For detail=False: () -> QuerySet[Model]
-# - For detail=True:  (id: Any) -> QuerySet[Model]
-ListQuerySetGetter = Union[
-    Callable[[], QuerySet[ModelType]], Callable[[Any], QuerySet[ModelType]]
-]
+from ninja_crud.views.types import CollectionQuerySetGetter, DetailQuerySetGetter
+from ninja_crud.views.validators.queryset_getter_validator import (
+    QuerySetGetterValidator,
+)
 
 
 class ListModelView(AbstractModelView):
@@ -27,8 +20,7 @@ class ListModelView(AbstractModelView):
         self,
         output_schema: Type[Schema],
         filter_schema: Type[FilterSchema] = None,
-        queryset_getter: ListQuerySetGetter = None,
-        related_model: Type[Model] = None,
+        queryset_getter: Union[DetailQuerySetGetter, CollectionQuerySetGetter] = None,
         detail: bool = False,
         decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
@@ -37,81 +29,85 @@ class ListModelView(AbstractModelView):
         self.output_schema = output_schema
         self.filter_schema = filter_schema
         self.queryset_getter = queryset_getter
-        self.related_model = related_model
         self.detail = detail
+
+        QuerySetGetterValidator.validate(queryset_getter, detail)
+        self._related_model = queryset_getter(None).model if detail else None
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         if self.detail:
-            self.register_instance_route(router, model_class)
+            self._register_detail_route(router, model_class)
         else:
-            self.register_collection_route(router, model_class)
+            self._register_collection_route(router, model_class)
 
-    def register_collection_route(
-        self, router: Router, model_class: Type[Model]
-    ) -> None:
-        model_name = utils.to_snake_case(model_class.__name__)
-        operation_id = f"list_{model_name}s"
-        summary = f"List {model_class.__name__}s"
-
-        output_schema = self.output_schema
+    def _register_detail_route(self, router: Router, model_class: Type[Model]) -> None:
         filter_schema = self.filter_schema
 
-        @router.get(
-            path=self.get_path(),
-            response={HTTPStatus.OK: List[output_schema]},
-            operation_id=operation_id,
-            summary=summary,
-            **self.router_kwargs,
-        )
-        @utils.merge_decorators(self.decorators)
-        @paginate(LimitOffsetPagination)
-        def list_models(
-            request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
-        ):
-            queryset = self.get_queryset(model_class)
-            return self.filter_queryset(queryset=queryset, filters=filters)
-
-    def register_instance_route(self, router: Router, model_class: Type[Model]) -> None:
-        parent_model_name = utils.to_snake_case(model_class.__name__)
-        related_model_name = utils.to_snake_case(self.related_model.__name__)
-        operation_id = f"list_{parent_model_name}_{related_model_name}s"
-        summary = f"List {self.related_model.__name__}s of a {model_class.__name__}"
-
-        output_schema = self.output_schema
-        filter_schema = self.filter_schema
-
-        @router.get(
-            path=self.get_path(),
-            response={HTTPStatus.OK: List[output_schema]},
-            operation_id=operation_id,
-            summary=summary,
-            **self.router_kwargs,
-        )
-        @utils.merge_decorators(self.decorators)
-        @paginate(LimitOffsetPagination)
+        @self._configure_route(router, model_class)
         def list_models(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
             filters: filter_schema = Query(default=FilterSchema()),
         ):
-            instance = model_class.objects.get(pk=id)
-            queryset = self.get_queryset(model_class, instance.pk)
-            return self.filter_queryset(queryset=queryset, filters=filters)
+            if not model_class.objects.filter(pk=id).exists():
+                raise model_class.DoesNotExist(
+                    f"{model_class.__name__} with ID '{id}' does not exist."
+                )
 
-    def get_queryset(self, model_class: Type[Model], id: Any = None) -> QuerySet[Model]:
+            queryset = self._get_queryset(model_class, id)
+            return self._filter_queryset(queryset=queryset, filters=filters)
+
+    def _register_collection_route(
+        self, router: Router, model_class: Type[Model]
+    ) -> None:
+        filter_schema = self.filter_schema
+
+        @self._configure_route(router, model_class)
+        def list_models(
+            request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
+        ):
+            queryset = self._get_queryset(model_class)
+            return self._filter_queryset(queryset=queryset, filters=filters)
+
+    def get_path(self) -> str:
         if self.detail:
-            if self.queryset_getter is not None:
+            related_model_name = utils.to_snake_case(self._related_model.__name__)
+            return f"/{{id}}/{related_model_name}s/"
+        else:
+            return "/"
+
+    def _configure_route(self, router: Router, model_class: Type[Model]):
+        def decorator(route_func):
+            @router.get(
+                path=self.get_path(),
+                response={HTTPStatus.OK: List[self.output_schema]},
+                operation_id=self._get_operation_id(model_class),
+                summary=self._get_summary(model_class),
+                **self.router_kwargs,
+            )
+            @utils.merge_decorators(self.decorators)
+            @paginate(LimitOffsetPagination)
+            @functools.wraps(route_func)
+            def wrapped_func(*args, **kwargs):
+                return route_func(*args, **kwargs)
+
+            return wrapped_func
+
+        return decorator
+
+    def _get_queryset(
+        self, model_class: Type[Model], id: Any = None
+    ) -> QuerySet[Model]:
+        if self.queryset_getter:
+            if self.detail:
                 return self.queryset_getter(id)
             else:
-                return self.related_model.objects.get_queryset()
-        else:
-            if self.queryset_getter is not None:
                 return self.queryset_getter()
-            else:
-                return model_class.objects.get_queryset()
+        else:
+            return model_class.objects.get_queryset()
 
     @staticmethod
-    def filter_queryset(queryset: QuerySet[Model], filters: FilterSchema):
+    def _filter_queryset(queryset: QuerySet[Model], filters: FilterSchema):
         filters_dict = filters.dict()
         if "order_by" in filters_dict and filters_dict["order_by"] is not None:
             queryset = queryset.order_by(*filters_dict.pop("order_by"))
@@ -119,8 +115,18 @@ class ListModelView(AbstractModelView):
         queryset = filters.filter(queryset)
         return queryset
 
-    def get_path(self) -> str:
+    def _get_operation_id(self, model_class: Type[Model]) -> str:
+        model_name = utils.to_snake_case(model_class.__name__)
         if self.detail:
-            return f"/{{id}}/{utils.to_snake_case(self.related_model.__name__)}s/"
+            related_model_name = utils.to_snake_case(self._related_model.__name__)
+            return f"list_{model_name}_{related_model_name}s"
         else:
-            return "/"
+            return f"list_{model_name}s"
+
+    def _get_summary(self, model_class: Type[Model]) -> str:
+        model_name = model_class.__name__
+        if self.detail:
+            related_model_name = self._related_model.__name__
+            return f"List {related_model_name}s related to a {model_name}"
+        else:
+            return f"List {model_name}s"

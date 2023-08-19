@@ -55,7 +55,7 @@ class ItemViewSet(ModelViewSet):
 
     list_tags = ListModelView(
         detail=True,
-        related_model=Tag,
+        queryset_getter=lambda id: Tag.objects.filter(items__id=id),
         output_schema=output_schema,
     )
 

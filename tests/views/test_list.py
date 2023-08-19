@@ -1,35 +1,61 @@
 from unittest.mock import MagicMock
 
-from django.db import models
 from django.test import TestCase
 
 from ninja_crud.views.list import ListModelView
-from tests.test_app.models import Collection, Item
+from tests.test_app.models import Item
 from tests.test_app.schemas import ItemOut
 
 
 class ListModelViewTest(TestCase):
-    def test_register_collection_route_router_kwargs(self):
+    def test_register_route_with_router_kwargs(self):
         router_mock = MagicMock()
         model_view = ListModelView(
             output_schema=ItemOut,
             router_kwargs={"exclude_unset": True},
         )
 
-        model_view.register_collection_route(router_mock, Item)
+        model_view.register_route(router_mock, Item)
 
         router_mock.get.assert_called_once()
         self.assertTrue(router_mock.get.call_args[1]["exclude_unset"])
 
-    def test_register_instance_route_router_kwargs(self):
-        router_mock = MagicMock()
-        model_view = ListModelView(
-            output_schema=ItemOut,
-            related_model=Collection,
-            router_kwargs={"exclude_none": True},
-        )
+    def test_queryset_getter_validator(self):
+        # queryset_getter must be provided if detail=True
+        with self.assertRaises(ValueError):
+            ListModelView(
+                detail=True,
+                output_schema=ItemOut,
+                queryset_getter=None,
+            )
 
-        model_view.register_instance_route(router_mock, Item)
+        # queryset_getter must be callable
+        with self.assertRaises(TypeError):
+            ListModelView(
+                detail=True,
+                queryset_getter="not callable",
+                output_schema=ItemOut,
+            )
 
-        router_mock.get.assert_called_once()
-        self.assertTrue(router_mock.get.call_args[1]["exclude_none"])
+        # queryset_getter must return a queryset
+        with self.assertRaises(TypeError):
+            ListModelView(
+                detail=True,
+                queryset_getter=lambda id: None,
+                output_schema=ItemOut,
+            )
+
+        # queryset_getter must have the correct number of arguments
+        with self.assertRaises(ValueError):
+            ListModelView(
+                detail=True,
+                queryset_getter=lambda: Item.objects.get_queryset(),
+                output_schema=ItemOut,
+            )
+
+        with self.assertRaises(ValueError):
+            ListModelView(
+                detail=False,
+                queryset_getter=lambda id: Item.objects.get_queryset(),
+                output_schema=ItemOut,
+            )
