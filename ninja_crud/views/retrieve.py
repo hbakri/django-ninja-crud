@@ -89,6 +89,6 @@ class RetrieveModelView(AbstractModelView):
         Returns the URL path for this view.
 
         Returns:
-            str: The URL path.
+            path (str): The URL path.
         """
         return "/{id}"
