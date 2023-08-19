@@ -16,14 +16,17 @@ from ninja_crud.views.validators.queryset_getter_validator import (
 class RetrieveModelView(AbstractModelView):
     """
     A view class that handles retrieving a specific instance of a model.
+    It allows customization through a queryset getter and also supports decorators.
 
-    Attributes:
-        output_schema (Type[Schema]): The schema used to serialize the retrieved instance.
-        queryset_getter (DetailQuerySetGetter, optional): A function that takes an object ID and returns a QuerySet
-            for retrieving the object. Defaults to None, in which case the model's default manager is used.
-            Should be a function with the signature (id: Any) -> QuerySet[Model].
-        decorators (List[Callable], optional): A list of decorators to apply to the view function.
-        router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
+    Example:
+        >>> from ninja_crud.views import ModelViewSet, RetrieveModelView
+        >>> from example.models import Department
+        >>> from example.schemas import DepartmentOut
+
+        >>> class DepartmentViewSet(ModelViewSet):
+        ...     model_class = Department
+        ...
+        ...     retrieve = RetrieveModelView(output_schema=DepartmentOut)
     """
 
     def __init__(
@@ -34,15 +37,15 @@ class RetrieveModelView(AbstractModelView):
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
-        Initializes the RetrieveModelView with the given output schema and optional queryset getter and decorators.
+        Initializes the RetrieveModelView.
 
         Args:
             output_schema (Type[Schema]): The schema used to serialize the retrieved object.
-            queryset_getter (DetailQuerySetGetter, optional): A function that takes an object ID and returns a QuerySet
-                for retrieving the object. Defaults to None, in which case the model's default manager is used.
-                Should be a function with the signature (id: Any) -> QuerySet[Model].
+            queryset_getter (DetailQuerySetGetter, optional): A function to customize the queryset used
+                for retrieving the object. If not provided, the model's default manager is used.
+                Should have the signature (id: Any) -> QuerySet[Model].
             decorators (List[Callable], optional): A list of decorators to apply to the view function.
-            router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
+            router_kwargs (Optional[dict], optional): Additional keyword arguments to pass to the Ninja Router.
         """
 
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
@@ -81,7 +84,7 @@ class RetrieveModelView(AbstractModelView):
 
     def get_path(self) -> str:
         """
-        Returns the URL path for this view, used in routing.
+        Returns the URL path for this view.
 
         Returns:
             str: The URL path.
