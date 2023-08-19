@@ -63,7 +63,7 @@ class RetrieveModelView(AbstractModelView):
 
         Args:
             router (Router): The Ninja Router instance to which the route should be added.
-            model_class (Type[Model]): The Django model class for which the route should be created.
+            model_class (Type[Model]): The model class to use for the route.
         """
 
         @router.get(

@@ -16,6 +16,23 @@ from ninja_crud.views.validators.queryset_getter_validator import (
 
 
 class ListModelView(AbstractModelView):
+    """
+    A view class that handles listing instances of a model.
+    It allows customization through a queryset getter and also supports decorators.
+
+    Example:
+    ```python
+    from ninja_crud.views import ModelViewSet, ListModelView
+    from example.models import Department
+    from example.schemas import DepartmentOut
+
+    class DepartmentViewSet(ModelViewSet):
+        model_class = Department
+
+        list = ListModelView(output_schema=DepartmentOut)
+    ```
+    """
+
     def __init__(
         self,
         output_schema: Type[Schema],
@@ -25,6 +42,21 @@ class ListModelView(AbstractModelView):
         decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
+        """
+        Initializes the ListModelView.
+
+        Args:
+            output_schema (Type[Schema]): The schema used to serialize the retrieved objects.
+            filter_schema (Type[FilterSchema], optional): The schema used to validate the filters.
+            queryset_getter (Union[DetailQuerySetGetter, CollectionQuerySetGetter], optional): A
+                function to customize the queryset used for retrieving the objects. If not provided,
+                the model's default manager is used. Should have the signature (id: Any) -> QuerySet[Model]
+                if detail=True, and () -> QuerySet[Model] if detail=False.
+            detail (bool, optional): Whether the view is for a detail route or a collection route.
+            decorators (List[Callable], optional): A list of decorators to apply to the view function.
+            router_kwargs (Optional[dict], optional): Additional keyword arguments to pass to the Ninja Router.
+        """
+
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
 
         if detail and queryset_getter is None:
@@ -40,6 +72,14 @@ class ListModelView(AbstractModelView):
         self._related_model = queryset_getter(None).model if detail else None
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
+        """
+        Registers the list route with the given router and model class.
+
+        Args:
+            router (Router): The Ninja Router to register the route with.
+            model_class (Type[Model]): The model class to use for the route.
+        """
+
         if self.detail:
             self._register_detail_route(router, model_class)
         else:
