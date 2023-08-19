@@ -18,10 +18,6 @@ class QuerySetGetterValidator:
         detail: bool,
     ) -> None:
         if queryset_getter is None:
-            if detail:
-                raise ValueError(
-                    "Expected 'queryset_getter' when 'detail=True', but found None."
-                )
             return
 
         if not callable(queryset_getter):

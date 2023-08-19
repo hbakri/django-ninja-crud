@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock
 
-from django.db import models
 from django.test import TestCase
 
 from ninja_crud.views import RetrieveModelView
@@ -20,3 +19,26 @@ class RetrieveModelViewTest(TestCase):
 
         router_mock.get.assert_called_once()
         self.assertTrue(router_mock.get.call_args[1]["exclude_unset"])
+
+    # noinspection PyTypeChecker
+    def test_queryset_getter_validator(self):
+        # queryset_getter must be callable
+        with self.assertRaises(TypeError):
+            RetrieveModelView(
+                queryset_getter="not callable",
+                output_schema=ItemOut,
+            )
+
+        # queryset_getter must return a queryset
+        with self.assertRaises(TypeError):
+            RetrieveModelView(
+                queryset_getter=lambda id: None,
+                output_schema=ItemOut,
+            )
+
+        # queryset_getter must have the correct number of arguments
+        with self.assertRaises(ValueError):
+            RetrieveModelView(
+                queryset_getter=lambda: Item.objects.get_queryset(),
+                output_schema=ItemOut,
+            )
