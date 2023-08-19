@@ -85,10 +85,4 @@ class RetrieveModelView(AbstractModelView):
             return model_class.objects.get_queryset()
 
     def get_path(self) -> str:
-        """
-        Returns the URL path for this view.
-
-        Returns:
-            path (str): The URL path.
-        """
         return "/{id}"
