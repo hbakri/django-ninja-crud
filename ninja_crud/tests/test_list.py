@@ -55,7 +55,7 @@ class ListModelViewTest(AbstractModelViewTest):
         self.model_view_set_test.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
-        queryset = self.model_view.get_queryset(
+        queryset = self.model_view._get_queryset(
             self.model_view_set_test.model_view_set_class.model_class,
             path_parameters["id"] if "id" in path_parameters else None,
         )
@@ -63,8 +63,8 @@ class ListModelViewTest(AbstractModelViewTest):
         limit = query_parameters.pop("limit", 100)
         offset = query_parameters.pop("offset", 0)
         if self.model_view.filter_schema is not None:
-            filter_instance = self.model_view.filter_schema(**query_parameters)
-            queryset = self.model_view.filter_queryset(queryset, filter_instance)
+            filters = self.model_view.filter_schema(**query_parameters)
+            queryset = self.model_view._filter_queryset(queryset, filters)
 
         TestAssertionHelper.assert_content_equals_schema_list(
             test_case=self.model_view_set_test,
