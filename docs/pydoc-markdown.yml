@@ -11,7 +11,7 @@ renderer:
 
   add_method_class_prefix: false
   add_member_class_prefix: false
-  docstrings_as_blockquote: true
+  docstrings_as_blockquote: false
   use_fixed_header_levels: true
   header_level_by_type:
     Module: 1
