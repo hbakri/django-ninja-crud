@@ -19,16 +19,16 @@ class RetrieveModelView(AbstractModelView):
     It allows customization through a queryset getter and also supports decorators.
 
     Example:
-    ```python
-    from ninja_crud.views import ModelViewSet, RetrieveModelView
-    from example.models import Department
-    from example.schemas import DepartmentOut
+        ```python
+        from ninja_crud.views import ModelViewSet, RetrieveModelView
+        from example.models import Department
+        from example.schemas import DepartmentOut
 
-    class DepartmentViewSet(ModelViewSet):
-        model_class = Department
+        class DepartmentViewSet(ModelViewSet):
+            model_class = Department
 
-        retrieve = RetrieveModelView(output_schema=DepartmentOut)
-    ```
+            retrieve = RetrieveModelView(output_schema=DepartmentOut)
+        ```
     """
 
     def __init__(
