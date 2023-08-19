@@ -74,10 +74,10 @@ class RetrieveModelView(AbstractModelView):
             return HTTPStatus.OK, queryset.get(pk=id)
 
     def _get_queryset(self, model_class: Type[Model], id: Any) -> QuerySet[Model]:
-        if self.queryset_getter is None:
-            return model_class.objects.get_queryset()
-        else:
+        if self.queryset_getter:
             return self.queryset_getter(id)
+        else:
+            return model_class.objects.get_queryset()
 
     def get_path(self) -> str:
         """
