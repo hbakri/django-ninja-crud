@@ -52,7 +52,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         content = json.loads(response.content)
 
         if self.model_view.detail:
-            model = self.model_view.related_model
+            model = self.model_view._related_model
         else:
             model = self.model_view_set_test.model_view_set_class.model_class
         TestAssertionHelper.assert_content_equals_schema(

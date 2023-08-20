@@ -23,6 +23,20 @@ Type hint for callables used in collection views where the intention is to retri
 Expected signature: () -> QuerySet[Model]
 """
 
+DetailInstanceBuilder = Callable[[Any], ModelType]
+"""
+Type hint for callables used in detail views where the intention is to build an instance of a single entity.
+
+Expected signature: (id: Any) -> Model
+"""
+
+CollectionInstanceBuilder = Callable[[], ModelType]
+"""
+Type hint for callables used in collection views where the intention is to build an instance of a single entity.
+
+Expected signature: () -> Model
+"""
+
 CreateDetailSaveHook = Callable[[HttpRequest, Any, ModelType], None]
 """
 Type hint for callables used in detail views during a create action where the intention is to

@@ -26,8 +26,8 @@ class ListModelViewTest(TestCase):
         with self.assertRaises(ValueError):
             ListModelView(
                 detail=True,
-                output_schema=ItemOut,
                 queryset_getter=None,
+                output_schema=ItemOut,
             )
 
         # queryset_getter must be callable

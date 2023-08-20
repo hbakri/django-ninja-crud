@@ -2,13 +2,9 @@ from inspect import signature
 from types import MappingProxyType
 from typing import Union
 
-from django.db.models import QuerySet
+from django.db.models import Model, QuerySet
 
-from ninja_crud.views.types import (
-    CollectionQuerySetGetter,
-    DetailQuerySetGetter,
-    ModelType,
-)
+from ninja_crud.views.types import CollectionQuerySetGetter, DetailQuerySetGetter
 
 
 class QuerySetGetterValidator:
@@ -58,7 +54,7 @@ class QuerySetGetterValidator:
         QuerySetGetterValidator._check_queryset_type(queryset=queryset_getter())
 
     @staticmethod
-    def _check_queryset_type(queryset: QuerySet[ModelType]):
+    def _check_queryset_type(queryset: QuerySet[Model]):
         if not isinstance(queryset, QuerySet):
             raise TypeError(
                 f"Expected 'queryset_getter' to return a QuerySet when 'detail=True', but found type {type(queryset)}."
