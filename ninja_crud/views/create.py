@@ -56,7 +56,7 @@ class CreateModelView(AbstractModelView):
             path=self.get_path(),
             response={HTTPStatus.CREATED: output_schema},
             operation_id=operation_id,
-            summary=f"Create {model_class.__name__}",
+            summary=self._get_summary(model_class),
             **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
@@ -88,7 +88,7 @@ class CreateModelView(AbstractModelView):
             path=self.get_path(),
             response={HTTPStatus.CREATED: output_schema},
             operation_id=operation_id,
-            summary=f"Create {self.related_model.__name__}",
+            summary=self._get_summary(model_class),
             **self.router_kwargs,
         )
         @utils.merge_decorators(self.decorators)
@@ -118,3 +118,12 @@ class CreateModelView(AbstractModelView):
             return f"/{{id}}/{utils.to_snake_case(self.related_model.__name__)}s/"
         else:
             return "/"
+
+    def _get_summary(self, model_class: Type[Model]) -> str:
+        verbose_model_name = model_class._meta.verbose_name
+        if self.detail:
+            verbose_model_name = model_class._meta.verbose_name
+            verbose_related_model_name = self.related_model._meta.verbose_name
+            return f"Create {verbose_related_model_name} for {verbose_model_name}"
+        else:
+            return f"Create {verbose_model_name}"
