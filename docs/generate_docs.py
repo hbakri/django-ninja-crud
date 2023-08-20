@@ -10,6 +10,7 @@ modules = [
     "views.update",
     "views.partial_update",
     "views.delete",
+    "views.list",
 ]
 
 template_path = "docs/pydoc-markdown.yml"
