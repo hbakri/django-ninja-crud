@@ -115,7 +115,7 @@ class ListModelView(AbstractModelView):
         ):
             if not model_class.objects.filter(pk=id).exists():
                 raise model_class.DoesNotExist(
-                    f"{model_class.__name__} with ID '{id}' does not exist."
+                    f"{model_class.__name__} with pk '{id}' does not exist."
                 )
 
             queryset = self._get_queryset(model_class, id)
