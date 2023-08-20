@@ -20,6 +20,38 @@ from ninja_crud.views.validators.instance_builder_validator import (
 
 
 class CreateModelView(AbstractModelView):
+    """
+    A view class that handles creating instances of a model.
+    It allows customization through an instance builder, pre-save and post-save hooks,
+    and also supports decorators.
+
+    Example:
+    ```python
+    from ninja_crud.views import ModelViewSet, CreateModelView
+    from example.models import Department, Employee
+    from example.schemas import DepartmentIn, DepartmentOut, EmployeeIn, EmployeeOut
+
+    class DepartmentViewSet(ModelViewSet):
+        model_class = Department
+
+        # Basic usage: Create a department
+        # POST /departments/
+        create = CreateModelView(
+            input_schema=DepartmentIn,
+            output_schema=DepartmentOut
+        )
+
+        # Advanced usage: Create an employee for a specific department
+        # POST /departments/{id}/employees/
+        create_employee = CreateModelView(
+            detail=True,
+            instance_builder=lambda id: Employee(department_id=id),
+            input_schema=EmployeeIn,
+            output_schema=EmployeeOut,
+        )
+    ```
+    """
+
     def __init__(
         self,
         input_schema: Type[Schema],
@@ -33,6 +65,43 @@ class CreateModelView(AbstractModelView):
         decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
+        """
+        Initializes the CreateModelView.
+
+        Args:
+            input_schema (Type[Schema]): The schema used to deserialize the payload.
+            output_schema (Type[Schema]): The schema used to serialize the created object.
+            detail (bool, optional): Whether the view is a detail or collection view. Defaults to False.
+
+                If set to True, `instance_builder` must be provided.
+            instance_builder (Union[DetailInstanceBuilder, CollectionInstanceBuilder], optional): A function
+                that builds an instance of the model. Defaults to None.
+
+                The function should have one of the following signatures:
+                - For `detail=False`: () -> Model
+                - For `detail=True`: (id: Any) -> Model
+
+                If not provided, the `model_class` specified in the `ModelViewSet` will be used.
+            pre_save (Union[CreateDetailSaveHook, CreateCollectionSaveHook], optional): A function that
+                is called before saving the instance. Defaults to None.
+
+                The function should have one of the following signatures:
+                - For `detail=False`: (instance: Model, request: HttpRequest) -> None
+                - For `detail=True`: (instance: Model, request: HttpRequest, id: Any) -> None
+
+                If not provided, the function will be a no-op.
+            post_save (Union[CreateDetailSaveHook, CreateCollectionSaveHook], optional): A function that
+                is called after saving the instance. Defaults to None.
+
+                The function should have one of the following signatures:
+                - For `detail=False`: (instance: Model, request: HttpRequest) -> None
+                - For `detail=True`: (instance: Model, request: HttpRequest, id: Any) -> None
+
+                If not provided, the function will be a no-op.
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
+        """
+
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
 
         if detail and instance_builder is None:
@@ -52,6 +121,14 @@ class CreateModelView(AbstractModelView):
         )
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
+        """
+        Registers the create route with the given router and model class.
+
+        Args:
+            router (Router): The Ninja Router to register the route with.
+            model_class (Type[Model]): The model class to use for the route.
+        """
+
         if self.detail:
             self._register_detail_route(router, model_class)
         else:

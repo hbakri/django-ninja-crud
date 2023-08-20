@@ -58,20 +58,19 @@ class ListModelView(AbstractModelView):
         Args:
             output_schema (Type[Schema]): The schema used to serialize the retrieved objects.
             filter_schema (Type[FilterSchema], optional): The schema used to validate the filters.
+            detail (bool, optional): Whether the view is a detail or collection view. Defaults to False.
+
+                If set to True, `queryset_getter` must be provided.
             queryset_getter (Union[DetailQuerySetGetter, CollectionQuerySetGetter], optional): A
-                function to customize the queryset used for retrieving the objects.
+                function to customize the queryset used for retrieving the objects. Defaults to None.
                 The function should have one of the following signatures:
                 - For `detail=False`: () -> QuerySet[Model]
                 - For `detail=True`: (id: Any) -> QuerySet[Model]
 
                 If not provided, the default manager of the `model_class` specified in the
                 `ModelViewSet` will be used.
-            detail (bool, optional): Indicates whether the route is configured for a detail or
-                collection view.
-
-                If set to True, `queryset_getter` must be provided.
-            decorators (List[Callable], optional): A list of decorators to apply to the view function.
-            router_kwargs (Optional[dict], optional): Additional keyword arguments to pass to the Ninja Router.
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
         """
 
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
