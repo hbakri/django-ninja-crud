@@ -66,8 +66,10 @@ class ListModelView(AbstractModelView):
 
                 If not provided, the default manager of the `model_class` specified in the
                 `ModelViewSet` will be used.
-            detail (bool, optional): Whether the view is for a detail route or a collection route.
-                If set to True, 'queryset_getter' must be provided.
+            detail (bool, optional): Indicates whether the route is configured for a detail or
+                collection view.
+
+                If set to True, `queryset_getter` must be provided.
             decorators (List[Callable], optional): A list of decorators to apply to the view function.
             router_kwargs (Optional[dict], optional): Additional keyword arguments to pass to the Ninja Router.
         """
