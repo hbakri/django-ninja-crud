@@ -16,6 +16,33 @@ from ninja_crud.views.validators.queryset_getter_validator import (
 
 
 class ListModelView(AbstractModelView):
+    """
+    A view class that handles listing instances of a model.
+    It allows customization through a queryset getter and also supports decorators.
+
+    Example:
+    ```python
+    from ninja_crud.views import ModelViewSet, ListModelView
+    from example.models import Department, Employee
+    from example.schemas import DepartmentOut, EmployeeOut
+
+    class DepartmentViewSet(ModelViewSet):
+        model_class = Department
+
+        # Basic usage: List all departments
+        # GET /departments/
+        list = ListModelView(output_schema=DepartmentOut)
+
+        # Advanced usage: List employees of a specific department
+        # GET /departments/{id}/employees/
+        list_employees = ListModelView(
+            detail=True,
+            queryset_getter=lambda id: Employee.objects.filter(department_id=id),
+            output_schema=EmployeeOut,
+        )
+    ```
+    """
+
     def __init__(
         self,
         output_schema: Type[Schema],
@@ -25,6 +52,28 @@ class ListModelView(AbstractModelView):
         decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
+        """
+        Initializes the ListModelView.
+
+        Args:
+            output_schema (Type[Schema]): The schema used to serialize the retrieved objects.
+            filter_schema (Type[FilterSchema], optional): The schema used to validate the filters.
+            queryset_getter (Union[DetailQuerySetGetter, CollectionQuerySetGetter], optional): A
+                function to customize the queryset used for retrieving the objects.
+                The function should have one of the following signatures:
+                - For `detail=False`: () -> QuerySet[Model]
+                - For `detail=True`: (id: Any) -> QuerySet[Model]
+
+                If not provided, the default manager of the `model_class` specified in the
+                `ModelViewSet` will be used.
+            detail (bool, optional): Indicates whether the route is configured for a detail or
+                collection view.
+
+                If set to True, `queryset_getter` must be provided.
+            decorators (List[Callable], optional): A list of decorators to apply to the view function.
+            router_kwargs (Optional[dict], optional): Additional keyword arguments to pass to the Ninja Router.
+        """
+
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
 
         if detail and queryset_getter is None:
@@ -40,6 +89,14 @@ class ListModelView(AbstractModelView):
         self._related_model = queryset_getter(None).model if detail else None
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
+        """
+        Registers the list route with the given router and model class.
+
+        Args:
+            router (Router): The Ninja Router to register the route with.
+            model_class (Type[Model]): The model class to use for the route.
+        """
+
         if self.detail:
             self._register_detail_route(router, model_class)
         else:
