@@ -1,6 +1,7 @@
 from typing import Any, Callable, TypeVar
 
 from django.db.models import Model, QuerySet
+from django.http import HttpRequest
 
 ModelType = TypeVar("ModelType", bound=Model)
 """
@@ -12,9 +13,6 @@ DetailQuerySetGetter = Callable[[Any], QuerySet[ModelType]]
 """
 Type hint for callables used in detail views where the intention is to retrieve a QuerySet for a single entity.
 
-This type is especially used in contexts where a `detail=True` flag indicates that the view is intended
-to fetch details for an individual object rather than a collection.
-
 Expected signature: (id: Any) -> QuerySet[Model]
 """
 
@@ -22,8 +20,21 @@ CollectionQuerySetGetter = Callable[[], QuerySet[ModelType]]
 """
 Type hint for callables used in collection views where the intention is to retrieve a QuerySet for a collection.
 
-This type is especially used in contexts where a `detail=False` flag indicates that the view is intended
-to fetch a collection of objects rather than a single object.
-
 Expected signature: () -> QuerySet[Model]
+"""
+
+CreateDetailSaveHook = Callable[[HttpRequest, Any, ModelType], None]
+"""
+Type hint for callables used in detail views during a create action where the intention is to
+perform a save operation for a single entity.
+
+Expected signature: (request: HttpRequest, id: Any, instance: Model) -> None
+"""
+
+CreateCollectionSaveHook = Callable[[HttpRequest, ModelType], None]
+"""
+Type hint for callables used in collection views during a create action where the intention is to
+perform a pre/post save operation over the created entity.
+
+Expected signature: (request: HttpRequest, instance: Model) -> None
 """
