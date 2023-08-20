@@ -25,15 +25,14 @@ class DepartmentViewSet(ModelViewSet):
 
     list_employees = ListModelView(
         detail=True,
-        output_schema=EmployeeOut,
         queryset_getter=lambda id: Employee.objects.filter(department_id=id),
+        output_schema=EmployeeOut,
     )
     create_employee = CreateModelView(
         detail=True,
-        related_model=Employee,
+        instance_builder=lambda id: Employee(department_id=id),
         input_schema=EmployeeIn,
         output_schema=EmployeeOut,
-        pre_save=lambda request, id, instance: setattr(instance, "department_id", id),
     )
 
 

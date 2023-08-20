@@ -47,8 +47,8 @@ class ListModelView(AbstractModelView):
         self,
         output_schema: Type[Schema],
         filter_schema: Type[FilterSchema] = None,
-        queryset_getter: Union[DetailQuerySetGetter, CollectionQuerySetGetter] = None,
         detail: bool = False,
+        queryset_getter: Union[DetailQuerySetGetter, CollectionQuerySetGetter] = None,
         decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -84,8 +84,8 @@ class ListModelView(AbstractModelView):
 
         self.output_schema = output_schema
         self.filter_schema = filter_schema
-        self.queryset_getter = queryset_getter
         self.detail = detail
+        self.queryset_getter = queryset_getter
         self._related_model: Optional[Type[Model]] = (
             queryset_getter(None).model if detail else None
         )
@@ -115,7 +115,7 @@ class ListModelView(AbstractModelView):
         ):
             if not model_class.objects.filter(pk=id).exists():
                 raise model_class.DoesNotExist(
-                    f"{model_class.__name__} with ID '{id}' does not exist."
+                    f"{model_class.__name__} with pk '{id}' does not exist."
                 )
 
             queryset = self._get_queryset(model_class, id)
@@ -163,10 +163,8 @@ class ListModelView(AbstractModelView):
         self, model_class: Type[Model], id: Any = None
     ) -> QuerySet[Model]:
         if self.queryset_getter:
-            if self.detail:
-                return self.queryset_getter(id)
-            else:
-                return self.queryset_getter()
+            args = [id] if self.detail else []
+            return self.queryset_getter(*args)
         else:
             return model_class.objects.get_queryset()
 
