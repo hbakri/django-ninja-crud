@@ -60,9 +60,12 @@ class ListModelView(AbstractModelView):
             filter_schema (Type[FilterSchema], optional): The schema used to validate the filters.
             queryset_getter (Union[DetailQuerySetGetter, CollectionQuerySetGetter], optional): A
                 function to customize the queryset used for retrieving the objects. If not provided,
-                the model's default manager is used. Should have the signature (id: Any) -> QuerySet[Model]
-                if detail=True, and () -> QuerySet[Model] if detail=False.
+                the model's default manager is used. The function should have one of the following signatures:
+                - For `detail=True`: (id: Any) -> QuerySet[Model]
+                - For `detail=False`: () -> QuerySet[Model]
+                Note: 'queryset_getter' is mandatory if 'detail=True'.
             detail (bool, optional): Whether the view is for a detail route or a collection route.
+                If set to True, 'queryset_getter' must be provided.
             decorators (List[Callable], optional): A list of decorators to apply to the view function.
             router_kwargs (Optional[dict], optional): Additional keyword arguments to pass to the Ninja Router.
         """
