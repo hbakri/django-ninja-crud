@@ -86,7 +86,7 @@ class ListModelView(AbstractModelView):
         self.filter_schema = filter_schema
         self.queryset_getter = queryset_getter
         self.detail = detail
-        self._related_model: Type[Model] = (
+        self._related_model: Optional[Type[Model]] = (
             queryset_getter(None).model if detail else None
         )
 
