@@ -86,7 +86,9 @@ class ListModelView(AbstractModelView):
         self.filter_schema = filter_schema
         self.queryset_getter = queryset_getter
         self.detail = detail
-        self._related_model = queryset_getter(None).model if detail else None
+        self._related_model: Type[Model] = (
+            queryset_getter(None).model if detail else None
+        )
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         """
@@ -186,9 +188,12 @@ class ListModelView(AbstractModelView):
             return f"list_{model_name}s"
 
     def _get_summary(self, model_class: Type[Model]) -> str:
-        model_name = model_class.__name__
         if self.detail:
-            related_model_name = self._related_model.__name__
-            return f"List {related_model_name}s related to a {model_name}"
+            verbose_model_name = model_class._meta.verbose_name
+            verbose_related_model_name_plural = (
+                self._related_model._meta.verbose_name_plural
+            )
+            return f"List {verbose_related_model_name_plural} related to a {verbose_model_name}"
         else:
-            return f"List {model_name}s"
+            verbose_model_name_plural = model_class._meta.verbose_name_plural
+            return f"List {verbose_model_name_plural}"
