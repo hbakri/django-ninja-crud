@@ -86,16 +86,16 @@ class CreateModelView(AbstractModelView):
                 is called before saving the instance. Defaults to None.
 
                 The function should have one of the following signatures:
-                - For `detail=False`: (instance: Model, request: HttpRequest) -> None
-                - For `detail=True`: (instance: Model, request: HttpRequest, id: Any) -> None
+                - For `detail=False`: (request: HttpRequest, instance: Model) -> None
+                - For `detail=True`: (request: HttpRequest, id: Any, instance: Model) -> None
 
                 If not provided, the function will be a no-op.
             post_save (Union[CreateDetailSaveHook, CreateCollectionSaveHook], optional): A function that
                 is called after saving the instance. Defaults to None.
 
                 The function should have one of the following signatures:
-                - For `detail=False`: (instance: Model, request: HttpRequest) -> None
-                - For `detail=True`: (instance: Model, request: HttpRequest, id: Any) -> None
+                - For `detail=False`: (request: HttpRequest, instance: Model) -> None
+                - For `detail=True`: (request: HttpRequest, id: Any, instance: Model) -> None
 
                 If not provided, the function will be a no-op.
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
