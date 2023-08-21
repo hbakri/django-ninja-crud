@@ -62,14 +62,6 @@ class RetrieveModelView(AbstractModelView):
         self.queryset_getter = queryset_getter
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
-        """
-        Registers the retrieve route with the given router and model class.
-
-        Args:
-            router (Router): The Ninja Router to register the route with.
-            model_class (Type[Model]): The Django Model class to use for the route.
-        """
-
         @router.get(
             path=self.get_path(),
             response=self.output_schema,

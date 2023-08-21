@@ -73,14 +73,6 @@ class DeleteModelView(AbstractModelView):
         self.post_delete = post_delete
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
-        """
-        Registers the delete route for the given model class.
-
-        Args:
-            router (Router): The Ninja Router to register the route with.
-            model_class (Type[Model]): The Django Model class to use for the route.
-        """
-
         @router.delete(
             path=self.get_path(),
             response={HTTPStatus.NO_CONTENT: None},

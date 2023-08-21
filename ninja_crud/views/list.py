@@ -90,14 +90,6 @@ class ListModelView(AbstractModelView):
         )
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
-        """
-        Registers the list route with the given router and model class.
-
-        Args:
-            router (Router): The Ninja Router to register the route with.
-            model_class (Type[Model]): The Django Model class to use for the route.
-        """
-
         if self.detail:
             self._register_detail_route(router, model_class)
         else:
