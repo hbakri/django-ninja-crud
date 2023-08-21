@@ -45,7 +45,7 @@ class PartialUpdateModelView(UpdateModelView):
         """
 
         super().__init__(
-            input_schema=self.generate_partial_schema(input_schema),
+            input_schema=self._generate_partial_schema(input_schema),
             output_schema=output_schema,
             decorators=decorators,
             pre_save=pre_save,
@@ -55,17 +55,7 @@ class PartialUpdateModelView(UpdateModelView):
         self.http_method = "PATCH"
 
     @staticmethod
-    def generate_partial_schema(schema_class: Type[Schema]) -> Type[Schema]:
-        """
-        Creates a new schema class based on the given schema_class, with all fields set as optional.
-
-        Args:
-            schema_class (Type[Schema]): The original schema class.
-
-        Returns:
-            Type[Schema]: A new schema class with all fields made optional.
-        """
-
+    def _generate_partial_schema(schema_class: Type[Schema]) -> Type[Schema]:
         class PartialSchema(schema_class):
             pass
 
