@@ -50,7 +50,7 @@ class DeleteModelView(AbstractModelView):
             post_delete (PostDeleteHook, optional): A function that is called after deleting the instance.
                 Defaults to None.
 
-                Should have the signature (request: HttpRequest, id: Any) -> None.
+                Should have the signature (request: HttpRequest, id: Any, deleted_instance: Model) -> None.
 
                 If not provided, the function will be a no-op.
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
