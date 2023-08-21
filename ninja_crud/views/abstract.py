@@ -7,11 +7,9 @@ from ninja import Router
 
 class AbstractModelView(ABC):
     """
-    Abstract class for a model view.
+    An abstract base class for all model views.
 
-    Attributes:
-        decorators (List[Callable], optional): A list of decorators to apply to the view function.
-        router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
+    Subclasses must implement the register_route and get_path methods.
     """
 
     def __init__(
@@ -21,8 +19,8 @@ class AbstractModelView(ABC):
         Initializes the AbstractModelView with the given decorators and optional router keyword arguments.
 
         Args:
-            decorators (List[Callable], optional): A list of decorators to apply to the view function.
-            router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
         """
 
         if decorators is None:

@@ -53,12 +53,20 @@ class DeleteModelView(AbstractModelView):
         Initializes the DeleteModelView with the given decorators and optional pre- and post-delete hooks.
 
         Args:
-            pre_delete (PreDeleteHook, optional): A function to call before deleting the instance.
+            pre_delete (PreDeleteHook, optional): A function that is called before deleting the instance.
+                Defaults to None.
+
                 Should have the signature (request: HttpRequest, instance: Model) -> None.
-            post_delete (PostDeleteHook, optional): A function to call after deleting the instance.
+
+                If not provided, the function will be a no-op.
+            post_delete (PostDeleteHook, optional): A function that is called after deleting the instance.
+                Defaults to None.
+
                 Should have the signature (request: HttpRequest, id: Any) -> None.
-            decorators (List[Callable], optional): A list of decorators to apply to the view function.
-            router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
+
+                If not provided, the function will be a no-op.
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
         """
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
         self.pre_delete = pre_delete
@@ -69,11 +77,8 @@ class DeleteModelView(AbstractModelView):
         Registers the delete route for the given model class.
 
         Args:
-            router (Router): The Ninja router to register the route with.
-            model_class (Type[Model]): The Django model class for the update view.
-
-        Note:
-            This method is usually called by the parent class and should not be called manually.
+            router (Router): The Ninja Router to register the route with.
+            model_class (Type[Model]): The Django Model class to use for the route.
         """
 
         @router.delete(

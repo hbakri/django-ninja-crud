@@ -26,18 +26,21 @@ PostSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
 class UpdateModelView(AbstractModelView):
     """
     A view class that handles updating a specific instance of a model.
+    It allows customization through pre- and post-save hooks and also supports decorators.
 
-    Attributes:
-        input_schema (Type[Schema]): The schema used to validate the input data.
-        output_schema (Type[Schema]): The schema used to serialize the updated instance.
-        pre_save (PreSaveHook, optional): A callable to be invoked before saving the updated instance. Should be a
-            function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
-        post_save (PostSaveHook, optional): A callable to be invoked after saving the updated instance. Should be a
-            function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
-        decorators (List[Callable], optional): A list of decorators to apply to the view function.
-        router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
-        http_method (str): The HTTP method used for this view, defaulting to "PUT". This is an internal attribute and
-            not intended to be modified directly.
+    Example:
+    ```python
+    from ninja_crud.views import ModelViewSet, UpdateModelView
+    from example.models import Department
+    from example.schemas import DepartmentIn, DepartmentOut
+
+    class DepartmentViewSet(ModelViewSet):
+        model_class = Department
+
+        # Usage: Update a department by id
+        # PUT /departments/{id}/
+        update = UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+    ```
     """
 
     def __init__(
@@ -50,17 +53,23 @@ class UpdateModelView(AbstractModelView):
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
-        Initializes the UpdateModelView with the specified schemas, decorators, and hooks.
+        Initializes the UpdateModelView.
 
         Args:
-            input_schema (Type[Schema]): The schema for validating the input data for the update.
-            output_schema (Type[Schema]): The schema for serializing the updated instance.
-            pre_save (PreSaveHook, optional): A callable to be invoked before saving the updated instance. Should be a
-                function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
-            post_save (PostSaveHook, optional): A callable to be invoked after saving the updated instance. Should be a
-                function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
-            decorators (List[Callable], optional): A list of decorators to apply to the view function.
-            router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
+            input_schema (Type[Schema]): The schema used to deserialize the payload.
+            output_schema (Type[Schema]): The schema used to serialize the updated instance.
+            pre_save (PreSaveHook, optional): A function that is called before saving the instance. Defaults to None.
+
+                Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
+
+                If not provided, the function will be a no-op.
+            post_save (PostSaveHook, optional): A function that is called after saving the instance. Defaults to None.
+
+                Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
+
+                If not provided, the function will be a no-op.
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
         """
 
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
@@ -75,11 +84,8 @@ class UpdateModelView(AbstractModelView):
         Registers the update route for the given model class.
 
         Args:
-            router (Router): The Ninja router to register the route with.
-            model_class (Type[Model]): The Django model class for the update view.
-
-        Note:
-            This method is usually called by the parent class and should not be called manually.
+            router (Router): The Ninja Router to register the route with.
+            model_class (Type[Model]): The Django Model class to use for the route.
         """
 
         input_schema = self.input_schema
@@ -120,10 +126,4 @@ class UpdateModelView(AbstractModelView):
             return HTTPStatus.OK, instance
 
     def get_path(self) -> str:
-        """
-        Returns the URL path for this view, used in routing.
-
-        Returns:
-            str: The URL path.
-        """
         return "/{id}"

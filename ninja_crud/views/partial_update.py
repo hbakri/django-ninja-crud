@@ -7,16 +7,22 @@ from ninja_crud.views.update import PostSaveHook, PreSaveHook, UpdateModelView
 
 class PartialUpdateModelView(UpdateModelView):
     """
-    A view class that handles partially updating a specific instance of a model.
+    A view class that handles partially updating instances of a model.
+    It allows customization through pre- and post-save hooks and also supports decorators.
 
-    This class extends UpdateModelView to support partial updates. All fields in the input schema are made optional,
-    allowing clients to submit only the fields they want to update.
+    Example:
+    ```python
+    from ninja_crud.views import ModelViewSet, PartialUpdateModelView
+    from example.models import Department
+    from example.schemas import DepartmentIn, DepartmentOut
 
-    Attributes are inherited from UpdateModelView, and the behavior of methods is the same except as noted below.
+    class DepartmentViewSet(ModelViewSet):
+        model_class = Department
 
-    Attributes:
-        http_method (str): The HTTP method used for this view, defaulting to "PATCH".
-            This is an internal attribute and not intended to be modified directly.
+        # Usage: Partially update a department by id
+        # PATCH /departments/{id}/
+        partial_update = PartialUpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+    ```
     """
 
     def __init__(
@@ -29,19 +35,27 @@ class PartialUpdateModelView(UpdateModelView):
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
-        Initializes the PartialUpdateModelView with the specified schemas, decorators, and hooks.
-
-        All fields in the input schema are made optional, allowing clients to submit only the fields they want to update.
+        Initializes the PartialUpdateModelView.
+        All fields in the input schema are made optional, allowing clients to submit only
+        the fields they want to update.
 
         Args:
-            input_schema (Type[Schema]): The schema for validating the input data for the partial update.
-            output_schema (Type[Schema]): The schema for serializing the updated instance.
-            pre_save (PreSaveHook, optional): A callable to be invoked before saving the updated instance. Should be a
-                function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
-            post_save (PostSaveHook, optional): A callable to be invoked after saving the updated instance. Should be a
-                function with the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
-            decorators (List[Callable], optional): A list of decorators to apply to the view function.
-            router_kwargs (Optional[dict], optional): A dictionary of keyword arguments to pass to the router.
+            input_schema (Type[Schema]): The schema used to deserialize the payload.
+            output_schema (Type[Schema]): The schema used to serialize the updated instance.
+            pre_save (PreSaveHook, optional): A function that is called before saving the instance. Defaults to None.
+
+                The function should have one of the following signature:
+                - (request: HttpRequest, instance: Model, old_instance: Model) -> None
+
+                If not provided, the function will be a no-op.
+            post_save (PostSaveHook, optional): A function that is called after saving the instance. Defaults to None.
+
+                The function should have one of the following signature:
+                - (request: HttpRequest, instance: Model, old_instance: Model) -> None
+
+                If not provided, the function will be a no-op.
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
         """
 
         super().__init__(

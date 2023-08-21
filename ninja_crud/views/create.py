@@ -22,7 +22,7 @@ from ninja_crud.views.validators.instance_builder_validator import (
 class CreateModelView(AbstractModelView):
     """
     A view class that handles creating instances of a model.
-    It allows customization through an instance builder, pre-save and post-save hooks,
+    It allows customization through an instance builder, pre- and post-save hooks,
     and also supports decorators.
 
     Example:
@@ -70,7 +70,7 @@ class CreateModelView(AbstractModelView):
 
         Args:
             input_schema (Type[Schema]): The schema used to deserialize the payload.
-            output_schema (Type[Schema]): The schema used to serialize the created object.
+            output_schema (Type[Schema]): The schema used to serialize the created instance.
             detail (bool, optional): Whether the view is a detail or collection view. Defaults to False.
 
                 If set to True, `instance_builder` must be provided.
@@ -126,7 +126,7 @@ class CreateModelView(AbstractModelView):
 
         Args:
             router (Router): The Ninja Router to register the route with.
-            model_class (Type[Model]): The model class to use for the route.
+            model_class (Type[Model]): The Django Model class to use for the route.
         """
 
         if self.detail:
