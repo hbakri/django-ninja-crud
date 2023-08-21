@@ -38,7 +38,7 @@ class DeleteModelView(AbstractModelView):
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
-        Initializes the DeleteModelView with the given decorators and optional pre- and post-delete hooks.
+        Initializes the DeleteModelView.
 
         Args:
             pre_delete (PreDeleteHook, optional): A function that is called before deleting the instance.
