@@ -14,10 +14,10 @@ DetailQuerySetGetter = Callable[[Any], QuerySet[ModelType]]
 Alias for a callable expected to retrieve a QuerySet for a detail view.
 
 Parameters:
-- id (Any): The identifier of the detail instance.
+    id (Any): The identifier of the detail instance.
 
 Returns:
-- QuerySet[ModelType]: The QuerySet of model instances.
+    QuerySet[ModelType]: The QuerySet of model instances.
 """
 
 CollectionQuerySetGetter = Callable[[], QuerySet[ModelType]]
@@ -25,10 +25,10 @@ CollectionQuerySetGetter = Callable[[], QuerySet[ModelType]]
 Alias for a callable expected to retrieve a QuerySet for a collection view.
 
 Parameters:
-- None
+    None
 
 Returns:
-- QuerySet[ModelType]: The QuerySet of model instances.
+    QuerySet[ModelType]: The QuerySet of model instances.
 """
 
 DetailInstanceBuilder = Callable[[Any], ModelType]
@@ -36,10 +36,10 @@ DetailInstanceBuilder = Callable[[Any], ModelType]
 Alias for a callable expected to build an instance for a detail view.
 
 Parameters:
-- id (Any): The identifier of the detail instance.
+    id (Any): The identifier of the detail instance.
 
 Returns:
-- ModelType: The instance of the model that was created.
+    ModelType: The instance of the model that was created.
 """
 
 CollectionInstanceBuilder = Callable[[], ModelType]
@@ -47,10 +47,10 @@ CollectionInstanceBuilder = Callable[[], ModelType]
 Alias for a callable expected to build an instance for a collection view.
 
 Parameters:
-- None
+    None
 
 Returns:
-- ModelType: The instance of the model that was created.
+    ModelType: The instance of the model that was created.
 """
 
 CreateDetailSaveHook = Callable[[HttpRequest, Any, ModelType], None]
@@ -58,12 +58,9 @@ CreateDetailSaveHook = Callable[[HttpRequest, Any, ModelType], None]
 Alias for a callback/hook executed during a create operation on a detail view.
 
 Parameters:
-- request (HttpRequest): The request object associated with the create operation.
-- id (Any): The identifier of the detail instance.
-- instance (ModelType): The instance of the model that was created.
-
-Returns:
-- None
+    request (HttpRequest): The request object associated with the create operation.
+    id (Any): The identifier of the detail instance.
+    instance (ModelType): The instance of the model that was created.
 """
 
 CreateCollectionSaveHook = Callable[[HttpRequest, ModelType], None]
@@ -71,11 +68,8 @@ CreateCollectionSaveHook = Callable[[HttpRequest, ModelType], None]
 Alias for a callback/hook executed during a create operation on a collection view.
 
 Parameters:
-- request (HttpRequest): The request object associated with the create operation.
-- instance (ModelType): The instance of the model that was created.
-
-Returns:
-- None
+    request (HttpRequest): The request object associated with the create operation.
+    instance (ModelType): The instance of the model that was created.
 """
 
 UpdateSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
@@ -83,12 +77,9 @@ UpdateSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
 Alias for a callback/hook executed during an update operation.
 
 Parameters:
-- request (HttpRequest): The request object associated with the update operation.
-- old_instance (ModelType): The instance of the model before the update.
-- new_instance (ModelType): The instance of the model after the update.
-
-Returns:
-- None
+    request (HttpRequest): The request object associated with the update operation.
+    old_instance (ModelType): The instance of the model before the update.
+    new_instance (ModelType): The instance of the model after the update.
 """
 
 PreDeleteHook = Callable[[HttpRequest, ModelType], None]
@@ -96,11 +87,8 @@ PreDeleteHook = Callable[[HttpRequest, ModelType], None]
 Alias for a callback/hook executed prior to a model deletion.
 
 Parameters:
-- request (HttpRequest): The request object associated with the delete operation.
-- instance (ModelType): The instance of the model that is about to be deleted.
-
-Returns:
-- None
+    request (HttpRequest): The request object associated with the delete operation.
+    instance (ModelType): The instance of the model that is about to be deleted.
 """
 
 PostDeleteHook = Callable[[HttpRequest, Any, ModelType], None]
@@ -108,13 +96,10 @@ PostDeleteHook = Callable[[HttpRequest, Any, ModelType], None]
 Alias for a callback/hook executed after a model deletion.
 
 Parameters:
-- request (HttpRequest): The request object associated with the delete operation.
-- id (Any): The identifier of the deleted instance.
-- deleted_instance (ModelType): The instance of the model that was deleted from the database.
+    request (HttpRequest): The request object associated with the delete operation.
+    id (Any): The identifier of the deleted instance.
+    deleted_instance (ModelType): The instance of the model that was deleted from the database.
 
 Note:
     Be cautious when using `deleted_instance` as the object no longer resides in the database.
-
-Returns:
-- None
 """
