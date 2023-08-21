@@ -13,6 +13,7 @@ modules = [
     "views.list",
     "views.create",
     "views.types",
+    "views.viewset",
 ]
 
 template_path = "docs/pydoc-markdown.yml"

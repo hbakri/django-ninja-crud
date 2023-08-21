@@ -95,7 +95,7 @@ class ListModelView(AbstractModelView):
 
         Args:
             router (Router): The Ninja Router to register the route with.
-            model_class (Type[Model]): The model class to use for the route.
+            model_class (Type[Model]): The Django Model class to use for the route.
         """
 
         if self.detail:

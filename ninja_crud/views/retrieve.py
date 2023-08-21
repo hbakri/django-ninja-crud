@@ -27,6 +27,7 @@ class RetrieveModelView(AbstractModelView):
     class DepartmentViewSet(ModelViewSet):
         model_class = Department
 
+        # Usage: Retrieve a department by id
         # GET /departments/{id}/
         retrieve = RetrieveModelView(output_schema=DepartmentOut)
     ```
@@ -45,10 +46,12 @@ class RetrieveModelView(AbstractModelView):
         Args:
             output_schema (Type[Schema]): The schema used to serialize the retrieved object.
             queryset_getter (DetailQuerySetGetter, optional): A function to customize the queryset used
-                for retrieving the object. If not provided, the model's default manager is used.
-                Should have the signature (id: Any) -> QuerySet[Model].
-            decorators (List[Callable], optional): A list of decorators to apply to the view function.
-            router_kwargs (Optional[dict], optional): Additional keyword arguments to pass to the Ninja Router.
+                for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet[Model].
+
+                If not provided, the default manager of the `model_class` specified in the
+                `ModelViewSet` will be used.
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
         """
 
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
@@ -63,8 +66,8 @@ class RetrieveModelView(AbstractModelView):
         Registers the retrieve route with the given router and model class.
 
         Args:
-            router (Router): The Ninja Router instance to which the route should be added.
-            model_class (Type[Model]): The model class to use for the route.
+            router (Router): The Ninja Router to register the route with.
+            model_class (Type[Model]): The Django Model class to use for the route.
         """
 
         @router.get(
