@@ -45,7 +45,7 @@ jobs:
     - name: Copy new markdown files
       run: |
         find docs -name '*.md' -exec cp --parents \{\} wiki/ \;
-        cp assets/images/django-ninja-crud-logo.png wiki/assets/images/
+        cp assets/images/django-ninja-crud-cover.png wiki/django-ninja-crud-cover.png
 
     - name: Commit and push changes
       env:
