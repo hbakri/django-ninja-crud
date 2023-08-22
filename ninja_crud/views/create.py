@@ -99,7 +99,7 @@ class CreateModelView(AbstractModelView):
 
                 If not provided, the function will be a no-op.
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
+            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
         """
 
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
