@@ -130,7 +130,7 @@ With this package, these tests can be written in a consistent, straightforward w
 In summary, this package simplifies the process of setting up and testing **CRUD** operations in Django Ninja, letting you focus on what makes your application unique. By providing a flexible, transparent, and configurable solution, this package is a powerful tool for accelerating web development.
 
 ## 📚 Documentation
-For more information, see the [documentation](https://django-ninja-crud.readme.io/docs).
+For more information, see the [documentation](https://github.com/hbakri/django-ninja-crud/wiki).
 
 ## 🫶 Support
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/hbakri)
