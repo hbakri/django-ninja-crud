@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type, TypeVar
+from typing import Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -7,19 +7,7 @@ from ninja import Router
 
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
-
-# Type alias for a Django Model instance.
-# It's a generic type that is bound to Django's base Model class,
-# meaning it can represent any Django Model instance.
-ModelType = TypeVar("ModelType", bound=Model)
-
-# Type alias for a callable to be invoked before deleting the instance.
-# Should have the signature (request: HttpRequest, instance: Model) -> None.
-PreDeleteHook = Callable[[HttpRequest, ModelType], None]
-
-# Type alias for a callable to be invoked after deleting the instance.
-# Should have the signature (request: HttpRequest, id: Any) -> None.
-PostDeleteHook = Callable[[HttpRequest, Any], None]
+from ninja_crud.views.types import PostDeleteHook, PreDeleteHook
 
 
 class DeleteModelView(AbstractModelView):
@@ -50,7 +38,7 @@ class DeleteModelView(AbstractModelView):
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
-        Initializes the DeleteModelView with the given decorators and optional pre- and post-delete hooks.
+        Initializes the DeleteModelView.
 
         Args:
             pre_delete (PreDeleteHook, optional): A function that is called before deleting the instance.
@@ -62,11 +50,11 @@ class DeleteModelView(AbstractModelView):
             post_delete (PostDeleteHook, optional): A function that is called after deleting the instance.
                 Defaults to None.
 
-                Should have the signature (request: HttpRequest, id: Any) -> None.
+                Should have the signature (request: HttpRequest, id: Any, deleted_instance: Model) -> None.
 
                 If not provided, the function will be a no-op.
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
+            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
         """
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
         self.pre_delete = pre_delete
@@ -90,7 +78,7 @@ class DeleteModelView(AbstractModelView):
             instance.delete()
 
             if self.post_delete is not None:
-                self.post_delete(request, id)
+                self.post_delete(request, id, instance)
 
             return HTTPStatus.NO_CONTENT, None
 

@@ -2,7 +2,8 @@ from typing import Callable, List, Optional, Type
 
 from ninja import Schema
 
-from ninja_crud.views.update import PostSaveHook, PreSaveHook, UpdateModelView
+from ninja_crud.views.types import UpdateSaveHook
+from ninja_crud.views.update import UpdateModelView
 
 
 class PartialUpdateModelView(UpdateModelView):
@@ -29,8 +30,8 @@ class PartialUpdateModelView(UpdateModelView):
         self,
         input_schema: Type[Schema],
         output_schema: Type[Schema],
-        pre_save: PreSaveHook = None,
-        post_save: PostSaveHook = None,
+        pre_save: UpdateSaveHook = None,
+        post_save: UpdateSaveHook = None,
         decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -42,20 +43,20 @@ class PartialUpdateModelView(UpdateModelView):
         Args:
             input_schema (Type[Schema]): The schema used to deserialize the payload.
             output_schema (Type[Schema]): The schema used to serialize the updated instance.
-            pre_save (PreSaveHook, optional): A function that is called before saving the instance. Defaults to None.
+            pre_save (UpdateSaveHook, optional): A function that is called before saving the instance. Defaults to None.
 
-                The function should have one of the following signature:
-                - (request: HttpRequest, instance: Model, old_instance: Model) -> None
+                The function should have the signature:
+                - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
 
                 If not provided, the function will be a no-op.
-            post_save (PostSaveHook, optional): A function that is called after saving the instance. Defaults to None.
+            post_save (UpdateSaveHook, optional): A function that is called after saving the instance. Defaults to None.
 
-                The function should have one of the following signature:
-                - (request: HttpRequest, instance: Model, old_instance: Model) -> None
+                The function should have the signature:
+                - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
 
                 If not provided, the function will be a no-op.
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
+            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
         """
 
         super().__init__(

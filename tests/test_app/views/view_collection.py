@@ -63,8 +63,8 @@ class CollectionViewSet(ModelViewSet):
         decorators=[user_is_creator],
     )
     delete = DeleteModelView(
-        pre_delete=lambda request, id: None,
-        post_delete=lambda request, id: None,
+        pre_delete=lambda request, instance: None,
+        post_delete=lambda request, id, deleted_instance: None,
         decorators=[user_is_creator],
     )
 

@@ -50,7 +50,15 @@ class ModelViewSet(metaclass=ModelViewSetMeta):
     ```python
     # example/views.py
     from ninja import Router
-    from ninja_crud.views import ModelViewSet
+    from django.http import HttpRequest
+    from ninja_crud.views import (
+        CreateModelView,
+        DeleteModelView,
+        ListModelView,
+        ModelViewSet,
+        RetrieveModelView,
+        UpdateModelView,
+    )
     from example.models import Department
     from example.schemas import DepartmentIn, DepartmentOut
 
@@ -71,7 +79,7 @@ class ModelViewSet(metaclass=ModelViewSetMeta):
 
     # The router can then be used as normal
     @router.get("/{name}", response=DepartmentOut)
-    def get_department_by_name(request, name: str):
+    def get_department_by_name(request: HttpRequest, name: str):
         return Department.objects.get(name=name)
     ```
 

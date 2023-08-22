@@ -51,7 +51,7 @@ class RetrieveModelView(AbstractModelView):
                 If not provided, the default manager of the `model_class` specified in the
                 `ModelViewSet` will be used.
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
+            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
         """
 
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)

@@ -11,44 +11,95 @@ This generic type is bound to Django's base Model class.
 
 DetailQuerySetGetter = Callable[[Any], QuerySet[ModelType]]
 """
-Type hint for callables used in detail views where the intention is to retrieve a QuerySet for a single entity.
+Alias for a callable expected to retrieve a QuerySet for a detail view.
 
-Expected signature: (id: Any) -> QuerySet[Model]
+Parameters:
+    id (Any): The identifier of the detail instance.
+
+Returns:
+    QuerySet[ModelType]: The QuerySet of model instances.
 """
 
 CollectionQuerySetGetter = Callable[[], QuerySet[ModelType]]
 """
-Type hint for callables used in collection views where the intention is to retrieve a QuerySet for a collection.
+Alias for a callable expected to retrieve a QuerySet for a collection view.
 
-Expected signature: () -> QuerySet[Model]
+Parameters:
+    None
+
+Returns:
+    QuerySet[ModelType]: The QuerySet of model instances.
 """
 
 DetailInstanceBuilder = Callable[[Any], ModelType]
 """
-Type hint for callables used in detail views where the intention is to build an instance of a single entity.
+Alias for a callable expected to build an instance for a detail view.
 
-Expected signature: (id: Any) -> Model
+Parameters:
+    id (Any): The identifier of the detail instance.
+
+Returns:
+    ModelType: The instance of the model that was created.
 """
 
 CollectionInstanceBuilder = Callable[[], ModelType]
 """
-Type hint for callables used in collection views where the intention is to build an instance of a single entity.
+Alias for a callable expected to build an instance for a collection view.
 
-Expected signature: () -> Model
+Parameters:
+    None
+
+Returns:
+    ModelType: The instance of the model that was created.
 """
 
 CreateDetailSaveHook = Callable[[HttpRequest, Any, ModelType], None]
 """
-Type hint for callables used in detail views during a create action where the intention is to
-perform a save operation for a single entity.
+Alias for a callback/hook executed during a create operation on a detail view.
 
-Expected signature: (request: HttpRequest, id: Any, instance: Model) -> None
+Parameters:
+    request (HttpRequest): The request object associated with the create operation.
+    id (Any): The identifier of the detail instance.
+    instance (ModelType): The instance of the model that was created.
 """
 
 CreateCollectionSaveHook = Callable[[HttpRequest, ModelType], None]
 """
-Type hint for callables used in collection views during a create action where the intention is to
-perform a pre/post save operation over the created entity.
+Alias for a callback/hook executed during a create operation on a collection view.
 
-Expected signature: (request: HttpRequest, instance: Model) -> None
+Parameters:
+    request (HttpRequest): The request object associated with the create operation.
+    instance (ModelType): The instance of the model that was created.
+"""
+
+UpdateSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
+"""
+Alias for a callback/hook executed during an update operation.
+
+Parameters:
+    request (HttpRequest): The request object associated with the update operation.
+    old_instance (ModelType): The instance of the model before the update.
+    new_instance (ModelType): The instance of the model after the update.
+"""
+
+PreDeleteHook = Callable[[HttpRequest, ModelType], None]
+"""
+Alias for a callback/hook executed prior to a model deletion.
+
+Parameters:
+    request (HttpRequest): The request object associated with the delete operation.
+    instance (ModelType): The instance of the model that is about to be deleted.
+"""
+
+PostDeleteHook = Callable[[HttpRequest, Any, ModelType], None]
+"""
+Alias for a callback/hook executed after a model deletion.
+
+Parameters:
+    request (HttpRequest): The request object associated with the delete operation.
+    id (Any): The identifier of the deleted instance.
+    deleted_instance (ModelType): The instance of the model that was deleted from the database.
+
+Note:
+    Be cautious when using `deleted_instance` as the object no longer resides in the database.
 """

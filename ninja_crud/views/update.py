@@ -1,6 +1,6 @@
 import copy
 from http import HTTPStatus
-from typing import Callable, List, Optional, Type, TypeVar
+from typing import Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -8,19 +8,7 @@ from ninja import Router, Schema
 
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
-
-# Type alias for a Django Model instance.
-# It's a generic type that is bound to Django's base Model class,
-# meaning it can represent any Django Model instance.
-ModelType = TypeVar("ModelType", bound=Model)
-
-# Type alias for a callable to be invoked before saving the updated instance.
-# Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
-PreSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
-
-# Type alias for a callable to be invoked after saving the updated instance.
-# Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
-PostSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
+from ninja_crud.views.types import UpdateSaveHook
 
 
 class UpdateModelView(AbstractModelView):
@@ -47,8 +35,8 @@ class UpdateModelView(AbstractModelView):
         self,
         input_schema: Type[Schema],
         output_schema: Type[Schema],
-        pre_save: PreSaveHook = None,
-        post_save: PostSaveHook = None,
+        pre_save: UpdateSaveHook = None,
+        post_save: UpdateSaveHook = None,
         decorators: List[Callable] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -58,18 +46,20 @@ class UpdateModelView(AbstractModelView):
         Args:
             input_schema (Type[Schema]): The schema used to deserialize the payload.
             output_schema (Type[Schema]): The schema used to serialize the updated instance.
-            pre_save (PreSaveHook, optional): A function that is called before saving the instance. Defaults to None.
+            pre_save (UpdateSaveHook, optional): A function that is called before saving the instance. Defaults to None.
 
-                Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
+                The function should have the signature:
+                - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
 
                 If not provided, the function will be a no-op.
-            post_save (PostSaveHook, optional): A function that is called after saving the instance. Defaults to None.
+            post_save (UpdateSaveHook, optional): A function that is called after saving the instance. Defaults to None.
 
-                Should have the signature (request: HttpRequest, instance: Model, old_instance: Model) -> None.
+                The function should have the signature:
+                - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
 
                 If not provided, the function will be a no-op.
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to None.
+            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
         """
 
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
@@ -97,25 +87,25 @@ class UpdateModelView(AbstractModelView):
             id: utils.get_id_type(model_class),
             payload: input_schema,
         ):
-            instance = model_class.objects.get(pk=id)
+            new_instance = model_class.objects.get(pk=id)
 
             old_instance = None
             if self.pre_save is not None or self.post_save is not None:
-                old_instance = copy.deepcopy(instance)
+                old_instance = copy.deepcopy(new_instance)
 
             for field, value in payload.dict(exclude_unset=True).items():
-                setattr(instance, field, value)
+                setattr(new_instance, field, value)
 
             if self.pre_save is not None:
-                self.pre_save(request, instance, old_instance)
+                self.pre_save(request, old_instance, new_instance)
 
-            instance.full_clean()
-            instance.save()
+            new_instance.full_clean()
+            new_instance.save()
 
             if self.post_save is not None:
-                self.post_save(request, instance, old_instance)
+                self.post_save(request, old_instance, new_instance)
 
-            return HTTPStatus.OK, instance
+            return HTTPStatus.OK, new_instance
 
     def get_path(self) -> str:
         return "/{id}"
