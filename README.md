@@ -132,5 +132,11 @@ In summary, this package simplifies the process of setting up and testing **CRUD
 ## 📚 Documentation
 For more information, see the [documentation](https://github.com/hbakri/django-ninja-crud/wiki).
 
+> 📘 **Note:**
+>
+> In preparation for the upcoming v0.3.0 release, I've dedicated significant effort towards enhancing the developer experience for this package. This has involved the introduction of various features, refactorings, especially over the views, and most prominently in the associated testing suite.
+>
+> As of now, I've managed to update the documentation only for the views. Please bear with me as I am actively working on documenting the improvements in the testing suite. Your patience is appreciated as I strive to provide a comprehensive and updated documentation experience!
+
 ## 🫶 Support
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/hbakri)
