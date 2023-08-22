@@ -16,7 +16,7 @@ def generate_sidebar(path, level, file_output):
         file_output.write("# Table of Contents\n")
 
     for item in sorted(os.listdir(path)):
-        if item in ["_Sidebar.md", "LOGO_LICENSE.md"]:
+        if item == "_Sidebar.md":
             continue
         new_path = os.path.join(path, item)
         if os.path.isdir(new_path):
