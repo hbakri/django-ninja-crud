@@ -31,7 +31,7 @@ By using this package, developers can write efficient and clear code, saving tim
 ```bash
 pip install django-ninja-crud
 ```
-For more information, see the [installation guide](https://django-ninja-crud.readme.io/docs/installation).
+For more information, see the [installation guide](https://github.com/hbakri/django-ninja-crud/wiki/02_installation).
 
 ## 👨‍🎨 Example
 ### Usage
