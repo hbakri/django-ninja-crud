@@ -26,7 +26,10 @@ def generate_sidebar(path, level, file_output):
         elif os.path.isfile(new_path):
             name, ext = os.path.splitext(item)
             if ext == ".md":
-                title = get_markdown_title(new_path) or name
+                if name != "Home":
+                    title = get_markdown_title(new_path) or name
+                else:
+                    title = name
                 file_output.write(f"  - [{title}]({name})\n")
 
 
