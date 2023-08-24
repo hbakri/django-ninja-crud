@@ -65,27 +65,38 @@ Now, here comes the power of Django Ninja CRUD. With it, you can set up the **CR
 
 ```python
 # views.py
+from ninja import Router
+from django.http import HttpRequest
+from ninja_crud.views import (
+    CreateModelView,
+    DeleteModelView,
+    ListModelView,
+    ModelViewSet,
+    RetrieveModelView,
+    UpdateModelView,
+)
 from example.models import Department
 from example.schemas import DepartmentIn, DepartmentOut
-from ninja import Router
-from ninja_crud.views import ModelViewSet, ListModelView, CreateModelView, \
-    RetrieveModelView, UpdateModelView, DeleteModelView
-
-
-class DepartmentViewSet(ModelViewSet):
-    model = Department
-    input_schema = DepartmentIn
-    output_schema = DepartmentOut
-
-    list = ListModelView(output_schema=output_schema)
-    create = CreateModelView(input_schema=input_schema, output_schema=output_schema)
-    retrieve = RetrieveModelView(output_schema=output_schema)
-    update = UpdateModelView(input_schema=input_schema, output_schema=output_schema)
-    delete = DeleteModelView()
-
 
 router = Router()
+
+class DepartmentViewSet(ModelViewSet):
+    model_class = Department
+
+    # AbstractModelView subclasses can be used as-is
+    list = ListModelView(output_schema=DepartmentOut)
+    create = CreateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+    retrieve = RetrieveModelView(output_schema=DepartmentOut)
+    update = UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+    delete = DeleteModelView()
+
+# The register_routes method must be called to register the routes with the router
 DepartmentViewSet.register_routes(router)
+
+# The router can then be used as normal
+@router.get("/{name}", response=DepartmentOut)
+def get_department_by_name(request: HttpRequest, name: str):
+    return Department.objects.get(name=name)
 ```
 
 ### Testing
@@ -96,13 +107,21 @@ A key advantage of this package is that it makes your views easy to test. Once y
 from django.test import TestCase
 from example.models import Department
 from example.views.view_department import DepartmentViewSet
-from ninja_crud.tests import CreateModelViewTest, DeleteModelViewTest, \
-    ListModelViewTest, ModelViewSetTest, RetrieveModelViewTest, UpdateModelViewTest, \
-    BodyParams, PathParams
+from ninja_crud.tests import (
+    Payloads,
+    DeleteModelViewTest,
+    ListModelViewTest,
+    ModelViewSetTest,
+    PathParameters,
+    RetrieveModelViewTest,
+    UpdateModelViewTest,
+    CreateModelViewTest,
+)
 
 
 class DepartmentViewSetTest(ModelViewSetTest, TestCase):
-    model_view_set = DepartmentViewSet
+    model_view_set_class = DepartmentViewSet
+    base_path = "api/departments"
 
     @classmethod
     def setUpTestData(cls):
@@ -110,20 +129,20 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         cls.department_1 = Department.objects.create(title="department-1")
         cls.department_2 = Department.objects.create(title="department-2")
 
-    def get_path_params(self):
-        return PathParams(ok={"id": self.department_1.id}, not_found={"id": 9999})
+    def get_path_parameters(self):
+        return PathParameters(ok={"id": self.department_1.id}, not_found={"id": 9999})
 
-    body_params = BodyParams(
+    payloads = Payloads(
         ok={"title": "new_title"},
         bad_request={"bad-title": 1},
         conflict={"title": "department-2"},
     )
 
     test_list = ListModelViewTest()
-    test_create = CreateModelViewTest(body_params=body_params)
-    test_retrieve = RetrieveModelViewTest(path_params=get_path_params)
-    test_update = UpdateModelViewTest(path_params=get_path_params, body_params=body_params)
-    test_delete = DeleteModelViewTest(path_params=get_path_params)
+    test_create = CreateModelViewTest(payloads=payloads)
+    test_retrieve = RetrieveModelViewTest(path_parameters=get_path_parameters)
+    test_update = UpdateModelViewTest(path_parameters=get_path_parameters, payloads=payloads)
+    test_delete = DeleteModelViewTest(path_parameters=get_path_parameters)
 ```
 With this package, these tests can be written in a consistent, straightforward way, making it easier to ensure your views are working as expected.
 
@@ -134,9 +153,17 @@ For more information, see the [documentation](https://github.com/hbakri/django-n
 
 > 📘 **Note:**
 >
-> In preparation for the upcoming v0.3.0 release, I've dedicated significant effort towards enhancing the developer experience for this package. This has involved the introduction of various features, refactorings, especially over the views, and most prominently in the associated testing suite.
+> With the launch of the `v0.3.0` release, we've made substantial enhancements to improve the developer experience while using this package. A myriad of new features has been introduced, and deep refactorings have taken place—primarily focusing on the views and the associated testing suite.
 >
-> As of now, I've managed to update the documentation only for the views. Please bear with me as I am actively working on documenting the improvements in the testing suite. Your patience is appreciated as I strive to provide a comprehensive and updated documentation experience!
+> Currently, the documentation for the views has been thoroughly updated to reflect these changes. I'm in the process of updating and expanding the documentation for the revamped testing suite. Your patience and understanding are deeply valued as I work towards delivering a more detailed and up-to-date documentation experience. Thank you for supporting this project and its continuous growth!
 
 ## 🫶 Support
+First and foremost, thank you for taking the time to explore this project. If you find it valuable or promising, please give it a star! Your recognition not only motivates but also helps others discover the project.
+
+![GitHub Repo stars](https://img.shields.io/github/stars/hbakri/django-ninja-crud?style=social)
+
+If you've benefited from this project or appreciate the dedication behind it, consider showing further support. Whether it's the price of a coffee, a word of encouragement, or a sponsorship, every gesture adds fuel to the open-source fire, making it shine even brighter. ✨
+
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/hbakri)
+
+Your kindness and support make a world of difference. Thank you!
