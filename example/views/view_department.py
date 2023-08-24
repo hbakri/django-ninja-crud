@@ -30,7 +30,7 @@ class DepartmentViewSet(ModelViewSet):
     )
     create_employee = CreateModelView(
         detail=True,
-        instance_builder=lambda id: Employee(department_id=id),
+        model_factory=lambda id: Employee(department_id=id),
         input_schema=EmployeeIn,
         output_schema=EmployeeOut,
     )
