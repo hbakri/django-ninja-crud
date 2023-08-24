@@ -9,20 +9,18 @@ from ninja import Router, Schema
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 from ninja_crud.views.types import (
-    CollectionInstanceBuilder,
+    CollectionModelFactory,
     CreateCollectionSaveHook,
     CreateDetailSaveHook,
-    DetailInstanceBuilder,
+    DetailModelFactory,
 )
-from ninja_crud.views.validators.instance_builder_validator import (
-    InstanceBuilderValidator,
-)
+from ninja_crud.views.validators.model_factory_validator import ModelFactoryValidator
 
 
 class CreateModelView(AbstractModelView):
     """
     A view class that handles creating instances of a model.
-    It allows customization through an instance builder, pre- and post-save hooks,
+    It allows customization through an model factory, pre- and post-save hooks,
     and also supports decorators.
 
     Example:
@@ -45,7 +43,7 @@ class CreateModelView(AbstractModelView):
         # POST /departments/{id}/employees/
         create_employee = CreateModelView(
             detail=True,
-            instance_builder=lambda id: Employee(department_id=id),
+            model_factory=lambda id: Employee(department_id=id),
             input_schema=EmployeeIn,
             output_schema=EmployeeOut,
         )
@@ -57,9 +55,7 @@ class CreateModelView(AbstractModelView):
         input_schema: Type[Schema],
         output_schema: Type[Schema],
         detail: bool = False,
-        instance_builder: Union[
-            DetailInstanceBuilder, CollectionInstanceBuilder
-        ] = None,
+        model_factory: Union[DetailModelFactory, CollectionModelFactory] = None,
         pre_save: Union[CreateDetailSaveHook, CreateCollectionSaveHook] = None,
         post_save: Union[CreateDetailSaveHook, CreateCollectionSaveHook] = None,
         decorators: List[Callable] = None,
@@ -73,9 +69,9 @@ class CreateModelView(AbstractModelView):
             output_schema (Type[Schema]): The schema used to serialize the created instance.
             detail (bool, optional): Whether the view is a detail or collection view. Defaults to False.
 
-                If set to True, `instance_builder` must be provided.
-            instance_builder (Union[DetailInstanceBuilder, CollectionInstanceBuilder], optional): A function
-                that builds an instance of the model. Defaults to None.
+                If set to True, `model_factory` must be provided.
+            model_factory (Union[DetailModelFactory, CollectionModelFactory], optional): A function
+                that returns a new instance of a model. Defaults to None.
 
                 The function should have one of the following signatures:
                 - For `detail=False`: () -> Model
@@ -104,20 +100,20 @@ class CreateModelView(AbstractModelView):
 
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
 
-        if detail and instance_builder is None:
+        if detail and model_factory is None:
             raise ValueError(
-                "Expected 'instance_builder' when 'detail=True', but found None."
+                "Expected 'model_factory' when 'detail=True', but found None."
             )
-        InstanceBuilderValidator.validate(instance_builder, detail)
+        ModelFactoryValidator.validate(model_factory, detail)
 
         self.input_schema = input_schema
         self.output_schema = output_schema
         self.detail = detail
-        self.instance_builder = instance_builder
+        self.model_factory = model_factory
         self.pre_save = pre_save
         self.post_save = post_save
         self._related_model: Optional[Type[Model]] = (
-            instance_builder(None).__class__ if detail else None
+            model_factory(None).__class__ if detail else None
         )
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
@@ -140,8 +136,8 @@ class CreateModelView(AbstractModelView):
                     f"{model_class.__name__} with pk '{id}' does not exist."
                 )
 
-            instance = self._build_instance(model_class, id)
-            instance = self._save_instance(instance, payload, request, id)
+            instance = self._create_model(model_class, id)
+            instance = self._save_model(instance, payload, request, id)
             return HTTPStatus.CREATED, instance
 
     def _register_collection_route(
@@ -151,8 +147,8 @@ class CreateModelView(AbstractModelView):
 
         @self._configure_route(router, model_class)
         def create_model(request: HttpRequest, payload: input_schema):
-            instance = self._build_instance(model_class)
-            instance = self._save_instance(instance, payload, request)
+            instance = self._create_model(model_class)
+            instance = self._save_model(instance, payload, request)
             return HTTPStatus.CREATED, instance
 
     def get_path(self) -> str:
@@ -162,14 +158,14 @@ class CreateModelView(AbstractModelView):
         else:
             return "/"
 
-    def _build_instance(self, model_class: Type[Model], id: Any = None) -> Model:
-        if self.instance_builder:
+    def _create_model(self, model_class: Type[Model], id: Any = None) -> Model:
+        if self.model_factory:
             args = [id] if self.detail else []
-            return self.instance_builder(*args)
+            return self.model_factory(*args)
         else:
             return model_class()
 
-    def _save_instance(
+    def _save_model(
         self, instance: Model, payload: Schema, request: HttpRequest, id: Any = None
     ) -> Model:
         for field, value in payload.dict(exclude_unset=True).items():

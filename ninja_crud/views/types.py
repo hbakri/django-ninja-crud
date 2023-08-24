@@ -31,9 +31,9 @@ Returns:
     QuerySet[ModelType]: The QuerySet of model instances.
 """
 
-DetailInstanceBuilder = Callable[[Any], ModelType]
+DetailModelFactory = Callable[[Any], ModelType]
 """
-Alias for a callable expected to build an instance for a detail view.
+Alias for a callable that returns a new instance for a detail view.
 
 Parameters:
     id (Any): The identifier of the detail instance.
@@ -42,9 +42,9 @@ Returns:
     ModelType: The instance of the model that was created.
 """
 
-CollectionInstanceBuilder = Callable[[], ModelType]
+CollectionModelFactory = Callable[[], ModelType]
 """
-Alias for a callable expected to build an instance for a collection view.
+Alias for a callable that returns a new instance for a collection view.
 
 Parameters:
     None

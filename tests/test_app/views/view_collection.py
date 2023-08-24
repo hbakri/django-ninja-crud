@@ -45,7 +45,7 @@ class CollectionViewSet(ModelViewSet):
     create = CreateModelView(
         input_schema=input_schema,
         output_schema=output_schema,
-        instance_builder=lambda: Collection(),
+        model_factory=lambda: Collection(),
         pre_save=lambda request, instance: setattr(
             instance, "created_by", request.user
         ),
@@ -76,7 +76,7 @@ class CollectionViewSet(ModelViewSet):
     )
     create_item = CreateModelView(
         detail=True,
-        instance_builder=lambda id: Item(collection_id=id),
+        model_factory=lambda id: Item(collection_id=id),
         input_schema=ItemIn,
         output_schema=ItemOut,
         pre_save=lambda request, id, instance: None,
