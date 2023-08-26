@@ -1,4 +1,4 @@
-# ✨ Table of Contents
+# <img alt="" src="https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/assets/images/django-ninja-crud-logo.png" width="20"> Table of Contents
 
   - [Home](Home)
 
