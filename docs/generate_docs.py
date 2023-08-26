@@ -15,7 +15,6 @@ modules = [
     ("views/create", "CreateModelView"),
     ("views/types", "Types"),
     ("views/viewset", "ModelViewSet"),
-    ("tests/test_viewset", "ModelViewSetTest"),
 ]
 
 template_path = "docs/pydoc-markdown.yml"
