@@ -21,7 +21,12 @@ def generate_sidebar(path, level, file_output):
         new_path = os.path.join(path, item)
         if os.path.isdir(new_path):
             separator = "#" * (level + 1)
-            file_output.write(f"{separator} {item.capitalize()}\n")
+            if item == "guides":
+                file_output.write(f"{separator} 📚 Guides\n")
+            elif item == "reference":
+                file_output.write(f"{separator} 🛠 API Reference\n")
+            else:
+                file_output.write(f"{separator} {item.capitalize()}\n")
             generate_sidebar(path=new_path, level=level + 1, file_output=file_output)
         elif os.path.isfile(new_path):
             name, ext = os.path.splitext(item)
