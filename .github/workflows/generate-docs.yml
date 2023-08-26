@@ -30,7 +30,6 @@ jobs:
     - name: Generate documentation
       run: |
           poetry run python docs/generate_docs.py
-          poetry run python docs/generate_wiki_sidebar.py docs docs/_Sidebar.md
 
     - name: Clone wiki repository
       env:
@@ -45,7 +44,6 @@ jobs:
     - name: Copy new markdown files
       run: |
         find docs -name '*.md' -exec cp --parents \{\} wiki/ \;
-        cp assets/images/django-ninja-crud-cover.png wiki/django-ninja-crud-cover.png
 
     - name: Commit and push changes
       env:
