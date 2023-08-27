@@ -12,7 +12,7 @@ Before installing the `django-ninja-crud` package, please ensure you have the fo
   pip install --upgrade django-ninja
   ```
 
-## 🥷 Installing `django-ninja-crud`
+# 🥷 Installing `django-ninja-crud`
 
 Once you have the prerequisites installed, you can install `django-ninja-crud` using pip:
 
