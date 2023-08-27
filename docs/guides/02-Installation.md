@@ -1,6 +1,4 @@
-# Installation
-
-## 👀 Prerequisites
+# 👀 Prerequisites
 
 Before installing the `django-ninja-crud` package, please ensure you have the following dependencies installed:
 
