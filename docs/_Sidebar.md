@@ -1,14 +1,13 @@
-# <img alt="" src="https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/assets/images/django-ninja-crud-logo.png" width="20"> Table of Contents
+# Table of Contents
 
   - [Home](Home)
 
 ## 📖 Guides
 
-  - [Introduction](01_introduction)
-  - [Installation](02_installation)
-  - [Setup](03_setup)
-  - [Examples](04_examples)
-  - [Core Concepts](05_core_concepts)
+  - [Introduction](01-Introduction)
+  - [Installation](02-Installation)
+  - [Setup](03-Setup)
+  - [Examples](04-Examples)
 
 ## 🛠 API Reference
 
