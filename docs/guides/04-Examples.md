@@ -1,8 +1,6 @@
-# Examples
-
 In this section, we'll walk through some quick examples of how to use Django Ninja CRUD. The goal is to illustrate how simple it is to define data operations and tests with this tool.
 
-## 👨‍🎨 Usage
+# 👨‍🎨 Usage
 
 Let's imagine you're building a system for a university and you have a model called `Department`. Each department in your university has a unique title.
 
@@ -68,7 +66,7 @@ def get_department_by_name(request: HttpRequest, name: str):
     return Department.objects.get(name=name)
 ```
 
-## 🥷 Testing
+# 🥷 Testing
 A key advantage of this package is that it makes your views easy to test. Once you've set up your **CRUD** operations, you can write tests to ensure they're working as expected. Here's an example of how you might test the `Department` operations:
 
 ```python
