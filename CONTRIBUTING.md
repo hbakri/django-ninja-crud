@@ -1,25 +1,96 @@
-# Contributing to Your Project
+# Contributing to Django Ninja CRUD
 
-Firstly, thank you for considering contributing to Django Ninja CRUD! It's people like you that make an open source project such a great tool. We welcome any type of contribution, not only code. You can help with:
+We welcome contributions to Django-Ninja-CRUD! This document outlines how to contribute to this project and provides guidelines to make the process smoother for everyone involved.
 
-- **Q&A**: just answering questions that people have on the issues
-- **Docs**: improve the documentation, no matter how small! If you find a typo, please let us know!
-- **Testing**: if you like the project, just try to use it and report any bugs or uncomfortable things you see.
-- **Code**: have a look at the open issues. Even if you can't write code, commenting on them, showing that you care about a given issue matters. It helps us triage them.
+For an overview of how to contribute to open-source projects on GitHub, see [GitHub's official documentation](https://docs.github.com/en/get-started/exploring-projects-on-github/finding-ways-to-contribute-to-open-source-on-github).
 
-## Your First Contribution
+## Table of Contents
+- [Setting up Development Environment](#setting-up-development-environment)
+- [Running Tests](#running-tests)
+- [Coding and Commit Conventions](#coding-and-commit-conventions)
+- [Labels for Issues and PRs](#labels-for-issues-and-prs)
+- [Updating an Existing Pull Request](#updating-an-existing-pull-request)
 
-Working on your first Pull Request? You can learn how from this free series: [How to Contribute to an Open Source Project on GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github)
+## Setting up Development Environment
 
-## Submitting code
+1. **Install Python 3.x**: Make sure Python 3.x is installed on your machine.
 
-Any code change should be submitted as a pull request. The description should explain what the code does and give steps to execute it. The pull request should also contain tests.
+2. **Create a Virtual Environment**:
+    ```bash
+    python3 -m venv venv
+    ```
 
-### Code review process
+3. **Activate the Virtual Environment**:
+    ```bash
+    source venv/bin/activate
+    ```
 
-The bigger the pull request, the longer it will take to review and merge. Try to break down large pull requests into smaller chunks that are easier to review and merge.
-It is also always helpful to have some context for your pull request. What was the purpose? Why does it matter to you?
+4. **Install Poetry**:
+    ```bash
+    pip install poetry
+    ```
 
-## Code, commit message and labeling conventions
+5. **Install Project Dependencies**:
+    ```bash
+    poetry install
+    ```
 
-We use [PEP 8](https://pep8.org/) as coding and [Conventional Commits](https://www.conventionalcommits.org/) as commit convention, and we use a set of labels for categorizing issues and pull requests.
+6. **Install Pre-commit Hooks**: To ensure code quality, we use pre-commit hooks. Install the pre-commit package and set up the hooks with:
+    ```bash
+    pip install pre-commit
+    pre-commit install
+    ```
+    This will automatically run checks before each commit, helping you adhere to the coding and commit conventions.
+
+## Running Tests
+
+After setting up your development environment, you can run tests to make sure everything is functioning as expected. To run the tests, use the following commands:
+
+```bash
+export DJANGO_SETTINGS_MODULE=tests.test_settings
+python -m poetry run coverage run -m django test
+python -m poetry run coverage report
+```
+
+## Coding and Commit Conventions
+
+- We adhere to the [PEP 8](https://pep8.org/) coding style guide.
+- For commits, we follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.
+
+## Labels for Issues and PRs
+
+We use a set of labels to categorize issues and pull requests. This helps in project management and prioritizing work.
+
+- **bug**: For marking issues that are bugs.
+- **enhancement**: For new features or improvements.
+- **documentation**: Issues related to documentation.
+- **good first issue**: Easier issues aimed at beginners.
+- **help wanted**: Issues that need additional support.
+
+## Updating an Existing Pull Request
+
+1. **Ensure Your Fork is Up-to-date**:
+    ```bash
+    git remote add upstream https://github.com/hbakri/django-ninja-crud.git
+    git fetch upstream
+    ```
+
+2. **Check Out Your Local Branch**: Associated with the PR.
+
+3. **Rebase Your Branch**:
+    ```bash
+    git rebase upstream/main
+    ```
+
+4. **Resolve Conflicts**: If conflicts arise, resolve them.
+
+5. **Commit Your Changes**.
+
+6. **Force Push to Update the PR**:
+    ```bash
+    git push origin <your-branch> --force
+    ```
+
+---
+
+Thank you for contributing to `django-ninja-crud`! Your efforts help make this project better for everyone.
