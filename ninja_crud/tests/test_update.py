@@ -55,7 +55,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
             test_case=self.model_view_set_test,
             content=content,
             queryset=self.model_view_set_test.model_view_set_class.model_class.objects.get_queryset(),
-            output_schema=self.model_view.output_schema,
+            schema_class=self.model_view.output_schema,
         )
 
     def assert_response_is_bad_request(
