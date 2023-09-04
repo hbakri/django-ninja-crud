@@ -11,11 +11,11 @@ from ninja_crud.tests.request_composer import (
     RequestComposer,
     TestCaseType,
 )
-from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_abstract import AbstractTestModelView
 from ninja_crud.views.create import CreateModelView
 
 
-class CreateModelViewTest(AbstractModelViewTest):
+class CreateModelViewTest(AbstractTestModelView):
     model_view_class = CreateModelView
     model_view: CreateModelView
 

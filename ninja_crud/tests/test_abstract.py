@@ -9,7 +9,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from ninja_crud.tests.test_viewset import TestModelViewSet
 
 
-class AbstractModelViewTest:
+class AbstractTestModelView:
     model_view_class: Type[AbstractModelView]
     model_view: AbstractModelView
 

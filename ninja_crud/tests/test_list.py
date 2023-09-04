@@ -12,11 +12,11 @@ from ninja_crud.tests.request_composer import (
     RequestComposer,
     TestCaseType,
 )
-from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_abstract import AbstractTestModelView
 from ninja_crud.views.list import ListModelView
 
 
-class ListModelViewTest(AbstractModelViewTest):
+class ListModelViewTest(AbstractTestModelView):
     model_view_class = ListModelView
     model_view: ListModelView
 

@@ -10,11 +10,11 @@ from ninja_crud.tests.request_composer import (
     RequestComposer,
     TestCaseType,
 )
-from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_abstract import AbstractTestModelView
 from ninja_crud.views.delete import DeleteModelView
 
 
-class DeleteModelViewTest(AbstractModelViewTest):
+class DeleteModelViewTest(AbstractTestModelView):
     model_view_class = DeleteModelView
     model_view: DeleteModelView
 

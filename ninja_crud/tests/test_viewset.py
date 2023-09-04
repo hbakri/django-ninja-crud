@@ -5,7 +5,7 @@ from typing import Type, Union
 
 from django.test import TestCase
 
-from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_abstract import AbstractTestModelView
 from ninja_crud.tests.test_matcher import ModelViewSetTestMatcher
 from ninja_crud.views import ModelViewSet
 
@@ -60,7 +60,7 @@ class TestModelViewSetMeta(type):
         associated_model_views = []
         for attr_name in dir(new_cls):
             attr_value = getattr(new_cls, attr_name)
-            if isinstance(attr_value, AbstractModelViewTest):
+            if isinstance(attr_value, AbstractTestModelView):
                 attr_value.test_model_view_set = test_model_view_set
                 attr_value.model_view = (
                     ModelViewSetTestMatcher.get_associated_model_view(
