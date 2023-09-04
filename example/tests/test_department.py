@@ -10,8 +10,8 @@ from ninja_crud.tests import (
     ListModelViewTest,
     PathParameters,
     Payloads,
-    RetrieveModelViewTest,
     TestModelViewSet,
+    TestRetrieveModelView,
     TestUpdateModelView,
 )
 
@@ -47,7 +47,7 @@ class TestDepartmentViewSet(TestModelViewSet, TestCase):
 
     test_list = ListModelViewTest()
     test_create = CreateModelViewTest(payloads=department_payloads)
-    test_retrieve = RetrieveModelViewTest(path_parameters=get_path_parameters)
+    test_retrieve = TestRetrieveModelView(path_parameters=get_path_parameters)
     test_update = TestUpdateModelView(
         path_parameters=get_path_parameters, payloads=department_payloads
     )

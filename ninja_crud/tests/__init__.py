@@ -3,22 +3,26 @@ from .test_create import CreateModelViewTest
 from .test_delete import DeleteModelViewTest
 from .test_list import ListModelViewTest
 from .test_partial_update import PartialUpdateModelViewTest
-from .test_retrieve import RetrieveModelViewTest
+from .test_retrieve import RetrieveModelViewTest, TestRetrieveModelView
 from .test_update import TestUpdateModelView, UpdateModelViewTest
 from .test_viewset import ModelViewSetTest, TestModelViewSet
 
 __all__ = [
-    "ModelViewSetTest",
-    "TestModelViewSet",
+    # request components
     "PathParameters",
     "QueryParameters",
     "AuthHeaders",
     "Payloads",
+    # test classes
+    "TestModelViewSet",
+    "TestRetrieveModelView",
+    "TestUpdateModelView",
+    # deprecated
+    "ModelViewSetTest",
     "ListModelViewTest",
     "CreateModelViewTest",
     "RetrieveModelViewTest",
     "UpdateModelViewTest",
-    "TestUpdateModelView",
     "PartialUpdateModelViewTest",
     "DeleteModelViewTest",
 ]

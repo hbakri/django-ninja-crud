@@ -1,4 +1,5 @@
 import json
+import logging
 from http import HTTPStatus
 
 from django.http import HttpResponse
@@ -14,8 +15,10 @@ from ninja_crud.tests.request_composer import (
 from ninja_crud.tests.test_abstract import AbstractTestModelView
 from ninja_crud.views.retrieve import RetrieveModelView
 
+logger = logging.getLogger(__name__)
 
-class RetrieveModelViewTest(AbstractTestModelView):
+
+class TestRetrieveModelView(AbstractTestModelView):
     model_view_class = RetrieveModelView
     model_view: RetrieveModelView
 
@@ -101,3 +104,12 @@ class RetrieveModelViewTest(AbstractTestModelView):
                 response, status_code=HTTPStatus.NOT_FOUND
             ),
         )
+
+
+class RetrieveModelViewTest(TestRetrieveModelView):
+    def __init__(self, *args, **kwargs):  # pragma: no cover
+        logger.warning(
+            f"{RetrieveModelViewTest.__name__} is deprecated, use {TestRetrieveModelView.__name__} instead",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

@@ -10,8 +10,8 @@ from ninja_crud.tests import (
     PathParameters,
     Payloads,
     QueryParameters,
-    RetrieveModelViewTest,
     TestModelViewSet,
+    TestRetrieveModelView,
     TestUpdateModelView,
 )
 from tests.test_app.tests.test_base import BaseTestCase
@@ -56,7 +56,7 @@ class TestCollectionViewSet(TestModelViewSet, BaseTestCase):
         auth_headers=get_auth_headers_ok,
         payloads=collection_payloads,
     )
-    test_retrieve = RetrieveModelViewTest(
+    test_retrieve = TestRetrieveModelView(
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok,
     )
