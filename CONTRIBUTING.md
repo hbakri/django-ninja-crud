@@ -35,9 +35,8 @@ For an overview of how to contribute to open-source projects on GitHub, see [Git
     poetry install
     ```
 
-6. **Install Pre-commit Hooks**: To ensure code quality, we use pre-commit hooks. Install the pre-commit package and set up the hooks with:
+6. **Install Pre-commit Hooks**: Set up the pre-commit hooks with:
     ```bash
-    pip install pre-commit
     pre-commit install
     ```
     This will automatically run checks before each commit, helping you adhere to the coding and commit conventions.
