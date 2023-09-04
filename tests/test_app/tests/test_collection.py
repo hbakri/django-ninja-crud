@@ -6,19 +6,19 @@ from ninja_crud.tests import (
     CreateModelViewTest,
     DeleteModelViewTest,
     ListModelViewTest,
-    ModelViewSetTest,
     PartialUpdateModelViewTest,
     PathParameters,
     Payloads,
     QueryParameters,
     RetrieveModelViewTest,
+    TestModelViewSet,
     UpdateModelViewTest,
 )
 from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_collection import CollectionViewSet
 
 
-class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
+class TestCollectionViewSet(TestModelViewSet, BaseTestCase):
     model_view_set_class = CollectionViewSet
     base_path = "api/collections"
 

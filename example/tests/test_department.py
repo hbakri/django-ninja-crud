@@ -8,15 +8,15 @@ from ninja_crud.tests import (
     CreateModelViewTest,
     DeleteModelViewTest,
     ListModelViewTest,
-    ModelViewSetTest,
     PathParameters,
     Payloads,
     RetrieveModelViewTest,
+    TestModelViewSet,
     UpdateModelViewTest,
 )
 
 
-class DepartmentViewSetTest(ModelViewSetTest, TestCase):
+class TestDepartmentViewSet(TestModelViewSet, TestCase):
     model_view_set_class = DepartmentViewSet
     base_path = "api/departments"
 

@@ -26,8 +26,8 @@ class PartialUpdateModelViewTest(UpdateModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.model_view_set_test.base_path + self.model_view.get_path()
-        return self.model_view_set_test.client_class().patch(
+        path = "/" + self.test_model_view_set.base_path + self.model_view.get_path()
+        return self.test_model_view_set.client_class().patch(
             path=path.format(**path_parameters),
             data=payload,
             content_type="application/json",

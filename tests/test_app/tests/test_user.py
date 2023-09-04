@@ -2,17 +2,17 @@ from ninja_crud.tests import (
     CreateModelViewTest,
     DeleteModelViewTest,
     ListModelViewTest,
-    ModelViewSetTest,
     PathParameters,
     Payloads,
     RetrieveModelViewTest,
+    TestModelViewSet,
     UpdateModelViewTest,
 )
 from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_user import UserViewSet
 
 
-class UserViewSetTest(ModelViewSetTest, BaseTestCase):
+class TestUserViewSet(TestModelViewSet, BaseTestCase):
     model_view_set_class = UserViewSet
     base_path = "api/users"
 

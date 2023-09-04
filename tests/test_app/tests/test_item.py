@@ -4,18 +4,18 @@ from ninja_crud.tests import (
     AuthHeaders,
     DeleteModelViewTest,
     ListModelViewTest,
-    ModelViewSetTest,
     PathParameters,
     Payloads,
     QueryParameters,
     RetrieveModelViewTest,
+    TestModelViewSet,
     UpdateModelViewTest,
 )
 from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_item import ItemViewSet
 
 
-class ItemViewSetTest(ModelViewSetTest, BaseTestCase):
+class TestItemViewSet(TestModelViewSet, BaseTestCase):
     model_view_set_class = ItemViewSet
     base_path = "api/items"
 

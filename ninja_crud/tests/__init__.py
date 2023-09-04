@@ -7,11 +7,12 @@ from .test_list import ListModelViewTest
 from .test_partial_update import PartialUpdateModelViewTest
 from .test_retrieve import RetrieveModelViewTest
 from .test_update import UpdateModelViewTest
-from .test_viewset import ModelViewSetTest
+from .test_viewset import ModelViewSetTest, TestModelViewSet
 
 __all__ = [
     "AbstractModelViewTest",
     "ModelViewSetTest",
+    "TestModelViewSet",
     "RequestComposer",
     "PathParameters",
     "QueryParameters",

@@ -6,15 +6,15 @@ from example.views.view_employee import EmployeeViewSet
 
 from ninja_crud.tests import (
     DeleteModelViewTest,
-    ModelViewSetTest,
     PathParameters,
     Payloads,
     RetrieveModelViewTest,
+    TestModelViewSet,
     UpdateModelViewTest,
 )
 
 
-class EmployeeViewSetTest(ModelViewSetTest, TestCase):
+class TestEmployeeViewSet(TestModelViewSet, TestCase):
     model_view_set_class = EmployeeViewSet
     base_path = "api/employees"
 
