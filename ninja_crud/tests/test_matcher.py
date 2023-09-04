@@ -7,7 +7,7 @@ from ninja_crud.views import AbstractModelView, ModelViewSet
 logger = logging.getLogger(__name__)
 
 
-class ModelViewSetTestMatcher:
+class TestModelViewSetMatcher:
     @staticmethod
     def get_associated_model_view(
         model_view_set_class: Type[ModelViewSet],

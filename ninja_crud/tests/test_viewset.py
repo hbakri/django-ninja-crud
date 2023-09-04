@@ -6,7 +6,7 @@ from typing import Type, Union
 from django.test import TestCase
 
 from ninja_crud.tests.test_abstract import AbstractTestModelView
-from ninja_crud.tests.test_matcher import ModelViewSetTestMatcher
+from ninja_crud.tests.test_matcher import TestModelViewSetMatcher
 from ninja_crud.views import ModelViewSet
 
 logger = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ class TestModelViewSetMeta(type):
             if isinstance(attr_value, AbstractTestModelView):
                 attr_value.test_model_view_set = test_model_view_set
                 attr_value.model_view = (
-                    ModelViewSetTestMatcher.get_associated_model_view(
+                    TestModelViewSetMatcher.get_associated_model_view(
                         model_view_set_class=test_model_view_set.model_view_set_class,
                         test_attr_name=attr_name,
                         test_attr_value=attr_value,
@@ -75,7 +75,7 @@ class TestModelViewSetMeta(type):
                     setattr(new_cls, new_test_method_name, test_method)
 
         if hasattr(new_cls, "model_view_set_class"):
-            ModelViewSetTestMatcher.assert_all_model_views_are_associated(
+            TestModelViewSetMatcher.assert_all_model_views_are_associated(
                 model_view_set_class=new_cls.model_view_set_class,
                 associated_model_views=associated_model_views,
             )
