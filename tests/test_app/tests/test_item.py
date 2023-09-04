@@ -9,7 +9,7 @@ from ninja_crud.tests import (
     QueryParameters,
     RetrieveModelViewTest,
     TestModelViewSet,
-    UpdateModelViewTest,
+    TestUpdateModelView,
 )
 from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_item import ItemViewSet
@@ -44,7 +44,7 @@ class TestItemViewSet(TestModelViewSet, BaseTestCase):
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok_forbidden,
     )
-    test_update = UpdateModelViewTest(
+    test_update = TestUpdateModelView(
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok_forbidden,
         payloads=Payloads(

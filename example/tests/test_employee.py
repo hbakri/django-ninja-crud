@@ -10,7 +10,7 @@ from ninja_crud.tests import (
     Payloads,
     RetrieveModelViewTest,
     TestModelViewSet,
-    UpdateModelViewTest,
+    TestUpdateModelView,
 )
 
 
@@ -47,7 +47,7 @@ class TestEmployeeViewSet(TestModelViewSet, TestCase):
     )
 
     test_retrieve = RetrieveModelViewTest(path_parameters=get_path_parameters)
-    test_update = UpdateModelViewTest(
+    test_update = TestUpdateModelView(
         path_parameters=get_path_parameters, payloads=employee_payloads
     )
     test_delete = DeleteModelViewTest(path_parameters=get_path_parameters)
