@@ -1,9 +1,9 @@
 from ninja_crud.tests import (
     CreateModelViewTest,
-    DeleteModelViewTest,
     ListModelViewTest,
     PathParameters,
     Payloads,
+    TestDeleteModelView,
     TestModelViewSet,
     TestRetrieveModelView,
     TestUpdateModelView,
@@ -40,4 +40,4 @@ class TestUserViewSet(TestModelViewSet, BaseTestCase):
     test_update = TestUpdateModelView(
         path_parameters=get_path_parameters, payloads=get_user_payloads
     )
-    test_delete = DeleteModelViewTest(path_parameters=get_path_parameters)
+    test_delete = TestDeleteModelView(path_parameters=get_path_parameters)

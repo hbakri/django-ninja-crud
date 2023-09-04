@@ -5,9 +5,9 @@ from example.models import Department, Employee
 from example.views.view_employee import EmployeeViewSet
 
 from ninja_crud.tests import (
-    DeleteModelViewTest,
     PathParameters,
     Payloads,
+    TestDeleteModelView,
     TestModelViewSet,
     TestRetrieveModelView,
     TestUpdateModelView,
@@ -50,4 +50,4 @@ class TestEmployeeViewSet(TestModelViewSet, TestCase):
     test_update = TestUpdateModelView(
         path_parameters=get_path_parameters, payloads=employee_payloads
     )
-    test_delete = DeleteModelViewTest(path_parameters=get_path_parameters)
+    test_delete = TestDeleteModelView(path_parameters=get_path_parameters)

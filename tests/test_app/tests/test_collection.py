@@ -4,12 +4,12 @@ import uuid
 from ninja_crud.tests import (
     AuthHeaders,
     CreateModelViewTest,
-    DeleteModelViewTest,
     ListModelViewTest,
     PartialUpdateModelViewTest,
     PathParameters,
     Payloads,
     QueryParameters,
+    TestDeleteModelView,
     TestModelViewSet,
     TestRetrieveModelView,
     TestUpdateModelView,
@@ -78,7 +78,7 @@ class TestCollectionViewSet(TestModelViewSet, BaseTestCase):
             conflict={"name": "collection-2"},
         ),
     )
-    test_delete = DeleteModelViewTest(
+    test_delete = TestDeleteModelView(
         path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
     )
 

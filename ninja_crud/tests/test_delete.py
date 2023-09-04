@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 
 from django.http import HttpResponse
@@ -13,8 +14,10 @@ from ninja_crud.tests.request_composer import (
 from ninja_crud.tests.test_abstract import AbstractTestModelView
 from ninja_crud.views.delete import DeleteModelView
 
+logger = logging.getLogger(__name__)
 
-class DeleteModelViewTest(AbstractTestModelView):
+
+class TestDeleteModelView(AbstractTestModelView):
     model_view_class = DeleteModelView
     model_view: DeleteModelView
 
@@ -100,3 +103,12 @@ class DeleteModelViewTest(AbstractTestModelView):
                 response, status_code=HTTPStatus.NOT_FOUND
             ),
         )
+
+
+class DeleteModelViewTest(TestDeleteModelView):
+    def __init__(self, *args, **kwargs):  # pragma: no cover
+        logger.warning(
+            f"{DeleteModelViewTest.__name__} is deprecated, use {TestDeleteModelView.__name__} instead",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)
