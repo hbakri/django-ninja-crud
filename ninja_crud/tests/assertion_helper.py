@@ -25,7 +25,7 @@ class TestAssertionHelper:
         test_case: TestCase,
         content: dict,
         queryset: QuerySet[Model],
-        output_schema: Type[Schema],
+        schema_class: Type[Schema],
     ):
         test_case.assertIsInstance(content, dict)
 
@@ -33,37 +33,19 @@ class TestAssertionHelper:
         test_case.assertTrue(queryset.filter(pk=content["id"]).exists())
         test_case.assertEqual(queryset.filter(pk=content["id"]).count(), 1)
 
-        element = queryset.get(pk=content["id"])
-        TestAssertionHelper.assert_dict_equals_schema(
-            test_case, content, output_schema.from_orm(element)
-        )
-
-    @staticmethod
-    def assert_dict_equals_schema(test_case: TestCase, element: dict, schema: Schema):
-        copied_element = {}
-        for key, value in element.items():
-            copied_element[key] = value
-
+        model = queryset.get(pk=content["id"])
+        schema = schema_class.from_orm(model)
         test_case.assertDictEqual(
-            copied_element,
+            content,
             json.loads(json.dumps(schema.dict(), default=default_serializer)),
         )
-
-    @staticmethod
-    def assert_response_is_bad_request(
-        test_case: TestCase, response: HttpResponse, status_code: HTTPStatus
-    ):
-        test_case.assertEqual(response.status_code, status_code)
-        content = json.loads(response.content)
-        test_case.assertIsInstance(content, dict)
-        test_case.assertIn("detail", content)
 
     @staticmethod
     def assert_content_equals_schema_list(
         test_case: TestCase,
         content: List[dict],
         queryset: QuerySet[Model],
-        output_schema: Type[Schema],
+        schema_class: Type[Schema],
         limit: int,
         offset: int,
     ):
@@ -83,5 +65,14 @@ class TestAssertionHelper:
 
         for item in items:
             TestAssertionHelper.assert_content_equals_schema(
-                test_case, item, queryset, output_schema
+                test_case, item, queryset, schema_class
             )
+
+    @staticmethod
+    def assert_response_is_bad_request(
+        test_case: TestCase, response: HttpResponse, status_code: HTTPStatus
+    ):
+        test_case.assertEqual(response.status_code, status_code)
+        content = json.loads(response.content)
+        test_case.assertIsInstance(content, dict)
+        test_case.assertIn("detail", content)
