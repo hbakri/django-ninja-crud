@@ -7,7 +7,7 @@ from tests.test_app.models import Item
 from tests.test_app.schemas import ItemIn, ItemOut
 
 
-class PartialUpdateModelViewTest(TestCase):
+class TestPartialUpdateModelView(TestCase):
     def test_register_route_router_kwargs(self):
         router_mock = MagicMock()
         model_view = PartialUpdateModelView(

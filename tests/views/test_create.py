@@ -7,7 +7,7 @@ from tests.test_app.models import Collection, Item
 from tests.test_app.schemas import ItemIn, ItemOut
 
 
-class CreateModelViewTest(TestCase):
+class TestCreateModelView(TestCase):
     def test_register_route_with_router_kwargs(self):
         router_mock = MagicMock()
         model_view = CreateModelView(

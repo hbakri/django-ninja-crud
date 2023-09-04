@@ -7,7 +7,7 @@ from tests.test_app.models import Item
 from tests.test_app.schemas import ItemOut
 
 
-class RetrieveModelViewTest(TestCase):
+class TestRetrieveModelView(TestCase):
     def test_register_route_router_kwargs(self):
         router_mock = MagicMock()
         model_view = RetrieveModelView(
