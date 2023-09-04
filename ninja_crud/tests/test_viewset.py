@@ -12,10 +12,10 @@ from ninja_crud.views import ModelViewSet
 logger = logging.getLogger(__name__)
 
 
-class ModelViewSetTestMeta(type):
+class TestModelViewSetMeta(type):
     @staticmethod
     def validate_model_view_set_class(
-        new_cls: ModelViewSetTestMeta,
+        new_cls: TestModelViewSetMeta,
     ):  # pragma: no cover
         cls_attr_name = "model_view_set_class"
         if not hasattr(new_cls, cls_attr_name):
@@ -31,7 +31,7 @@ class ModelViewSetTestMeta(type):
             )
 
     @staticmethod
-    def validate_base_path(new_cls: ModelViewSetTestMeta):  # pragma: no cover
+    def validate_base_path(new_cls: TestModelViewSetMeta):  # pragma: no cover
         cls_attr_name = "base_path"
         if not hasattr(new_cls, cls_attr_name):
             raise ValueError(
@@ -83,7 +83,7 @@ class ModelViewSetTestMeta(type):
         return new_cls
 
 
-class TestModelViewSet(metaclass=ModelViewSetTestMeta):
+class TestModelViewSet(metaclass=TestModelViewSetMeta):
     model_view_set_class: Type[ModelViewSet]
     base_path: str
 
