@@ -3,11 +3,11 @@ import uuid
 
 from ninja_crud.tests import (
     AuthHeaders,
-    CreateModelViewTest,
     PartialUpdateModelViewTest,
     PathParameters,
     Payloads,
     QueryParameters,
+    TestCreateModelView,
     TestDeleteModelView,
     TestListModelView,
     TestModelViewSet,
@@ -52,7 +52,7 @@ class TestCollectionViewSet(TestModelViewSet, BaseTestCase):
             bad_request={"order_by": ["unknown_field"]},
         ),
     )
-    test_create = CreateModelViewTest(
+    test_create = TestCreateModelView(
         auth_headers=get_auth_headers_ok,
         payloads=collection_payloads,
     )
@@ -85,7 +85,7 @@ class TestCollectionViewSet(TestModelViewSet, BaseTestCase):
     test_list_items = TestListModelView(
         path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
     )
-    test_create_item = CreateModelViewTest(
+    test_create_item = TestCreateModelView(
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok_forbidden,
         payloads=Payloads(

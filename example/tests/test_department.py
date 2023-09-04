@@ -5,9 +5,9 @@ from example.models import Department, Employee
 from example.views.view_department import DepartmentViewSet
 
 from ninja_crud.tests import (
-    CreateModelViewTest,
     PathParameters,
     Payloads,
+    TestCreateModelView,
     TestDeleteModelView,
     TestListModelView,
     TestModelViewSet,
@@ -46,7 +46,7 @@ class TestDepartmentViewSet(TestModelViewSet, TestCase):
     )
 
     test_list = TestListModelView()
-    test_create = CreateModelViewTest(payloads=department_payloads)
+    test_create = TestCreateModelView(payloads=department_payloads)
     test_retrieve = TestRetrieveModelView(path_parameters=get_path_parameters)
     test_update = TestUpdateModelView(
         path_parameters=get_path_parameters, payloads=department_payloads
@@ -62,6 +62,6 @@ class TestDepartmentViewSet(TestModelViewSet, TestCase):
     )
 
     test_list_employees = TestListModelView(path_parameters=get_path_parameters)
-    test_create_employee = CreateModelViewTest(
+    test_create_employee = TestCreateModelView(
         path_parameters=get_path_parameters, payloads=employee_payloads
     )

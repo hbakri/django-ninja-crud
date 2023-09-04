@@ -1,5 +1,5 @@
 from .request_components import AuthHeaders, PathParameters, Payloads, QueryParameters
-from .test_create import CreateModelViewTest
+from .test_create import CreateModelViewTest, TestCreateModelView
 from .test_delete import DeleteModelViewTest, TestDeleteModelView
 from .test_list import ListModelViewTest, TestListModelView
 from .test_partial_update import PartialUpdateModelViewTest
@@ -16,6 +16,7 @@ __all__ = [
     # test classes
     "TestModelViewSet",
     "TestListModelView",
+    "TestCreateModelView",
     "TestRetrieveModelView",
     "TestUpdateModelView",
     "TestDeleteModelView",
