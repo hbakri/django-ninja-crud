@@ -1,4 +1,5 @@
 import json
+import logging
 from http import HTTPStatus
 
 from django.http import HttpResponse
@@ -15,8 +16,10 @@ from ninja_crud.tests.request_composer import (
 from ninja_crud.tests.test_abstract import AbstractTestModelView
 from ninja_crud.views.list import ListModelView
 
+logger = logging.getLogger(__name__)
 
-class ListModelViewTest(AbstractTestModelView):
+
+class TestListModelView(AbstractTestModelView):
     model_view_class = ListModelView
     model_view: ListModelView
 
@@ -128,3 +131,12 @@ class ListModelViewTest(AbstractTestModelView):
                 response, status_code=HTTPStatus.NOT_FOUND
             ),
         )
+
+
+class ListModelViewTest(TestListModelView):
+    def __init__(self, *args, **kwargs):  # pragma: no cover
+        logger.warning(
+            f"{ListModelViewTest.__name__} is deprecated, use {TestListModelView.__name__} instead",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

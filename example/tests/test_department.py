@@ -6,10 +6,10 @@ from example.views.view_department import DepartmentViewSet
 
 from ninja_crud.tests import (
     CreateModelViewTest,
-    ListModelViewTest,
     PathParameters,
     Payloads,
     TestDeleteModelView,
+    TestListModelView,
     TestModelViewSet,
     TestRetrieveModelView,
     TestUpdateModelView,
@@ -45,7 +45,7 @@ class TestDepartmentViewSet(TestModelViewSet, TestCase):
         conflict={"title": "department-2"},
     )
 
-    test_list = ListModelViewTest()
+    test_list = TestListModelView()
     test_create = CreateModelViewTest(payloads=department_payloads)
     test_retrieve = TestRetrieveModelView(path_parameters=get_path_parameters)
     test_update = TestUpdateModelView(
@@ -61,7 +61,7 @@ class TestDepartmentViewSet(TestModelViewSet, TestCase):
         bad_request={"first_name": 1},
     )
 
-    test_list_employees = ListModelViewTest(path_parameters=get_path_parameters)
+    test_list_employees = TestListModelView(path_parameters=get_path_parameters)
     test_create_employee = CreateModelViewTest(
         path_parameters=get_path_parameters, payloads=employee_payloads
     )

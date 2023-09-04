@@ -2,11 +2,11 @@ import uuid
 
 from ninja_crud.tests import (
     AuthHeaders,
-    ListModelViewTest,
     PathParameters,
     Payloads,
     QueryParameters,
     TestDeleteModelView,
+    TestListModelView,
     TestModelViewSet,
     TestRetrieveModelView,
     TestUpdateModelView,
@@ -34,7 +34,7 @@ class TestItemViewSet(TestModelViewSet, BaseTestCase):
             forbidden={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
         )
 
-    test_list = ListModelViewTest(
+    test_list = TestListModelView(
         auth_headers=get_auth_headers_ok,
         query_parameters=lambda self: QueryParameters(
             ok=[{}, {"order_by": ["name"], "limit": 1}]
@@ -55,7 +55,7 @@ class TestItemViewSet(TestModelViewSet, BaseTestCase):
         path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
     )
 
-    test_list_tags = ListModelViewTest(
+    test_list_tags = TestListModelView(
         path_parameters=lambda self: PathParameters(ok={"id": self.item_1.id}),
         auth_headers=get_auth_headers_ok,
     )

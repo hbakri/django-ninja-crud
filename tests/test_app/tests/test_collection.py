@@ -4,12 +4,12 @@ import uuid
 from ninja_crud.tests import (
     AuthHeaders,
     CreateModelViewTest,
-    ListModelViewTest,
     PartialUpdateModelViewTest,
     PathParameters,
     Payloads,
     QueryParameters,
     TestDeleteModelView,
+    TestListModelView,
     TestModelViewSet,
     TestRetrieveModelView,
     TestUpdateModelView,
@@ -45,7 +45,7 @@ class TestCollectionViewSet(TestModelViewSet, BaseTestCase):
         conflict={"name": "collection-2"},
     )
 
-    test_list = ListModelViewTest(
+    test_list = TestListModelView(
         auth_headers=get_auth_headers_ok,
         query_parameters=QueryParameters(
             ok=[{}, {"name": "collection-1", "order_by": ["name"], "limit": 1}],
@@ -82,7 +82,7 @@ class TestCollectionViewSet(TestModelViewSet, BaseTestCase):
         path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
     )
 
-    test_list_items = ListModelViewTest(
+    test_list_items = TestListModelView(
         path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
     )
     test_create_item = CreateModelViewTest(

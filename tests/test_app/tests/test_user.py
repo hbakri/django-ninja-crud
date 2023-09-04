@@ -1,9 +1,9 @@
 from ninja_crud.tests import (
     CreateModelViewTest,
-    ListModelViewTest,
     PathParameters,
     Payloads,
     TestDeleteModelView,
+    TestListModelView,
     TestModelViewSet,
     TestRetrieveModelView,
     TestUpdateModelView,
@@ -34,7 +34,7 @@ class TestUserViewSet(TestModelViewSet, BaseTestCase):
             },
         )
 
-    test_list = ListModelViewTest()
+    test_list = TestListModelView()
     test_create = CreateModelViewTest(payloads=get_user_payloads)
     test_retrieve = TestRetrieveModelView(path_parameters=get_path_parameters)
     test_update = TestUpdateModelView(
