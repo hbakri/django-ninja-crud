@@ -1,3 +1,5 @@
+import logging
+
 from django.http import HttpResponse
 
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters, Payloads
@@ -5,8 +7,10 @@ from ninja_crud.tests.request_composer import ArgOrCallable, TestCaseType
 from ninja_crud.tests.test_update import TestUpdateModelView
 from ninja_crud.views import PartialUpdateModelView
 
+logger = logging.getLogger(__name__)
 
-class PartialUpdateModelViewTest(TestUpdateModelView):
+
+class TestPartialUpdateModelView(TestUpdateModelView):
     model_view_class = PartialUpdateModelView
     model_view: PartialUpdateModelView
 
@@ -33,3 +37,12 @@ class PartialUpdateModelViewTest(TestUpdateModelView):
             content_type="application/json",
             **auth_headers,
         )
+
+
+class PartialUpdateModelViewTest(TestPartialUpdateModelView):
+    def __init__(self, *args, **kwargs):  # pragma: no cover
+        logger.warning(
+            f"{PartialUpdateModelViewTest.__name__} is deprecated, use {TestPartialUpdateModelView.__name__} instead",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

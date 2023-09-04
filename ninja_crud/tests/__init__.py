@@ -2,7 +2,7 @@ from .request_components import AuthHeaders, PathParameters, Payloads, QueryPara
 from .test_create import CreateModelViewTest, TestCreateModelView
 from .test_delete import DeleteModelViewTest, TestDeleteModelView
 from .test_list import ListModelViewTest, TestListModelView
-from .test_partial_update import PartialUpdateModelViewTest
+from .test_partial_update import PartialUpdateModelViewTest, TestPartialUpdateModelView
 from .test_retrieve import RetrieveModelViewTest, TestRetrieveModelView
 from .test_update import TestUpdateModelView, UpdateModelViewTest
 from .test_viewset import ModelViewSetTest, TestModelViewSet
@@ -19,6 +19,7 @@ __all__ = [
     "TestCreateModelView",
     "TestRetrieveModelView",
     "TestUpdateModelView",
+    "TestPartialUpdateModelView",
     "TestDeleteModelView",
     # deprecated
     "ModelViewSetTest",

@@ -3,7 +3,6 @@ import uuid
 
 from ninja_crud.tests import (
     AuthHeaders,
-    PartialUpdateModelViewTest,
     PathParameters,
     Payloads,
     QueryParameters,
@@ -11,6 +10,7 @@ from ninja_crud.tests import (
     TestDeleteModelView,
     TestListModelView,
     TestModelViewSet,
+    TestPartialUpdateModelView,
     TestRetrieveModelView,
     TestUpdateModelView,
 )
@@ -65,7 +65,7 @@ class TestCollectionViewSet(TestModelViewSet, BaseTestCase):
         auth_headers=get_auth_headers_ok_forbidden,
         payloads=collection_payloads,
     )
-    test_partial_update = PartialUpdateModelViewTest(
+    test_partial_update = TestPartialUpdateModelView(
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok_forbidden,
         payloads=Payloads(
