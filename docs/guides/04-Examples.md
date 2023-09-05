@@ -75,18 +75,18 @@ from django.test import TestCase
 from example.models import Department
 from example.views.view_department import DepartmentViewSet
 from ninja_crud.tests import (
-    Payloads,
-    DeleteModelViewTest,
-    ListModelViewTest,
-    ModelViewSetTest,
     PathParameters,
-    RetrieveModelViewTest,
-    UpdateModelViewTest,
-    CreateModelViewTest,
+    Payloads,
+    TestCreateModelView,
+    TestDeleteModelView,
+    TestListModelView,
+    TestModelViewSet,
+    TestRetrieveModelView,
+    TestUpdateModelView,
 )
 
 
-class DepartmentViewSetTest(ModelViewSetTest, TestCase):
+class TestDepartmentViewSet(TestModelViewSet, TestCase):
     model_view_set_class = DepartmentViewSet
     base_path = "api/departments"
 
@@ -105,11 +105,11 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         conflict={"title": "department-2"},
     )
 
-    test_list = ListModelViewTest()
-    test_create = CreateModelViewTest(payloads=payloads)
-    test_retrieve = RetrieveModelViewTest(path_parameters=get_path_parameters)
-    test_update = UpdateModelViewTest(path_parameters=get_path_parameters, payloads=payloads)
-    test_delete = DeleteModelViewTest(path_parameters=get_path_parameters)
+    test_list = TestListModelView()
+    test_create = TestCreateModelView(payloads=payloads)
+    test_retrieve = TestRetrieveModelView(path_parameters=get_path_parameters)
+    test_update = TestUpdateModelView(path_parameters=get_path_parameters, payloads=payloads)
+    test_delete = TestDeleteModelView(path_parameters=get_path_parameters)
 ```
 With this package, these tests can be written in a consistent, straightforward way, making it easier to ensure your views are working as expected.
 
