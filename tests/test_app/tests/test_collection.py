@@ -3,22 +3,22 @@ import uuid
 
 from ninja_crud.tests import (
     AuthHeaders,
-    CreateModelViewTest,
-    DeleteModelViewTest,
-    ListModelViewTest,
-    ModelViewSetTest,
-    PartialUpdateModelViewTest,
     PathParameters,
     Payloads,
     QueryParameters,
-    RetrieveModelViewTest,
-    UpdateModelViewTest,
+    TestCreateModelView,
+    TestDeleteModelView,
+    TestListModelView,
+    TestModelViewSet,
+    TestPartialUpdateModelView,
+    TestRetrieveModelView,
+    TestUpdateModelView,
 )
 from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_collection import CollectionViewSet
 
 
-class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
+class TestCollectionViewSet(TestModelViewSet, BaseTestCase):
     model_view_set_class = CollectionViewSet
     base_path = "api/collections"
 
@@ -45,27 +45,27 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
         conflict={"name": "collection-2"},
     )
 
-    test_list = ListModelViewTest(
+    test_list = TestListModelView(
         auth_headers=get_auth_headers_ok,
         query_parameters=QueryParameters(
             ok=[{}, {"name": "collection-1", "order_by": ["name"], "limit": 1}],
             bad_request={"order_by": ["unknown_field"]},
         ),
     )
-    test_create = CreateModelViewTest(
+    test_create = TestCreateModelView(
         auth_headers=get_auth_headers_ok,
         payloads=collection_payloads,
     )
-    test_retrieve = RetrieveModelViewTest(
+    test_retrieve = TestRetrieveModelView(
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok,
     )
-    test_update = UpdateModelViewTest(
+    test_update = TestUpdateModelView(
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok_forbidden,
         payloads=collection_payloads,
     )
-    test_partial_update = PartialUpdateModelViewTest(
+    test_partial_update = TestPartialUpdateModelView(
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok_forbidden,
         payloads=Payloads(
@@ -78,14 +78,14 @@ class CollectionViewSetTest(ModelViewSetTest, BaseTestCase):
             conflict={"name": "collection-2"},
         ),
     )
-    test_delete = DeleteModelViewTest(
+    test_delete = TestDeleteModelView(
         path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
     )
 
-    test_list_items = ListModelViewTest(
+    test_list_items = TestListModelView(
         path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
     )
-    test_create_item = CreateModelViewTest(
+    test_create_item = TestCreateModelView(
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok_forbidden,
         payloads=Payloads(

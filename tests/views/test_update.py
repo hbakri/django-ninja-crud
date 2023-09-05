@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock
 
-from django.db import models
 from django.test import TestCase
 
 from ninja_crud.views import UpdateModelView
@@ -8,7 +7,7 @@ from tests.test_app.models import Item
 from tests.test_app.schemas import ItemIn, ItemOut
 
 
-class UpdateModelViewTest(TestCase):
+class TestUpdateModelView(TestCase):
     def test_register_route_router_kwargs(self):
         router_mock = MagicMock()
         model_view = UpdateModelView(

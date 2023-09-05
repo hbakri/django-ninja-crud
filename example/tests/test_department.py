@@ -5,18 +5,18 @@ from example.models import Department, Employee
 from example.views.view_department import DepartmentViewSet
 
 from ninja_crud.tests import (
-    CreateModelViewTest,
-    DeleteModelViewTest,
-    ListModelViewTest,
-    ModelViewSetTest,
     PathParameters,
     Payloads,
-    RetrieveModelViewTest,
-    UpdateModelViewTest,
+    TestCreateModelView,
+    TestDeleteModelView,
+    TestListModelView,
+    TestModelViewSet,
+    TestRetrieveModelView,
+    TestUpdateModelView,
 )
 
 
-class DepartmentViewSetTest(ModelViewSetTest, TestCase):
+class TestDepartmentViewSet(TestModelViewSet, TestCase):
     model_view_set_class = DepartmentViewSet
     base_path = "api/departments"
 
@@ -45,13 +45,13 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         conflict={"title": "department-2"},
     )
 
-    test_list = ListModelViewTest()
-    test_create = CreateModelViewTest(payloads=department_payloads)
-    test_retrieve = RetrieveModelViewTest(path_parameters=get_path_parameters)
-    test_update = UpdateModelViewTest(
+    test_list = TestListModelView()
+    test_create = TestCreateModelView(payloads=department_payloads)
+    test_retrieve = TestRetrieveModelView(path_parameters=get_path_parameters)
+    test_update = TestUpdateModelView(
         path_parameters=get_path_parameters, payloads=department_payloads
     )
-    test_delete = DeleteModelViewTest(path_parameters=get_path_parameters)
+    test_delete = TestDeleteModelView(path_parameters=get_path_parameters)
 
     employee_payloads = Payloads(
         ok={
@@ -61,7 +61,7 @@ class DepartmentViewSetTest(ModelViewSetTest, TestCase):
         bad_request={"first_name": 1},
     )
 
-    test_list_employees = ListModelViewTest(path_parameters=get_path_parameters)
-    test_create_employee = CreateModelViewTest(
+    test_list_employees = TestListModelView(path_parameters=get_path_parameters)
+    test_create_employee = TestCreateModelView(
         path_parameters=get_path_parameters, payloads=employee_payloads
     )

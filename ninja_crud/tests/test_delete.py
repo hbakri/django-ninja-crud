@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 
 from django.http import HttpResponse
@@ -10,11 +11,13 @@ from ninja_crud.tests.request_composer import (
     RequestComposer,
     TestCaseType,
 )
-from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_abstract import AbstractTestModelView
 from ninja_crud.views.delete import DeleteModelView
 
+logger = logging.getLogger(__name__)
 
-class DeleteModelViewTest(AbstractModelViewTest):
+
+class TestDeleteModelView(AbstractTestModelView):
     model_view_class = DeleteModelView
     model_view: DeleteModelView
 
@@ -36,8 +39,8 @@ class DeleteModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.model_view_set_test.base_path + self.model_view.get_path()
-        return self.model_view_set_test.client_class().delete(
+        path = "/" + self.test_model_view_set.base_path + self.model_view.get_path()
+        return self.test_model_view_set.client_class().delete(
             path=path.format(**path_parameters),
             content_type="application/json",
             **auth_headers,
@@ -46,29 +49,29 @@ class DeleteModelViewTest(AbstractModelViewTest):
     def assert_response_is_no_content(
         self, response: HttpResponse, path_parameters: dict
     ):
-        self.model_view_set_test.assertEqual(
+        self.test_model_view_set.assertEqual(
             response.status_code, HTTPStatus.NO_CONTENT
         )
-        self.model_view_set_test.assertEqual(response.content, b"")
+        self.test_model_view_set.assertEqual(response.content, b"")
 
         queryset = (
-            self.model_view_set_test.model_view_set_class.model_class.objects.filter(
+            self.test_model_view_set.model_view_set_class.model_class.objects.filter(
                 id=path_parameters["id"]
             )
         )
-        self.model_view_set_test.assertEqual(queryset.count(), 0)
+        self.test_model_view_set.assertEqual(queryset.count(), 0)
 
     def assert_response_is_bad_request(
         self, response: HttpResponse, status_code: HTTPStatus
     ):
         TestAssertionHelper.assert_response_is_bad_request(
-            self.model_view_set_test, response, status_code=status_code
+            self.test_model_view_set, response, status_code=status_code
         )
 
     @tag("delete")
     def test_delete_model_ok(self):
         self.request_composer.test_view_ok(
-            test_case=self.model_view_set_test,
+            test_case=self.test_model_view_set,
             completion_callback=lambda response, path_parameters, _, __, ___: self.assert_response_is_no_content(
                 response, path_parameters=path_parameters
             ),
@@ -77,7 +80,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
     @tag("delete")
     def test_delete_model_unauthorized(self):
         self.request_composer.test_view_auth_headers_unauthorized(
-            test_case=self.model_view_set_test,
+            test_case=self.test_model_view_set,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.UNAUTHORIZED
             ),
@@ -86,7 +89,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
     @tag("delete")
     def test_delete_model_forbidden(self):
         self.request_composer.test_view_auth_headers_forbidden(
-            test_case=self.model_view_set_test,
+            test_case=self.test_model_view_set,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.FORBIDDEN
             ),
@@ -95,8 +98,17 @@ class DeleteModelViewTest(AbstractModelViewTest):
     @tag("delete")
     def test_delete_model_not_found(self):
         self.request_composer.test_view_path_parameters_not_found(
-            test_case=self.model_view_set_test,
+            test_case=self.test_model_view_set,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.NOT_FOUND
             ),
         )
+
+
+class DeleteModelViewTest(TestDeleteModelView):
+    def __init__(self, *args, **kwargs):  # pragma: no cover
+        logger.warning(
+            f"{DeleteModelViewTest.__name__} is deprecated, use {TestDeleteModelView.__name__} instead",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

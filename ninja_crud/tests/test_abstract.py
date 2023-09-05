@@ -6,14 +6,14 @@ from django.test import TestCase
 from ninja_crud.views import AbstractModelView
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ninja_crud.tests.test_viewset import ModelViewSetTest
+    from ninja_crud.tests.test_viewset import TestModelViewSet
 
 
-class AbstractModelViewTest:
+class AbstractTestModelView:
     model_view_class: Type[AbstractModelView]
     model_view: AbstractModelView
 
-    model_view_set_test: Union["ModelViewSetTest", TestCase]
+    test_model_view_set: Union["TestModelViewSet", TestCase]
 
     def get_test_methods(self) -> List[Tuple[str, Callable]]:
         return [

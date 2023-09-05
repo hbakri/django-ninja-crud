@@ -1,18 +1,18 @@
 from ninja_crud.tests import (
-    CreateModelViewTest,
-    DeleteModelViewTest,
-    ListModelViewTest,
-    ModelViewSetTest,
     PathParameters,
     Payloads,
-    RetrieveModelViewTest,
-    UpdateModelViewTest,
+    TestCreateModelView,
+    TestDeleteModelView,
+    TestListModelView,
+    TestModelViewSet,
+    TestRetrieveModelView,
+    TestUpdateModelView,
 )
 from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_user import UserViewSet
 
 
-class UserViewSetTest(ModelViewSetTest, BaseTestCase):
+class TestUserViewSet(TestModelViewSet, BaseTestCase):
     model_view_set_class = UserViewSet
     base_path = "api/users"
 
@@ -34,10 +34,10 @@ class UserViewSetTest(ModelViewSetTest, BaseTestCase):
             },
         )
 
-    test_list = ListModelViewTest()
-    test_create = CreateModelViewTest(payloads=get_user_payloads)
-    test_retrieve = RetrieveModelViewTest(path_parameters=get_path_parameters)
-    test_update = UpdateModelViewTest(
+    test_list = TestListModelView()
+    test_create = TestCreateModelView(payloads=get_user_payloads)
+    test_retrieve = TestRetrieveModelView(path_parameters=get_path_parameters)
+    test_update = TestUpdateModelView(
         path_parameters=get_path_parameters, payloads=get_user_payloads
     )
-    test_delete = DeleteModelViewTest(path_parameters=get_path_parameters)
+    test_delete = TestDeleteModelView(path_parameters=get_path_parameters)

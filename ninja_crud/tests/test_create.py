@@ -1,4 +1,5 @@
 import json
+import logging
 from http import HTTPStatus
 
 from django.http import HttpResponse
@@ -11,11 +12,13 @@ from ninja_crud.tests.request_composer import (
     RequestComposer,
     TestCaseType,
 )
-from ninja_crud.tests.test_abstract import AbstractModelViewTest
+from ninja_crud.tests.test_abstract import AbstractTestModelView
 from ninja_crud.views.create import CreateModelView
 
+logger = logging.getLogger(__name__)
 
-class CreateModelViewTest(AbstractModelViewTest):
+
+class TestCreateModelView(AbstractTestModelView):
     model_view_class = CreateModelView
     model_view: CreateModelView
 
@@ -39,8 +42,8 @@ class CreateModelViewTest(AbstractModelViewTest):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.model_view_set_test.base_path + self.model_view.get_path()
-        return self.model_view_set_test.client_class().post(
+        path = "/" + self.test_model_view_set.base_path + self.model_view.get_path()
+        return self.test_model_view_set.client_class().post(
             path=path.format(**path_parameters),
             data=payload,
             content_type="application/json",
@@ -48,15 +51,15 @@ class CreateModelViewTest(AbstractModelViewTest):
         )
 
     def assert_response_is_created(self, response: HttpResponse, payload: dict):
-        self.model_view_set_test.assertEqual(response.status_code, HTTPStatus.CREATED)
+        self.test_model_view_set.assertEqual(response.status_code, HTTPStatus.CREATED)
         content = json.loads(response.content)
 
         if self.model_view.detail:
             model = self.model_view._related_model
         else:
-            model = self.model_view_set_test.model_view_set_class.model_class
+            model = self.test_model_view_set.model_view_set_class.model_class
         TestAssertionHelper.assert_content_equals_schema(
-            test_case=self.model_view_set_test,
+            test_case=self.test_model_view_set,
             content=content,
             queryset=model.objects.get_queryset(),
             schema_class=self.model_view.output_schema,
@@ -66,13 +69,13 @@ class CreateModelViewTest(AbstractModelViewTest):
         self, response: HttpResponse, status_code: HTTPStatus
     ):
         TestAssertionHelper.assert_response_is_bad_request(
-            self.model_view_set_test, response, status_code=status_code
+            self.test_model_view_set, response, status_code=status_code
         )
 
     @tag("create")
     def test_create_model_ok(self):
         self.request_composer.test_view_ok(
-            test_case=self.model_view_set_test,
+            test_case=self.test_model_view_set,
             completion_callback=lambda response, _, __, ___, payload: self.assert_response_is_created(
                 response, payload=payload
             ),
@@ -81,7 +84,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_bad_request(self):
         self.request_composer.test_view_payloads_bad_request(
-            test_case=self.model_view_set_test,
+            test_case=self.test_model_view_set,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.BAD_REQUEST
             ),
@@ -90,7 +93,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_conflict(self):
         self.request_composer.test_view_payloads_conflict(
-            test_case=self.model_view_set_test,
+            test_case=self.test_model_view_set,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.CONFLICT
             ),
@@ -99,7 +102,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_unauthorized(self):
         self.request_composer.test_view_auth_headers_unauthorized(
-            test_case=self.model_view_set_test,
+            test_case=self.test_model_view_set,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.UNAUTHORIZED
             ),
@@ -108,7 +111,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_forbidden(self):
         self.request_composer.test_view_auth_headers_forbidden(
-            test_case=self.model_view_set_test,
+            test_case=self.test_model_view_set,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.FORBIDDEN
             ),
@@ -117,8 +120,17 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_not_found(self):
         self.request_composer.test_view_path_parameters_not_found(
-            test_case=self.model_view_set_test,
+            test_case=self.test_model_view_set,
             completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
                 response, status_code=HTTPStatus.NOT_FOUND
             ),
         )
+
+
+class CreateModelViewTest(TestCreateModelView):
+    def __init__(self, *args, **kwargs):  # pragma: no cover
+        logger.warning(
+            f"{CreateModelViewTest.__name__} is deprecated, use {TestCreateModelView.__name__} instead",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

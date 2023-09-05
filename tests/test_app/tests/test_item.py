@@ -2,20 +2,20 @@ import uuid
 
 from ninja_crud.tests import (
     AuthHeaders,
-    DeleteModelViewTest,
-    ListModelViewTest,
-    ModelViewSetTest,
     PathParameters,
     Payloads,
     QueryParameters,
-    RetrieveModelViewTest,
-    UpdateModelViewTest,
+    TestDeleteModelView,
+    TestListModelView,
+    TestModelViewSet,
+    TestRetrieveModelView,
+    TestUpdateModelView,
 )
 from tests.test_app.tests.test_base import BaseTestCase
 from tests.test_app.views.view_item import ItemViewSet
 
 
-class ItemViewSetTest(ModelViewSetTest, BaseTestCase):
+class TestItemViewSet(TestModelViewSet, BaseTestCase):
     model_view_set_class = ItemViewSet
     base_path = "api/items"
 
@@ -34,28 +34,28 @@ class ItemViewSetTest(ModelViewSetTest, BaseTestCase):
             forbidden={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
         )
 
-    test_list = ListModelViewTest(
+    test_list = TestListModelView(
         auth_headers=get_auth_headers_ok,
         query_parameters=lambda self: QueryParameters(
             ok=[{}, {"order_by": ["name"], "limit": 1}]
         ),
     )
-    test_retrieve = RetrieveModelViewTest(
+    test_retrieve = TestRetrieveModelView(
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok_forbidden,
     )
-    test_update = UpdateModelViewTest(
+    test_update = TestUpdateModelView(
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok_forbidden,
         payloads=Payloads(
             ok={"name": "new-name", "description": "new-description"},
         ),
     )
-    test_delete = DeleteModelViewTest(
+    test_delete = TestDeleteModelView(
         path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
     )
 
-    test_list_tags = ListModelViewTest(
+    test_list_tags = TestListModelView(
         path_parameters=lambda self: PathParameters(ok={"id": self.item_1.id}),
         auth_headers=get_auth_headers_ok,
     )

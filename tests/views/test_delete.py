@@ -1,13 +1,12 @@
 from unittest.mock import MagicMock
 
-from django.db import models
 from django.test import TestCase
 
 from ninja_crud.views import DeleteModelView
-from tests.test_app.models import Collection, Item
+from tests.test_app.models import Collection
 
 
-class DeleteModelViewTest(TestCase):
+class TestDeleteModelView(TestCase):
     def test_register_route_router_kwargs(self):
         router_mock = MagicMock()
         model_view = DeleteModelView(router_kwargs={"exclude_unset": True})
