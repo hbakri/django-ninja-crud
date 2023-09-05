@@ -50,7 +50,7 @@ class TestModelViewSetMeta(type):
             return new_cls
         elif not issubclass(new_cls, TestCase):
             raise TypeError(
-                f"{new_cls.__name__} must inherit from both ModelViewSetTest and django.test.TestCase"
+                f"{new_cls.__name__} must inherit from both TestModelViewSet and django.test.TestCase"
             )  # pragma: no cover
 
         mcs.validate_model_view_set_class(new_cls)
