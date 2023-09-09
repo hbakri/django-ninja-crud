@@ -29,13 +29,13 @@ class TestCreateModelView(AbstractTestModelView):
         auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
         self.request_composer = RequestComposer(
-            request_method=self.request_create_model,
+            perform_request=self.perform_request,
             path_parameters=path_parameters,
             auth_headers=auth_headers,
             payloads=payloads,
         )
 
-    def request_create_model(
+    def perform_request(
         self,
         path_parameters: dict,
         query_parameters: dict,
@@ -50,7 +50,14 @@ class TestCreateModelView(AbstractTestModelView):
             **auth_headers,
         )
 
-    def assert_response_is_created(self, response: HttpResponse, payload: dict):
+    def on_successful_request(
+        self,
+        response: HttpResponse,
+        path_parameters: dict,
+        query_parameters: dict,
+        auth_headers: dict,
+        payload: dict,
+    ):
         self.test_model_view_set.assertEqual(response.status_code, HTTPStatus.CREATED)
         content = json.loads(response.content)
 
@@ -65,65 +72,57 @@ class TestCreateModelView(AbstractTestModelView):
             schema_class=self.model_view.output_schema,
         )
 
-    def assert_response_is_bad_request(
-        self, response: HttpResponse, status_code: HTTPStatus
+    def on_failed_request(
+        self,
+        response: HttpResponse,
+        path_parameters: dict,
+        query_parameters: dict,
+        auth_headers: dict,
+        payload: dict,
     ):
-        TestAssertionHelper.assert_response_is_bad_request(
-            self.test_model_view_set, response, status_code=status_code
-        )
+        pass
 
     @tag("create")
     def test_create_model_ok(self):
         self.request_composer.test_view_ok(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, payload: self.assert_response_is_created(
-                response, payload=payload
-            ),
+            on_completion=self.on_successful_request,
+            status=HTTPStatus.CREATED,
         )
 
     @tag("create")
     def test_create_model_bad_request(self):
         self.request_composer.test_view_payloads_bad_request(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.BAD_REQUEST
-            ),
+            on_completion=self.on_failed_request,
         )
 
     @tag("create")
     def test_create_model_conflict(self):
         self.request_composer.test_view_payloads_conflict(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.CONFLICT
-            ),
+            on_completion=self.on_failed_request,
         )
 
     @tag("create")
     def test_create_model_unauthorized(self):
         self.request_composer.test_view_auth_headers_unauthorized(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.UNAUTHORIZED
-            ),
+            on_completion=self.on_failed_request,
         )
 
     @tag("create")
     def test_create_model_forbidden(self):
         self.request_composer.test_view_auth_headers_forbidden(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.FORBIDDEN
-            ),
+            on_completion=self.on_failed_request,
         )
 
     @tag("create")
     def test_create_model_not_found(self):
         self.request_composer.test_view_path_parameters_not_found(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.NOT_FOUND
-            ),
+            on_completion=self.on_failed_request,
         )
 
 

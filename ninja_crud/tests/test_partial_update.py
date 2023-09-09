@@ -21,9 +21,9 @@ class TestPartialUpdateModelView(TestUpdateModelView):
         auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
         super().__init__(path_parameters, payloads, auth_headers)
-        self.request_composer.request_method = self.request_partial_update_model
+        self.request_composer.perform_request = self.perform_request
 
-    def request_partial_update_model(
+    def perform_request(
         self,
         path_parameters: dict,
         query_parameters: dict,
