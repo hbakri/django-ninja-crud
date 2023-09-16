@@ -3,7 +3,7 @@ import logging
 from django.http import HttpResponse
 
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters, Payloads
-from ninja_crud.tests.request_composer import ArgOrCallable, TestCaseType
+from ninja_crud.tests.test_composer import ArgOrCallable, TestCaseType
 from ninja_crud.tests.test_update import TestUpdateModelView
 from ninja_crud.views import PartialUpdateModelView
 
@@ -21,7 +21,7 @@ class TestPartialUpdateModelView(TestUpdateModelView):
         auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
         super().__init__(path_parameters, payloads, auth_headers)
-        self.request_composer.perform_request = self.perform_request
+        self.test_composer.perform_request = self.perform_request
 
     def perform_request(
         self,

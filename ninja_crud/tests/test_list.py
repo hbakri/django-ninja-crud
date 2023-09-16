@@ -8,12 +8,8 @@ from django.test import tag
 from ninja_crud.tests import QueryParameters
 from ninja_crud.tests.assertion_helper import TestAssertionHelper
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters
-from ninja_crud.tests.request_composer import (
-    ArgOrCallable,
-    RequestComposer,
-    TestCaseType,
-)
 from ninja_crud.tests.test_abstract import AbstractTestModelView
+from ninja_crud.tests.test_composer import ArgOrCallable, TestCaseType, TestComposer
 from ninja_crud.views.list import ListModelView
 
 logger = logging.getLogger(__name__)
@@ -29,7 +25,7 @@ class TestListModelView(AbstractTestModelView):
         query_parameters: ArgOrCallable[QueryParameters, TestCaseType] = None,
         auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
-        self.request_composer = RequestComposer(
+        self.test_composer = TestComposer(
             perform_request=self.perform_request,
             path_parameters=path_parameters,
             query_parameters=query_parameters,
@@ -95,34 +91,34 @@ class TestListModelView(AbstractTestModelView):
 
     @tag("list")
     def test_list_model_ok(self):
-        self.request_composer.test_view_ok(
+        self.test_composer.test_view_ok(
             test_case=self.test_model_view_set, on_completion=self.on_successful_request
         )
 
     @tag("list")
     def test_list_model_bad_request(self):
-        self.request_composer.test_view_query_parameters_bad_request(
+        self.test_composer.test_view_query_parameters_bad_request(
             test_case=self.test_model_view_set,
             on_completion=self.on_failed_request,
         )
 
     @tag("list")
     def test_list_model_unauthorized(self):
-        self.request_composer.test_view_auth_headers_unauthorized(
+        self.test_composer.test_view_auth_headers_unauthorized(
             test_case=self.test_model_view_set,
             on_completion=self.on_failed_request,
         )
 
     @tag("list")
     def test_list_model_forbidden(self):
-        self.request_composer.test_view_auth_headers_forbidden(
+        self.test_composer.test_view_auth_headers_forbidden(
             test_case=self.test_model_view_set,
             on_completion=self.on_failed_request,
         )
 
     @tag("list")
     def test_list_model_not_found(self):
-        self.request_composer.test_view_path_parameters_not_found(
+        self.test_composer.test_view_path_parameters_not_found(
             test_case=self.test_model_view_set,
             on_completion=self.on_failed_request,
         )

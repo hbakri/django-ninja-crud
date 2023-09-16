@@ -18,7 +18,7 @@ ArgOrCallable = Union[T, Callable[[TestCaseType], T]]
 CompletionCallback = Callable[[HttpResponse, dict, dict, dict, dict], None]
 
 
-class RequestComposer:
+class TestComposer:
     def __init__(
         self,
         perform_request: Callable[[dict, dict, dict, dict], HttpResponse],
