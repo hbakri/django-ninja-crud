@@ -7,12 +7,8 @@ from django.test import tag
 
 from ninja_crud.tests.assertion_helper import TestAssertionHelper
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters, Payloads
-from ninja_crud.tests.request_composer import (
-    ArgOrCallable,
-    RequestComposer,
-    TestCaseType,
-)
 from ninja_crud.tests.test_abstract import AbstractTestModelView
+from ninja_crud.tests.test_composer import ArgOrCallable, TestCaseType, TestComposer
 from ninja_crud.views.update import UpdateModelView
 
 logger = logging.getLogger(__name__)
@@ -28,7 +24,7 @@ class TestUpdateModelView(AbstractTestModelView):
         payloads: ArgOrCallable[Payloads, TestCaseType],
         auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
-        self.request_composer = RequestComposer(
+        self.test_composer = TestComposer(
             perform_request=self.perform_request,
             path_parameters=path_parameters,
             auth_headers=auth_headers,
@@ -80,41 +76,41 @@ class TestUpdateModelView(AbstractTestModelView):
 
     @tag("update")
     def test_update_model_ok(self):
-        self.request_composer.test_view_ok(
+        self.test_composer.test_view_ok(
             test_case=self.test_model_view_set, on_completion=self.on_successful_request
         )
 
     @tag("update")
     def test_update_model_bad_request(self):
-        self.request_composer.test_view_payloads_bad_request(
+        self.test_composer.test_view_payloads_bad_request(
             test_case=self.test_model_view_set,
             on_completion=self.on_failed_request,
         )
 
     @tag("update")
     def test_update_model_conflict(self):
-        self.request_composer.test_view_payloads_conflict(
+        self.test_composer.test_view_payloads_conflict(
             test_case=self.test_model_view_set,
             on_completion=self.on_failed_request,
         )
 
     @tag("update")
     def test_update_model_unauthorized(self):
-        self.request_composer.test_view_auth_headers_unauthorized(
+        self.test_composer.test_view_auth_headers_unauthorized(
             test_case=self.test_model_view_set,
             on_completion=self.on_failed_request,
         )
 
     @tag("update")
     def test_update_model_forbidden(self):
-        self.request_composer.test_view_auth_headers_forbidden(
+        self.test_composer.test_view_auth_headers_forbidden(
             test_case=self.test_model_view_set,
             on_completion=self.on_failed_request,
         )
 
     @tag("update")
     def test_update_model_not_found(self):
-        self.request_composer.test_view_path_parameters_not_found(
+        self.test_composer.test_view_path_parameters_not_found(
             test_case=self.test_model_view_set,
             on_completion=self.on_failed_request,
         )
