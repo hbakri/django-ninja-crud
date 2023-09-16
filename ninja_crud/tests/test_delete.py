@@ -4,7 +4,6 @@ from http import HTTPStatus
 from django.http import HttpResponse
 from django.test import tag
 
-from ninja_crud.tests.assertion_helper import TestAssertionHelper
 from ninja_crud.tests.request_components import AuthHeaders, PathParameters
 from ninja_crud.tests.request_composer import (
     ArgOrCallable,
@@ -27,12 +26,12 @@ class TestDeleteModelView(AbstractTestModelView):
         auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
         self.request_composer = RequestComposer(
-            request_method=self.request_delete_model,
+            perform_request=self.perform_request,
             path_parameters=path_parameters,
             auth_headers=auth_headers,
         )
 
-    def request_delete_model(
+    def perform_request(
         self,
         path_parameters: dict,
         query_parameters: dict,
@@ -46,8 +45,13 @@ class TestDeleteModelView(AbstractTestModelView):
             **auth_headers,
         )
 
-    def assert_response_is_no_content(
-        self, response: HttpResponse, path_parameters: dict
+    def on_successful_request(
+        self,
+        response: HttpResponse,
+        path_parameters: dict,
+        query_parameters: dict,
+        auth_headers: dict,
+        payload: dict,
     ):
         self.test_model_view_set.assertEqual(
             response.status_code, HTTPStatus.NO_CONTENT
@@ -61,47 +65,43 @@ class TestDeleteModelView(AbstractTestModelView):
         )
         self.test_model_view_set.assertEqual(queryset.count(), 0)
 
-    def assert_response_is_bad_request(
-        self, response: HttpResponse, status_code: HTTPStatus
+    def on_failed_request(
+        self,
+        response: HttpResponse,
+        path_parameters: dict,
+        query_parameters: dict,
+        auth_headers: dict,
+        payload: dict,
     ):
-        TestAssertionHelper.assert_response_is_bad_request(
-            self.test_model_view_set, response, status_code=status_code
-        )
+        pass
 
     @tag("delete")
     def test_delete_model_ok(self):
         self.request_composer.test_view_ok(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, path_parameters, _, __, ___: self.assert_response_is_no_content(
-                response, path_parameters=path_parameters
-            ),
+            on_completion=self.on_successful_request,
+            status=HTTPStatus.NO_CONTENT,
         )
 
     @tag("delete")
     def test_delete_model_unauthorized(self):
         self.request_composer.test_view_auth_headers_unauthorized(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.UNAUTHORIZED
-            ),
+            on_completion=self.on_failed_request,
         )
 
     @tag("delete")
     def test_delete_model_forbidden(self):
         self.request_composer.test_view_auth_headers_forbidden(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.FORBIDDEN
-            ),
+            on_completion=self.on_failed_request,
         )
 
     @tag("delete")
     def test_delete_model_not_found(self):
         self.request_composer.test_view_path_parameters_not_found(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.NOT_FOUND
-            ),
+            on_completion=self.on_failed_request,
         )
 
 

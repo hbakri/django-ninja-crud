@@ -28,12 +28,12 @@ class TestRetrieveModelView(AbstractTestModelView):
         auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
         self.request_composer = RequestComposer(
-            request_method=self.request_retrieve_model,
+            perform_request=self.perform_request,
             path_parameters=path_parameters,
             auth_headers=auth_headers,
         )
 
-    def request_retrieve_model(
+    def perform_request(
         self,
         path_parameters: dict,
         query_parameters: dict,
@@ -47,7 +47,14 @@ class TestRetrieveModelView(AbstractTestModelView):
             **auth_headers,
         )
 
-    def assert_response_is_ok(self, response: HttpResponse, path_parameters: dict):
+    def on_successful_request(
+        self,
+        response: HttpResponse,
+        path_parameters: dict,
+        query_parameters: dict,
+        auth_headers: dict,
+        payload: dict,
+    ):
         self.test_model_view_set.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
@@ -62,47 +69,41 @@ class TestRetrieveModelView(AbstractTestModelView):
             schema_class=self.model_view.output_schema,
         )
 
-    def assert_response_is_bad_request(
-        self, response: HttpResponse, status_code: HTTPStatus
+    def on_failed_request(
+        self,
+        response: HttpResponse,
+        path_parameters: dict,
+        query_parameters: dict,
+        auth_headers: dict,
+        payload: dict,
     ):
-        TestAssertionHelper.assert_response_is_bad_request(
-            self.test_model_view_set, response, status_code=status_code
-        )
+        pass
 
     @tag("retrieve")
     def test_retrieve_model_ok(self):
         self.request_composer.test_view_ok(
-            test_case=self.test_model_view_set,
-            completion_callback=lambda response, path_parameters, _, __, ___: self.assert_response_is_ok(
-                response, path_parameters=path_parameters
-            ),
+            test_case=self.test_model_view_set, on_completion=self.on_successful_request
         )
 
     @tag("retrieve")
     def test_retrieve_model_unauthorized(self):
         self.request_composer.test_view_auth_headers_unauthorized(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.UNAUTHORIZED
-            ),
+            on_completion=self.on_failed_request,
         )
 
     @tag("retrieve")
     def test_retrieve_model_forbidden(self):
         self.request_composer.test_view_auth_headers_forbidden(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.FORBIDDEN
-            ),
+            on_completion=self.on_failed_request,
         )
 
     @tag("retrieve")
     def test_retrieve_model_not_found(self):
         self.request_composer.test_view_path_parameters_not_found(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.NOT_FOUND
-            ),
+            on_completion=self.on_failed_request,
         )
 
 

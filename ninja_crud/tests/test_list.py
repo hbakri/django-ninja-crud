@@ -30,13 +30,13 @@ class TestListModelView(AbstractTestModelView):
         auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
     ) -> None:
         self.request_composer = RequestComposer(
-            request_method=self.request_list_model,
+            perform_request=self.perform_request,
             path_parameters=path_parameters,
             query_parameters=query_parameters,
             auth_headers=auth_headers,
         )
 
-    def request_list_model(
+    def perform_request(
         self,
         path_parameters: dict,
         query_parameters: dict,
@@ -52,8 +52,13 @@ class TestListModelView(AbstractTestModelView):
         )
         return response
 
-    def assert_response_is_ok(
-        self, response: HttpResponse, query_parameters: dict, path_parameters: dict
+    def on_successful_request(
+        self,
+        response: HttpResponse,
+        path_parameters: dict,
+        query_parameters: dict,
+        auth_headers: dict,
+        payload: dict,
     ):
         self.test_model_view_set.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
@@ -78,58 +83,48 @@ class TestListModelView(AbstractTestModelView):
             offset=offset,
         )
 
-    def assert_response_is_bad_request(
-        self, response: HttpResponse, status_code: HTTPStatus
+    def on_failed_request(
+        self,
+        response: HttpResponse,
+        path_parameters: dict,
+        query_parameters: dict,
+        auth_headers: dict,
+        payload: dict,
     ):
-        TestAssertionHelper.assert_response_is_bad_request(
-            self.test_model_view_set, response, status_code=status_code
-        )
+        pass
 
     @tag("list")
     def test_list_model_ok(self):
         self.request_composer.test_view_ok(
-            test_case=self.test_model_view_set,
-            completion_callback=lambda response, path_parameters, query_parameters, _, __: self.assert_response_is_ok(
-                response,
-                path_parameters=path_parameters,
-                query_parameters=query_parameters,
-            ),
+            test_case=self.test_model_view_set, on_completion=self.on_successful_request
         )
 
     @tag("list")
     def test_list_model_bad_request(self):
         self.request_composer.test_view_query_parameters_bad_request(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.BAD_REQUEST
-            ),
+            on_completion=self.on_failed_request,
         )
 
     @tag("list")
     def test_list_model_unauthorized(self):
         self.request_composer.test_view_auth_headers_unauthorized(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.UNAUTHORIZED
-            ),
+            on_completion=self.on_failed_request,
         )
 
     @tag("list")
     def test_list_model_forbidden(self):
         self.request_composer.test_view_auth_headers_forbidden(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.FORBIDDEN
-            ),
+            on_completion=self.on_failed_request,
         )
 
     @tag("list")
     def test_list_model_not_found(self):
         self.request_composer.test_view_path_parameters_not_found(
             test_case=self.test_model_view_set,
-            completion_callback=lambda response, _, __, ___, ____: self.assert_response_is_bad_request(
-                response, status_code=HTTPStatus.NOT_FOUND
-            ),
+            on_completion=self.on_failed_request,
         )
 
 

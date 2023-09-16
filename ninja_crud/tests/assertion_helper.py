@@ -1,11 +1,9 @@
 import datetime
 import json
 import uuid
-from http import HTTPStatus
 from typing import List, Type
 
 from django.db.models import Model, QuerySet
-from django.http import HttpResponse
 from django.test import TestCase
 from ninja import Schema
 
@@ -67,12 +65,3 @@ class TestAssertionHelper:
             TestAssertionHelper.assert_content_equals_schema(
                 test_case, item, queryset, schema_class
             )
-
-    @staticmethod
-    def assert_response_is_bad_request(
-        test_case: TestCase, response: HttpResponse, status_code: HTTPStatus
-    ):
-        test_case.assertEqual(response.status_code, status_code)
-        content = json.loads(response.content)
-        test_case.assertIsInstance(content, dict)
-        test_case.assertIn("detail", content)
