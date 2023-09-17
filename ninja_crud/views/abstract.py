@@ -65,10 +65,10 @@ class AbstractModelView(ABC):
         default_router_kwargs: dict, custom_router_kwargs: dict
     ) -> dict:
         locked_keys = ["path", "response"]
-        custom_router_kwargs = custom_router_kwargs.copy()
+        router_kwargs = custom_router_kwargs.copy()
         for key in locked_keys:
-            if key in custom_router_kwargs:
+            if key in router_kwargs:
                 logger.warning(f"Cannot override '{key}' in 'router_kwargs'.")
-                custom_router_kwargs.pop(key)
+                router_kwargs.pop(key)
 
-        return {**default_router_kwargs, **custom_router_kwargs}
+        return {**default_router_kwargs, **router_kwargs}
