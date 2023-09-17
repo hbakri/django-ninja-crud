@@ -62,11 +62,10 @@ class DeleteModelView(AbstractModelView):
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         @router.delete(
-            path=self.get_path(),
-            response={HTTPStatus.NO_CONTENT: None},
-            operation_id=f"delete_{utils.to_snake_case(model_class.__name__)}",
-            summary=f"Delete {model_class.__name__}",
-            **self.router_kwargs,
+            **self._sanitize_and_merge_router_kwargs(
+                default_router_kwargs=self._get_default_router_kwargs(model_class),
+                custom_router_kwargs=self.router_kwargs,
+            )
         )
         @utils.merge_decorators(self.decorators)
         def delete_model(request: HttpRequest, id: utils.get_id_type(model_class)):
@@ -82,5 +81,21 @@ class DeleteModelView(AbstractModelView):
 
             return HTTPStatus.NO_CONTENT, None
 
+    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
+        return dict(
+            path=self.get_path(),
+            response={HTTPStatus.NO_CONTENT: None},
+            operation_id=self._get_operation_id(model_class),
+            summary=self._get_summary(model_class),
+        )
+
     def get_path(self) -> str:
         return "/{id}"
+
+    @staticmethod
+    def _get_operation_id(model_class: Type[Model]) -> str:
+        return f"delete_{utils.to_snake_case(model_class.__name__)}"
+
+    @staticmethod
+    def _get_summary(model_class: Type[Model]) -> str:
+        return f"Delete {model_class.__name__}"

@@ -71,15 +71,12 @@ class UpdateModelView(AbstractModelView):
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         input_schema = self.input_schema
-        output_schema = self.output_schema
 
         @router.api_operation(
-            methods=[self.http_method],
-            path=self.get_path(),
-            response={HTTPStatus.OK: output_schema},
-            operation_id=f"update_{utils.to_snake_case(model_class.__name__)}",
-            summary=f"Update {model_class.__name__}",
-            **self.router_kwargs,
+            **self._sanitize_and_merge_router_kwargs(
+                default_router_kwargs=self._get_default_router_kwargs(model_class),
+                custom_router_kwargs=self.router_kwargs,
+            ),
         )
         @utils.merge_decorators(self.decorators)
         def update_model(
@@ -107,5 +104,22 @@ class UpdateModelView(AbstractModelView):
 
             return HTTPStatus.OK, new_instance
 
+    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
+        return dict(
+            methods=[self.http_method],
+            path=self.get_path(),
+            response={HTTPStatus.OK: self.output_schema},
+            operation_id=self._get_operation_id(model_class),
+            summary=self._get_summary(model_class),
+        )
+
     def get_path(self) -> str:
         return "/{id}"
+
+    @staticmethod
+    def _get_operation_id(model_class: Type[Model]) -> str:
+        return f"update_{utils.to_snake_case(model_class.__name__)}"
+
+    @staticmethod
+    def _get_summary(model_class: Type[Model]) -> str:
+        return f"Update {model_class.__name__}"

@@ -187,11 +187,10 @@ class CreateModelView(AbstractModelView):
     def _configure_route(self, router: Router, model_class: Type[Model]):
         def decorator(route_func):
             @router.post(
-                path=self.get_path(),
-                response={HTTPStatus.CREATED: self.output_schema},
-                operation_id=self._get_operation_id(model_class),
-                summary=self._get_summary(model_class),
-                **self.router_kwargs,
+                **self._sanitize_and_merge_router_kwargs(
+                    default_router_kwargs=self._get_default_router_kwargs(model_class),
+                    custom_router_kwargs=self.router_kwargs,
+                )
             )
             @utils.merge_decorators(self.decorators)
             @functools.wraps(route_func)
@@ -201,6 +200,14 @@ class CreateModelView(AbstractModelView):
             return wrapped_func
 
         return decorator
+
+    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
+        return dict(
+            path=self.get_path(),
+            response={HTTPStatus.CREATED: self.output_schema},
+            operation_id=self._get_operation_id(model_class),
+            summary=self._get_summary(model_class),
+        )
 
     def _get_operation_id(self, model_class: Type[Model]) -> str:
         model_name = utils.to_snake_case(model_class.__name__)
