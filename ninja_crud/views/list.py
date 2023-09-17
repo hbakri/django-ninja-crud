@@ -133,12 +133,17 @@ class ListModelView(AbstractModelView):
 
     def _configure_route(self, router: Router, model_class: Type[Model]):
         def decorator(route_func):
-            @router.get(
+            default_router_kwargs = dict(
                 path=self.get_path(),
                 response={HTTPStatus.OK: List[self.output_schema]},
                 operation_id=self._get_operation_id(model_class),
                 summary=self._get_summary(model_class),
-                **self.router_kwargs,
+            )
+
+            @router.get(
+                **self._sanitize_and_merge_router_kwargs(
+                    self.router_kwargs, default_router_kwargs
+                )
             )
             @utils.merge_decorators(self.decorators)
             @paginate(LimitOffsetPagination)

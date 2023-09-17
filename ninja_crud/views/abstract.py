@@ -1,8 +1,11 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import Callable, List, Optional, Type
 
 from django.db.models import Model
 from ninja import Router
+
+logger = logging.getLogger(__name__)
 
 
 class AbstractModelView(ABC):
@@ -56,3 +59,16 @@ class AbstractModelView(ABC):
             NotImplementedError: This method must be implemented by a subclass.
         """
         pass
+
+    @staticmethod
+    def _sanitize_and_merge_router_kwargs(
+        router_kwargs: dict, default_router_kwargs: dict
+    ) -> dict:
+        locked_keys = ["path", "response"]
+        custom_route_kwargs = router_kwargs.copy()
+        for key in locked_keys:
+            if key in custom_route_kwargs:
+                logger.warning(f"Cannot override '{key}' in 'router_kwargs'.")
+                custom_route_kwargs.pop(key)
+
+        return {**default_router_kwargs, **custom_route_kwargs}
