@@ -142,7 +142,8 @@ class ListModelView(AbstractModelView):
 
             @router.get(
                 **self._sanitize_and_merge_router_kwargs(
-                    self.router_kwargs, default_router_kwargs
+                    default_router_kwargs=default_router_kwargs,
+                    custom_router_kwargs=self.router_kwargs,
                 )
             )
             @utils.merge_decorators(self.decorators)

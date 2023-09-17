@@ -62,13 +62,13 @@ class AbstractModelView(ABC):
 
     @staticmethod
     def _sanitize_and_merge_router_kwargs(
-        router_kwargs: dict, default_router_kwargs: dict
+        default_router_kwargs: dict, custom_router_kwargs: dict
     ) -> dict:
         locked_keys = ["path", "response"]
-        custom_route_kwargs = router_kwargs.copy()
+        custom_router_kwargs = custom_router_kwargs.copy()
         for key in locked_keys:
-            if key in custom_route_kwargs:
+            if key in custom_router_kwargs:
                 logger.warning(f"Cannot override '{key}' in 'router_kwargs'.")
-                custom_route_kwargs.pop(key)
+                custom_router_kwargs.pop(key)
 
-        return {**default_router_kwargs, **custom_route_kwargs}
+        return {**default_router_kwargs, **custom_router_kwargs}
