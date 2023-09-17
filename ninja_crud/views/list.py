@@ -133,16 +133,9 @@ class ListModelView(AbstractModelView):
 
     def _configure_route(self, router: Router, model_class: Type[Model]):
         def decorator(route_func):
-            default_router_kwargs = dict(
-                path=self.get_path(),
-                response={HTTPStatus.OK: List[self.output_schema]},
-                operation_id=self._get_operation_id(model_class),
-                summary=self._get_summary(model_class),
-            )
-
             @router.get(
                 **self._sanitize_and_merge_router_kwargs(
-                    default_router_kwargs=default_router_kwargs,
+                    default_router_kwargs=self._get_default_router_kwargs(model_class),
                     custom_router_kwargs=self.router_kwargs,
                 )
             )
@@ -155,6 +148,14 @@ class ListModelView(AbstractModelView):
             return wrapped_func
 
         return decorator
+
+    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
+        return dict(
+            path=self.get_path(),
+            response={HTTPStatus.OK: List[self.output_schema]},
+            operation_id=self._get_operation_id(model_class),
+            summary=self._get_summary(model_class),
+        )
 
     def _get_queryset(
         self, model_class: Type[Model], id: Any = None

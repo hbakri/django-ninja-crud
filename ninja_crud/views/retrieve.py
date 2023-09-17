@@ -63,16 +63,23 @@ class RetrieveModelView(AbstractModelView):
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         @router.get(
-            path=self.get_path(),
-            response=self.output_schema,
-            operation_id=f"retrieve_{utils.to_snake_case(model_class.__name__)}",
-            summary=f"Retrieve {model_class.__name__}",
-            **self.router_kwargs,
+            **self._sanitize_and_merge_router_kwargs(
+                default_router_kwargs=self._get_default_router_kwargs(model_class),
+                custom_router_kwargs=self.router_kwargs,
+            )
         )
         @utils.merge_decorators(self.decorators)
         def retrieve_model(request: HttpRequest, id: utils.get_id_type(model_class)):
             queryset = self._get_queryset(model_class, id)
             return HTTPStatus.OK, queryset.get(pk=id)
+
+    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
+        return dict(
+            path=self.get_path(),
+            response=self.output_schema,
+            operation_id=self._get_operation_id(model_class),
+            summary=self._get_summary(model_class),
+        )
 
     def _get_queryset(self, model_class: Type[Model], id: Any) -> QuerySet[Model]:
         if self.queryset_getter:
@@ -82,3 +89,11 @@ class RetrieveModelView(AbstractModelView):
 
     def get_path(self) -> str:
         return "/{id}"
+
+    @staticmethod
+    def _get_operation_id(model_class: Type[Model]) -> str:
+        return f"retrieve_{utils.to_snake_case(model_class.__name__)}"
+
+    @staticmethod
+    def _get_summary(model_class: Type[Model]) -> str:
+        return f"Retrieve {model_class.__name__}"
