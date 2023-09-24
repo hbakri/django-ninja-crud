@@ -54,7 +54,6 @@ class TestUpdateModelView(AbstractTestModelView):
         auth_headers: dict,
         payload: dict,
     ):
-        self.test_model_view_set.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
         TestAssertionHelper.assert_content_equals_schema(
@@ -77,7 +76,9 @@ class TestUpdateModelView(AbstractTestModelView):
     @tag("update")
     def test_update_model_ok(self):
         self.test_composer.test_view_ok(
-            test_case=self.test_model_view_set, on_completion=self.on_successful_request
+            test_case=self.test_model_view_set,
+            on_completion=self.on_successful_request,
+            status=HTTPStatus.OK
         )
 
     @tag("update")

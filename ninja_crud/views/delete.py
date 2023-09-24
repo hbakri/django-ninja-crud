@@ -1,3 +1,4 @@
+import re
 from http import HTTPStatus
 from typing import Callable, List, Optional, Type
 
@@ -32,6 +33,7 @@ class DeleteModelView(AbstractModelView):
 
     def __init__(
         self,
+        path: str = None,
         pre_delete: PreDeleteHook = None,
         post_delete: PostDeleteHook = None,
         decorators: List[Callable] = None,
@@ -41,6 +43,7 @@ class DeleteModelView(AbstractModelView):
         Initializes the DeleteModelView.
 
         Args:
+            path (str, optional): The path to use for the view. Defaults to "/{id}".
             pre_delete (PreDeleteHook, optional): A function that is called before deleting the instance.
                 Defaults to None.
 
@@ -57,8 +60,20 @@ class DeleteModelView(AbstractModelView):
             router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
         """
         super().__init__(decorators=decorators, router_kwargs=router_kwargs)
+        if path is None:
+            path = "/{id}"
+        self.validate_path(path)
+        self.path = path
         self.pre_delete = pre_delete
         self.post_delete = post_delete
+
+    @staticmethod
+    def validate_path(path: str) -> None:
+        pattern = re.compile(r'^/?[^{]*(\{id})[^{]*$')
+        if not pattern.match(path):
+            raise ValueError(
+                f"DeleteModelView: path must contain only one parameter, and that should be {{id}}, got '{path}'"
+            )
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         @router.delete(
@@ -90,7 +105,7 @@ class DeleteModelView(AbstractModelView):
         )
 
     def get_path(self) -> str:
-        return "/{id}"
+        return self.path or "/{id}"
 
     @staticmethod
     def _get_operation_id(model_class: Type[Model]) -> str:
