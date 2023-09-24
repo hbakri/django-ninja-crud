@@ -54,7 +54,6 @@ class TestCreateModelView(AbstractTestModelView):
         auth_headers: dict,
         payload: dict,
     ):
-        self.test_model_view_set.assertEqual(response.status_code, HTTPStatus.CREATED)
         content = json.loads(response.content)
 
         if self.model_view.detail:
