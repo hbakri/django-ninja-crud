@@ -36,8 +36,9 @@ class RetrieveModelView(AbstractModelView):
     def __init__(
         self,
         output_schema: Type[Schema],
-        queryset_getter: DetailQuerySetGetter = None,
-        decorators: List[Callable] = None,
+        queryset_getter: Optional[DetailQuerySetGetter] = None,
+        path: Optional[str] = None,
+        decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
@@ -50,13 +51,17 @@ class RetrieveModelView(AbstractModelView):
 
                 If not provided, the default manager of the `model_class` specified in the
                 `ModelViewSet` will be used.
+            path (str, optional): The path to use for the view. Defaults to "/{id}".
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
             router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
         """
+        if path is None:
+            path = self._get_default_path()
+        super().__init__(
+            path=path, detail=True, decorators=decorators, router_kwargs=router_kwargs
+        )
 
-        super().__init__(decorators=decorators, router_kwargs=router_kwargs)
-
-        QuerySetGetterValidator.validate(queryset_getter, detail=True)
+        QuerySetGetterValidator.validate(queryset_getter, detail=self.detail)
 
         self.output_schema = output_schema
         self.queryset_getter = queryset_getter
@@ -73,22 +78,23 @@ class RetrieveModelView(AbstractModelView):
             queryset = self._get_queryset(model_class, id)
             return HTTPStatus.OK, queryset.get(pk=id)
 
-    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
-        return dict(
-            path=self.get_path(),
-            response=self.output_schema,
-            operation_id=self._get_operation_id(model_class),
-            summary=self._get_summary(model_class),
-        )
-
     def _get_queryset(self, model_class: Type[Model], id: Any) -> QuerySet[Model]:
         if self.queryset_getter:
             return self.queryset_getter(id)
         else:
             return model_class.objects.get_queryset()
 
-    def get_path(self) -> str:
+    @staticmethod
+    def _get_default_path() -> str:
         return "/{id}"
+
+    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
+        return dict(
+            path=self.path,
+            response=self.output_schema,
+            operation_id=self._get_operation_id(model_class),
+            summary=self._get_summary(model_class),
+        )
 
     @staticmethod
     def _get_operation_id(model_class: Type[Model]) -> str:

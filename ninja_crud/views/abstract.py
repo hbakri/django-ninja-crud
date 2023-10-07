@@ -5,6 +5,8 @@ from typing import Callable, List, Optional, Type
 from django.db.models import Model
 from ninja import Router
 
+from ninja_crud.views.validators.path_validator import PathValidator
+
 logger = logging.getLogger(__name__)
 
 
@@ -12,23 +14,29 @@ class AbstractModelView(ABC):
     """
     An abstract base class for all model views.
 
-    Subclasses must implement the register_route and get_path methods.
+    Subclasses must implement the register_route method.
     """
 
     def __init__(
-        self, decorators: List[Callable] = None, router_kwargs: Optional[dict] = None
+        self,
+        path: str,
+        detail: bool,
+        decorators: Optional[List[Callable]] = None,
+        router_kwargs: Optional[dict] = None,
     ) -> None:
         """
         Initializes the AbstractModelView with the given decorators and optional router keyword arguments.
 
         Args:
-            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
-            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
+            path (str): The path to use for the view.
+            detail (bool): Whether the view is for a detail or collection route.
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
+            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
         """
-
-        if decorators is None:
-            decorators = []
-        self.decorators = decorators
+        PathValidator.validate(path, detail)
+        self.path = path
+        self.detail = detail
+        self.decorators = decorators or []
         self.router_kwargs = router_kwargs or {}
 
     @abstractmethod
@@ -47,28 +55,15 @@ class AbstractModelView(ABC):
         """
         pass
 
-    @abstractmethod
-    def get_path(self) -> str:  # pragma: no cover
-        """
-        Returns the URL path for this view, used in routing.
-
-        Returns:
-            str: The URL path.
-
-        Raises:
-            NotImplementedError: This method must be implemented by a subclass.
-        """
-        pass
-
     @staticmethod
     def _sanitize_and_merge_router_kwargs(
         default_router_kwargs: dict, custom_router_kwargs: dict
     ) -> dict:
         locked_keys = ["path", "response"]
         router_kwargs = custom_router_kwargs.copy()
-        for key in locked_keys:
-            if key in router_kwargs:
-                logger.warning(f"Cannot override '{key}' in 'router_kwargs'.")
-                router_kwargs.pop(key)
+        for locked_key in locked_keys:
+            if locked_key in router_kwargs:
+                logger.warning(f"Cannot override '{locked_key}' in 'router_kwargs'.")
+                router_kwargs.pop(locked_key)
 
         return {**default_router_kwargs, **router_kwargs}

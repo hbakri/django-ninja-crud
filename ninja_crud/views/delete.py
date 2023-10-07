@@ -1,4 +1,3 @@
-import re
 from http import HTTPStatus
 from typing import Callable, List, Optional, Type
 
@@ -33,17 +32,16 @@ class DeleteModelView(AbstractModelView):
 
     def __init__(
         self,
-        path: str = None,
-        pre_delete: PreDeleteHook = None,
-        post_delete: PostDeleteHook = None,
-        decorators: List[Callable] = None,
+        pre_delete: Optional[PreDeleteHook] = None,
+        post_delete: Optional[PostDeleteHook] = None,
+        path: Optional[str] = None,
+        decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
         Initializes the DeleteModelView.
 
         Args:
-            path (str, optional): The path to use for the view. Defaults to "/{id}".
             pre_delete (PreDeleteHook, optional): A function that is called before deleting the instance.
                 Defaults to None.
 
@@ -56,24 +54,17 @@ class DeleteModelView(AbstractModelView):
                 Should have the signature (request: HttpRequest, id: Any, deleted_instance: Model) -> None.
 
                 If not provided, the function will be a no-op.
+            path (str, optional): The path to use for the view. Defaults to "/{id}".
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
             router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
         """
-        super().__init__(decorators=decorators, router_kwargs=router_kwargs)
         if path is None:
-            path = "/{id}"
-        self.validate_path(path)
-        self.path = path
+            path = self._get_default_path()
+        super().__init__(
+            path=path, detail=True, decorators=decorators, router_kwargs=router_kwargs
+        )
         self.pre_delete = pre_delete
         self.post_delete = post_delete
-
-    @staticmethod
-    def validate_path(path: str) -> None:
-        pattern = re.compile(r'^/?[^{]*(\{id})[^{]*$')
-        if not pattern.match(path):
-            raise ValueError(
-                f"DeleteModelView: path must contain only one parameter, and that should be {{id}}, got '{path}'"
-            )
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         @router.delete(
@@ -96,16 +87,17 @@ class DeleteModelView(AbstractModelView):
 
             return HTTPStatus.NO_CONTENT, None
 
+    @staticmethod
+    def _get_default_path() -> str:
+        return "/{id}"
+
     def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
         return dict(
-            path=self.get_path(),
+            path=self.path,
             response={HTTPStatus.NO_CONTENT: None},
             operation_id=self._get_operation_id(model_class),
             summary=self._get_summary(model_class),
         )
-
-    def get_path(self) -> str:
-        return self.path or "/{id}"
 
     @staticmethod
     def _get_operation_id(model_class: Type[Model]) -> str:

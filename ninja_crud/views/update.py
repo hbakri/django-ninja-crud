@@ -35,9 +35,10 @@ class UpdateModelView(AbstractModelView):
         self,
         input_schema: Type[Schema],
         output_schema: Type[Schema],
-        pre_save: UpdateSaveHook = None,
-        post_save: UpdateSaveHook = None,
-        decorators: List[Callable] = None,
+        pre_save: Optional[UpdateSaveHook] = None,
+        post_save: Optional[UpdateSaveHook] = None,
+        path: Optional[str] = None,
+        decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
@@ -58,11 +59,15 @@ class UpdateModelView(AbstractModelView):
                 - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
 
                 If not provided, the function will be a no-op.
+            path (str, optional): The path to use for the view. Defaults to "/{id}".
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
             router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
         """
-
-        super().__init__(decorators=decorators, router_kwargs=router_kwargs)
+        if path is None:
+            path = self._get_default_path()
+        super().__init__(
+            path=path, detail=True, decorators=decorators, router_kwargs=router_kwargs
+        )
         self.input_schema = input_schema
         self.output_schema = output_schema
         self.pre_save = pre_save
@@ -104,17 +109,18 @@ class UpdateModelView(AbstractModelView):
 
             return HTTPStatus.OK, new_instance
 
+    @staticmethod
+    def _get_default_path() -> str:
+        return "/{id}"
+
     def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
         return dict(
             methods=[self.http_method],
-            path=self.get_path(),
+            path=self.path,
             response={HTTPStatus.OK: self.output_schema},
             operation_id=self._get_operation_id(model_class),
             summary=self._get_summary(model_class),
         )
-
-    def get_path(self) -> str:
-        return "/{id}"
 
     @staticmethod
     def _get_operation_id(model_class: Type[Model]) -> str:
