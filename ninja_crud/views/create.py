@@ -104,6 +104,11 @@ class CreateModelView(AbstractModelView):
             path (str, optional): The path to use for the view. Defaults to:
                 - For `detail=False`: "/"
                 - For `detail=True`: "/{id}/{related_model_name_plural_to_snake_case}/"
+
+                Where `related_model_name_plural_to_snake_case` refers to the plural form of the related model's name,
+                converted to snake_case. For example, for a related model "ItemDetail", the path might look like
+                "/{id}/item_details/". This format is particularly useful when querying related entities or
+                sub-resources of a main resource.
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
         """
