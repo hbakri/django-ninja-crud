@@ -3,7 +3,9 @@ from typing import List, Optional, Union
 
 class PathParameters:
     def __init__(
-        self, ok: Union[dict, List[dict]], not_found: Union[dict, List[dict]] = None
+        self,
+        ok: Union[dict, List[dict]],
+        not_found: Union[dict, List[dict], None] = None,
     ) -> None:
         if isinstance(ok, dict):
             ok = [ok]
@@ -20,7 +22,9 @@ class PathParameters:
 
 class QueryParameters:
     def __init__(
-        self, ok: Union[dict, List[dict]], bad_request: Union[dict, List[dict]] = None
+        self,
+        ok: Union[dict, List[dict]],
+        bad_request: Union[dict, List[dict], None] = None,
     ) -> None:
         if isinstance(ok, dict):
             ok = [ok]
@@ -39,8 +43,8 @@ class AuthHeaders:
     def __init__(
         self,
         ok: Union[dict, List[dict]],
-        forbidden: Union[dict, List[dict]] = None,
-        unauthorized: Union[dict, List[dict]] = None,
+        forbidden: Union[dict, List[dict], None] = None,
+        unauthorized: Union[dict, List[dict], None] = None,
     ) -> None:
         if isinstance(ok, dict):
             ok = [ok]
@@ -64,8 +68,8 @@ class Payloads:
     def __init__(
         self,
         ok: Union[dict, List[dict]],
-        bad_request: Union[dict, List[dict]] = None,
-        conflict: Union[dict, List[dict]] = None,
+        bad_request: Union[dict, List[dict], None] = None,
+        conflict: Union[dict, List[dict], None] = None,
     ) -> None:
         if isinstance(ok, dict):
             ok = [ok]

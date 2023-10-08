@@ -1,6 +1,7 @@
 import json
 import logging
 from http import HTTPStatus
+from typing import Optional
 
 from django.http import HttpResponse
 from django.test import tag
@@ -21,8 +22,8 @@ class TestCreateModelView(AbstractTestModelView):
     def __init__(
         self,
         payloads: ArgOrCallable[Payloads, TestCaseType],
-        path_parameters: ArgOrCallable[PathParameters, TestCaseType] = None,
-        auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
+        path_parameters: Optional[ArgOrCallable[PathParameters, TestCaseType]] = None,
+        auth_headers: Optional[ArgOrCallable[AuthHeaders, TestCaseType]] = None,
     ) -> None:
         self.test_composer = TestComposer(
             perform_request=self.perform_request,
