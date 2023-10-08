@@ -75,7 +75,7 @@ class UpdateModelView(AbstractModelView):
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
-        if method not in [HTTPMethod.PUT, HTTPMethod.PATCH]:
+        if method.value not in [HTTPMethod.PUT.value, HTTPMethod.PATCH.value]:
             raise ValueError(
                 f"Expected 'method' to be either PUT or PATCH, but found {method}."
             )
