@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from django.http import HttpResponse
 
@@ -18,7 +19,7 @@ class TestPartialUpdateModelView(TestUpdateModelView):
         self,
         path_parameters: ArgOrCallable[PathParameters, TestCaseType],
         payloads: ArgOrCallable[Payloads, TestCaseType],
-        auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
+        auth_headers: Optional[ArgOrCallable[AuthHeaders, TestCaseType]] = None,
     ) -> None:
         super().__init__(path_parameters, payloads, auth_headers)
         self.test_composer.perform_request = self.perform_request

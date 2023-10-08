@@ -1,5 +1,6 @@
 import logging
 from http import HTTPStatus
+from typing import Optional
 
 from django.http import HttpResponse
 from django.test import tag
@@ -19,7 +20,7 @@ class TestDeleteModelView(AbstractTestModelView):
     def __init__(
         self,
         path_parameters: ArgOrCallable[PathParameters, TestCaseType],
-        auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
+        auth_headers: Optional[ArgOrCallable[AuthHeaders, TestCaseType]] = None,
     ) -> None:
         self.test_composer = TestComposer(
             perform_request=self.perform_request,

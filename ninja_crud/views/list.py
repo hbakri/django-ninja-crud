@@ -48,8 +48,8 @@ class ListModelView(AbstractModelView):
         output_schema: Type[Schema],
         filter_schema: Optional[Type[FilterSchema]] = None,
         detail: bool = False,
-        queryset_getter: Optional[
-            Union[DetailQuerySetGetter, CollectionQuerySetGetter]
+        queryset_getter: Union[
+            DetailQuerySetGetter, CollectionQuerySetGetter, None
         ] = None,
         path: Optional[str] = None,
         decorators: Optional[List[Callable]] = None,
@@ -159,7 +159,7 @@ class ListModelView(AbstractModelView):
         return decorator
 
     def _get_queryset(
-        self, model_class: Type[Model], id: Any = None
+        self, model_class: Type[Model], id: Optional[Any] = None
     ) -> QuerySet[Model]:
         if self.queryset_getter:
             args = [id] if self.detail else []

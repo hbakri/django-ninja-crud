@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Callable, List, TypeVar, Union
+from typing import Callable, List, Optional, TypeVar, Union
 
 from django.http import HttpResponse
 from django.test import TestCase
@@ -22,10 +22,10 @@ class TestComposer:
     def __init__(
         self,
         perform_request: Callable[[dict, dict, dict, dict], HttpResponse],
-        path_parameters: ArgOrCallable[PathParameters, TestCaseType] = None,
-        query_parameters: ArgOrCallable[QueryParameters, TestCaseType] = None,
-        auth_headers: ArgOrCallable[AuthHeaders, TestCaseType] = None,
-        payloads: ArgOrCallable[Payloads, TestCaseType] = None,
+        path_parameters: Optional[ArgOrCallable[PathParameters, TestCaseType]] = None,
+        query_parameters: Optional[ArgOrCallable[QueryParameters, TestCaseType]] = None,
+        auth_headers: Optional[ArgOrCallable[AuthHeaders, TestCaseType]] = None,
+        payloads: Optional[ArgOrCallable[Payloads, TestCaseType]] = None,
     ) -> None:
         if path_parameters is None:
             path_parameters = PathParameters(ok={})

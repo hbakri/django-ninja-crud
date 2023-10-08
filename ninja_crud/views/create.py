@@ -55,15 +55,9 @@ class CreateModelView(AbstractModelView):
         input_schema: Type[Schema],
         output_schema: Type[Schema],
         detail: bool = False,
-        model_factory: Optional[
-            Union[DetailModelFactory, CollectionModelFactory]
-        ] = None,
-        pre_save: Optional[
-            Union[CreateDetailSaveHook, CreateCollectionSaveHook]
-        ] = None,
-        post_save: Optional[
-            Union[CreateDetailSaveHook, CreateCollectionSaveHook]
-        ] = None,
+        model_factory: Union[DetailModelFactory, CollectionModelFactory, None] = None,
+        pre_save: Union[CreateDetailSaveHook, CreateCollectionSaveHook, None] = None,
+        post_save: Union[CreateDetailSaveHook, CreateCollectionSaveHook, None] = None,
         path: Optional[str] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
@@ -171,7 +165,9 @@ class CreateModelView(AbstractModelView):
             instance = self._save_model(instance, payload, request)
             return HTTPStatus.CREATED, instance
 
-    def _create_model(self, model_class: Type[Model], id: Any = None) -> Model:
+    def _create_model(
+        self, model_class: Type[Model], id: Optional[Any] = None
+    ) -> Model:
         if self.model_factory:
             args = [id] if self.detail else []
             return self.model_factory(*args)
@@ -179,7 +175,11 @@ class CreateModelView(AbstractModelView):
             return model_class()
 
     def _save_model(
-        self, instance: Model, payload: Schema, request: HttpRequest, id: Any = None
+        self,
+        instance: Model,
+        payload: Schema,
+        request: HttpRequest,
+        id: Optional[Any] = None,
     ) -> Model:
         for field, value in payload.dict(exclude_unset=True).items():
             setattr(instance, field, value)
