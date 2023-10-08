@@ -30,9 +30,10 @@ class PartialUpdateModelView(UpdateModelView):
         self,
         input_schema: Type[Schema],
         output_schema: Type[Schema],
-        pre_save: UpdateSaveHook = None,
-        post_save: UpdateSaveHook = None,
-        decorators: List[Callable] = None,
+        pre_save: Optional[UpdateSaveHook] = None,
+        post_save: Optional[UpdateSaveHook] = None,
+        path: Optional[str] = None,
+        decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
@@ -55,16 +56,18 @@ class PartialUpdateModelView(UpdateModelView):
                 - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
 
                 If not provided, the function will be a no-op.
-            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
-            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
+            path (str, optional): The path to use for the view. Defaults to "/{id}".
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
+            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
         """
 
         super().__init__(
             input_schema=self._generate_partial_schema(input_schema),
             output_schema=output_schema,
-            decorators=decorators,
             pre_save=pre_save,
             post_save=post_save,
+            path=path,
+            decorators=decorators,
             router_kwargs=router_kwargs,
         )
         self.http_method = "PATCH"

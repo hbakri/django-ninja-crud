@@ -52,8 +52,8 @@ class RetrieveModelView(AbstractModelView):
                 If not provided, the default manager of the `model_class` specified in the
                 `ModelViewSet` will be used.
             path (str, optional): The path to use for the view. Defaults to "/{id}".
-            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
-            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
+            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
         """
         if path is None:
             path = self._get_default_path()

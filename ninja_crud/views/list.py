@@ -75,8 +75,8 @@ class ListModelView(AbstractModelView):
             path (str, optional): The path to use for the view. Defaults to:
                 - For `detail=False`: "/"
                 - For `detail=True`: "/{id}/{related_model_name_plural_to_snake_case}/"
-            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
-            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
+            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
         """
         if detail and queryset_getter is None:
             raise ValueError(
