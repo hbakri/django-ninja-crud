@@ -21,7 +21,7 @@ class DepartmentViewSet(ModelViewSet):
     create = CreateModelView(input_schema=input_schema, output_schema=output_schema)
     retrieve = RetrieveModelView(output_schema=output_schema)
     update = UpdateModelView(input_schema=input_schema, output_schema=output_schema)
-    delete = DeleteModelView(path="/{id}/delete/")
+    delete = DeleteModelView()
 
     list_employees = ListModelView(
         detail=True,
