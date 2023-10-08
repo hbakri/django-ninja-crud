@@ -8,6 +8,7 @@ from ninja import Router, Schema
 
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
+from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.types import (
     CollectionModelFactory,
     CreateCollectionSaveHook,
@@ -120,7 +121,11 @@ class CreateModelView(AbstractModelView):
                 detail=detail, model_class=model_factory_class
             )
         super().__init__(
-            path=path, detail=detail, decorators=decorators, router_kwargs=router_kwargs
+            method=HTTPMethod.POST,
+            path=path,
+            detail=detail,
+            decorators=decorators,
+            router_kwargs=router_kwargs,
         )
 
         self.input_schema = input_schema
@@ -199,7 +204,7 @@ class CreateModelView(AbstractModelView):
 
     def _configure_route(self, router: Router, model_class: Type[Model]):
         def decorator(route_func):
-            @router.post(
+            @router.api_operation(
                 **self._sanitize_and_merge_router_kwargs(
                     default_router_kwargs=self._get_default_router_kwargs(model_class),
                     custom_router_kwargs=self.router_kwargs,
@@ -224,6 +229,7 @@ class CreateModelView(AbstractModelView):
 
     def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
         return dict(
+            methods=[self.method.value],
             path=self.path,
             response={HTTPStatus.CREATED: self.output_schema},
             operation_id=self._get_operation_id(model_class),

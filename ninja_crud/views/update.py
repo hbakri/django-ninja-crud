@@ -8,6 +8,7 @@ from ninja import Router, Schema
 
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
+from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.types import UpdateSaveHook
 
 
@@ -37,6 +38,7 @@ class UpdateModelView(AbstractModelView):
         output_schema: Type[Schema],
         pre_save: Optional[UpdateSaveHook] = None,
         post_save: Optional[UpdateSaveHook] = None,
+        method: HTTPMethod = HTTPMethod.PUT,
         path: Optional[str] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
@@ -59,6 +61,7 @@ class UpdateModelView(AbstractModelView):
                 - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
 
                 If not provided, the function will be a no-op.
+            method (HTTPMethod, optional): The HTTP method for the view. Defaults to HTTPMethod.PUT.
             path (str, optional): The path to use for the view. Defaults to "/{id}".
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
@@ -66,13 +69,20 @@ class UpdateModelView(AbstractModelView):
         if path is None:
             path = self._get_default_path()
         super().__init__(
-            path=path, detail=True, decorators=decorators, router_kwargs=router_kwargs
+            method=method,
+            path=path,
+            detail=True,
+            decorators=decorators,
+            router_kwargs=router_kwargs,
         )
+        if method.value not in [HTTPMethod.PUT.value, HTTPMethod.PATCH.value]:
+            raise ValueError(
+                f"Expected 'method' to be either PUT or PATCH, but found {method}."
+            )
         self.input_schema = input_schema
         self.output_schema = output_schema
         self.pre_save = pre_save
         self.post_save = post_save
-        self.http_method = "PUT"
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         input_schema = self.input_schema
@@ -115,7 +125,7 @@ class UpdateModelView(AbstractModelView):
 
     def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
         return dict(
-            methods=[self.http_method],
+            methods=[self.method.value],
             path=self.path,
             response={HTTPStatus.OK: self.output_schema},
             operation_id=self._get_operation_id(model_class),

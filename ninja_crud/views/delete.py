@@ -7,6 +7,7 @@ from ninja import Router
 
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
+from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.types import PostDeleteHook, PreDeleteHook
 
 
@@ -61,13 +62,17 @@ class DeleteModelView(AbstractModelView):
         if path is None:
             path = self._get_default_path()
         super().__init__(
-            path=path, detail=True, decorators=decorators, router_kwargs=router_kwargs
+            method=HTTPMethod.DELETE,
+            path=path,
+            detail=True,
+            decorators=decorators,
+            router_kwargs=router_kwargs,
         )
         self.pre_delete = pre_delete
         self.post_delete = post_delete
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
-        @router.delete(
+        @router.api_operation(
             **self._sanitize_and_merge_router_kwargs(
                 default_router_kwargs=self._get_default_router_kwargs(model_class),
                 custom_router_kwargs=self.router_kwargs,
@@ -93,6 +98,7 @@ class DeleteModelView(AbstractModelView):
 
     def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
         return dict(
+            methods=[self.method.value],
             path=self.path,
             response={HTTPStatus.NO_CONTENT: None},
             operation_id=self._get_operation_id(model_class),
