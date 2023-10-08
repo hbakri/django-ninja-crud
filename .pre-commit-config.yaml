@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
+  rev: v4.5.0
   hooks:
   - id: check-ast
   - id: check-case-conflict
@@ -26,7 +26,7 @@ repos:
   - id: trailing-whitespace
 
 - repo: https://github.com/hadialqattan/pycln
-  rev: v2.1.7
+  rev: v2.2.2
   hooks:
   - id: pycln
     args: ["--config=pyproject.toml"]
@@ -37,7 +37,7 @@ repos:
   - id: isort
 
 - repo: https://github.com/psf/black
-  rev: 23.7.0
+  rev: 23.9.1
   hooks:
   - id: black
 
