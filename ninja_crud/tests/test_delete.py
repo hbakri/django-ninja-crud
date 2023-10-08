@@ -34,7 +34,7 @@ class TestDeleteModelView(AbstractTestModelView):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.test_model_view_set.base_path + self.model_view.get_path()
+        path = "/" + self.test_model_view_set.base_path + self.model_view.path
         return self.test_model_view_set.client_class().delete(
             path=path.format(**path_parameters),
             content_type="application/json",
@@ -49,16 +49,10 @@ class TestDeleteModelView(AbstractTestModelView):
         auth_headers: dict,
         payload: dict,
     ):
-        self.test_model_view_set.assertEqual(
-            response.status_code, HTTPStatus.NO_CONTENT
-        )
         self.test_model_view_set.assertEqual(response.content, b"")
 
-        queryset = (
-            self.test_model_view_set.model_view_set_class.model_class.objects.filter(
-                id=path_parameters["id"]
-            )
-        )
+        model_class = self.test_model_view_set.model_view_set_class.model_class
+        queryset = model_class.objects.filter(id=path_parameters["id"])
         self.test_model_view_set.assertEqual(queryset.count(), 0)
 
     def on_failed_request(

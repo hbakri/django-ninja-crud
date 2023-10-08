@@ -36,7 +36,7 @@ class TestRetrieveModelView(AbstractTestModelView):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.test_model_view_set.base_path + self.model_view.get_path()
+        path = "/" + self.test_model_view_set.base_path + self.model_view.path
         return self.test_model_view_set.client_class().get(
             path=path.format(**path_parameters),
             content_type="application/json",
@@ -51,7 +51,6 @@ class TestRetrieveModelView(AbstractTestModelView):
         auth_headers: dict,
         payload: dict,
     ):
-        self.test_model_view_set.assertEqual(response.status_code, HTTPStatus.OK)
         content = json.loads(response.content)
 
         queryset = self.model_view._get_queryset(
@@ -78,7 +77,9 @@ class TestRetrieveModelView(AbstractTestModelView):
     @tag("retrieve")
     def test_retrieve_model_ok(self):
         self.test_composer.test_view_ok(
-            test_case=self.test_model_view_set, on_completion=self.on_successful_request
+            test_case=self.test_model_view_set,
+            on_completion=self.on_successful_request,
+            status=HTTPStatus.OK,
         )
 
     @tag("retrieve")

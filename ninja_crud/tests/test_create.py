@@ -38,7 +38,7 @@ class TestCreateModelView(AbstractTestModelView):
         auth_headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.test_model_view_set.base_path + self.model_view.get_path()
+        path = "/" + self.test_model_view_set.base_path + self.model_view.path
         return self.test_model_view_set.client_class().post(
             path=path.format(**path_parameters),
             data=payload,
@@ -54,7 +54,6 @@ class TestCreateModelView(AbstractTestModelView):
         auth_headers: dict,
         payload: dict,
     ):
-        self.test_model_view_set.assertEqual(response.status_code, HTTPStatus.CREATED)
         content = json.loads(response.content)
 
         if self.model_view.detail:

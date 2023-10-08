@@ -46,10 +46,13 @@ class ListModelView(AbstractModelView):
     def __init__(
         self,
         output_schema: Type[Schema],
-        filter_schema: Type[FilterSchema] = None,
+        filter_schema: Optional[Type[FilterSchema]] = None,
         detail: bool = False,
-        queryset_getter: Union[DetailQuerySetGetter, CollectionQuerySetGetter] = None,
-        decorators: List[Callable] = None,
+        queryset_getter: Optional[
+            Union[DetailQuerySetGetter, CollectionQuerySetGetter]
+        ] = None,
+        path: Optional[str] = None,
+        decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
@@ -69,25 +72,38 @@ class ListModelView(AbstractModelView):
 
                 If not provided, the default manager of the `model_class` specified in the
                 `ModelViewSet` will be used.
-            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to None.
-            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to None.
+            path (str, optional): The path to use for the view. Defaults to:
+                - For `detail=False`: "/"
+                - For `detail=True`: "/{id}/{related_model_name_plural_to_snake_case}/"
+
+                Where `related_model_name_plural_to_snake_case` refers to the plural form of the related model's name,
+                converted to snake_case. For example, for a related model "ItemDetail", the path might look like
+                "/{id}/item_details/". This format is particularly useful when querying related entities or
+                sub-resources of a main resource.
+            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
+            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
         """
-
-        super().__init__(decorators=decorators, router_kwargs=router_kwargs)
-
         if detail and queryset_getter is None:
             raise ValueError(
                 "Expected 'queryset_getter' when 'detail=True', but found None."
             )
         QuerySetGetterValidator.validate(queryset_getter, detail)
+        queryset_getter_model_class: Optional[Type[Model]] = (
+            queryset_getter(None).model if detail else None
+        )
+
+        if path is None:
+            path = self._get_default_path(
+                detail=detail, model_class=queryset_getter_model_class
+            )
+        super().__init__(
+            path=path, detail=detail, decorators=decorators, router_kwargs=router_kwargs
+        )
 
         self.output_schema = output_schema
         self.filter_schema = filter_schema
-        self.detail = detail
         self.queryset_getter = queryset_getter
-        self._related_model: Optional[Type[Model]] = (
-            queryset_getter(None).model if detail else None
-        )
+        self._related_model = queryset_getter_model_class
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         if self.detail:
@@ -124,13 +140,6 @@ class ListModelView(AbstractModelView):
             queryset = self._get_queryset(model_class)
             return self._filter_queryset(queryset=queryset, filters=filters)
 
-    def get_path(self) -> str:
-        if self.detail:
-            related_model_name = utils.to_snake_case(self._related_model.__name__)
-            return f"/{{id}}/{related_model_name}s/"
-        else:
-            return "/"
-
     def _configure_route(self, router: Router, model_class: Type[Model]):
         def decorator(route_func):
             @router.get(
@@ -149,14 +158,6 @@ class ListModelView(AbstractModelView):
 
         return decorator
 
-    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
-        return dict(
-            path=self.get_path(),
-            response={HTTPStatus.OK: List[self.output_schema]},
-            operation_id=self._get_operation_id(model_class),
-            summary=self._get_summary(model_class),
-        )
-
     def _get_queryset(
         self, model_class: Type[Model], id: Any = None
     ) -> QuerySet[Model]:
@@ -174,6 +175,22 @@ class ListModelView(AbstractModelView):
 
         queryset = filters.filter(queryset)
         return queryset
+
+    @staticmethod
+    def _get_default_path(detail: bool, model_class: Type[Model]) -> str:
+        if detail:
+            related_model_name = utils.to_snake_case(model_class.__name__)
+            return f"/{{id}}/{related_model_name}s/"
+        else:
+            return "/"
+
+    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
+        return dict(
+            path=self.path,
+            response={HTTPStatus.OK: List[self.output_schema]},
+            operation_id=self._get_operation_id(model_class),
+            summary=self._get_summary(model_class),
+        )
 
     def _get_operation_id(self, model_class: Type[Model]) -> str:
         model_name = utils.to_snake_case(model_class.__name__)
