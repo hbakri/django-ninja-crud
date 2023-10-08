@@ -2,6 +2,7 @@ from typing import Callable, List, Optional, Type
 
 from ninja import Schema
 
+from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.types import UpdateSaveHook
 from ninja_crud.views.update import UpdateModelView
 
@@ -66,11 +67,11 @@ class PartialUpdateModelView(UpdateModelView):
             output_schema=output_schema,
             pre_save=pre_save,
             post_save=post_save,
+            method=HTTPMethod.PATCH,
             path=path,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
-        self.http_method = "PATCH"
 
     @staticmethod
     def _generate_partial_schema(schema_class: Type[Schema]) -> Type[Schema]:

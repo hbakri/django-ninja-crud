@@ -5,6 +5,7 @@ from typing import Callable, List, Optional, Type
 from django.db.models import Model
 from ninja import Router
 
+from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.validators.path_validator import PathValidator
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,7 @@ class AbstractModelView(ABC):
 
     def __init__(
         self,
+        method: HTTPMethod,
         path: str,
         detail: bool,
         decorators: Optional[List[Callable]] = None,
@@ -28,11 +30,17 @@ class AbstractModelView(ABC):
         Initializes the AbstractModelView with the given decorators and optional router keyword arguments.
 
         Args:
+            method (HTTPMethod): The HTTP method for the view.
             path (str): The path to use for the view.
             detail (bool): Whether the view is for a detail or collection route.
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
         """
+        if not isinstance(method, HTTPMethod):
+            raise TypeError(
+                f"Expected 'method' to be an instance of HTTPMethod, but found type {type(method)}."
+            )
+        self.method = method
         PathValidator.validate(path, detail)
         self.path = path
         self.detail = detail

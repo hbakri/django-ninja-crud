@@ -13,5 +13,5 @@ class TestDeleteModelView(TestCase):
 
         model_view.register_route(router_mock, Collection)
 
-        router_mock.delete.assert_called_once()
-        self.assertTrue(router_mock.delete.call_args[1]["exclude_unset"])
+        router_mock.api_operation.assert_called_once()
+        self.assertTrue(router_mock.api_operation.call_args[1]["exclude_unset"])

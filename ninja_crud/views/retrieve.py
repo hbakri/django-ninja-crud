@@ -7,6 +7,7 @@ from ninja import Router, Schema
 
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
+from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.types import DetailQuerySetGetter
 from ninja_crud.views.validators.queryset_getter_validator import (
     QuerySetGetterValidator,
@@ -58,7 +59,11 @@ class RetrieveModelView(AbstractModelView):
         if path is None:
             path = self._get_default_path()
         super().__init__(
-            path=path, detail=True, decorators=decorators, router_kwargs=router_kwargs
+            method=HTTPMethod.GET,
+            path=path,
+            detail=True,
+            decorators=decorators,
+            router_kwargs=router_kwargs,
         )
 
         QuerySetGetterValidator.validate(queryset_getter, detail=self.detail)
@@ -67,7 +72,7 @@ class RetrieveModelView(AbstractModelView):
         self.queryset_getter = queryset_getter
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
-        @router.get(
+        @router.api_operation(
             **self._sanitize_and_merge_router_kwargs(
                 default_router_kwargs=self._get_default_router_kwargs(model_class),
                 custom_router_kwargs=self.router_kwargs,
@@ -90,6 +95,7 @@ class RetrieveModelView(AbstractModelView):
 
     def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
         return dict(
+            methods=[self.method.value],
             path=self.path,
             response=self.output_schema,
             operation_id=self._get_operation_id(model_class),

@@ -18,8 +18,8 @@ class TestCreateModelView(TestCase):
 
         model_view.register_route(router_mock, Collection)
 
-        router_mock.post.assert_called_once()
-        self.assertTrue(router_mock.post.call_args[1]["exclude_unset"])
+        router_mock.api_operation.assert_called_once()
+        self.assertTrue(router_mock.api_operation.call_args[1]["exclude_unset"])
 
     # noinspection PyTypeChecker
     def test_model_factory_validator(self):
