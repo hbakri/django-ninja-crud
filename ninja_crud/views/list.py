@@ -82,6 +82,8 @@ class ListModelView(AbstractModelView):
                 converted to snake_case. For example, for a related model "ItemDetail", the path might look like
                 "/{id}/item_details/".
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
+            pagination_decorator (Callable, optional): A decorator to apply to the view for pagination. Defaults to
+                `ninja.pagination.paginate(LimitOffsetPagination)`.
             router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
         """
         if detail and queryset_getter is None:
