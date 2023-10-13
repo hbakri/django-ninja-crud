@@ -1,7 +1,7 @@
 import datetime
 import json
 import uuid
-from typing import List, Type
+from typing import List, Type, Union
 
 from django.db.models import Model, QuerySet
 from django.test import TestCase
@@ -41,7 +41,7 @@ class TestAssertionHelper:
     @staticmethod
     def assert_content_equals_schema_list(
         test_case: TestCase,
-        content: dict | List[dict],
+        content: Union[dict, List[dict]],
         queryset: QuerySet[Model],
         schema_class: Type[Schema],
         limit: int,
