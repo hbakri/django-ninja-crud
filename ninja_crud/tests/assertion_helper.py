@@ -1,11 +1,12 @@
 import datetime
 import json
 import uuid
-from typing import List, Type, Union
+from typing import List, Optional, Type, Union
 
 from django.db.models import Model, QuerySet
 from django.test import TestCase
 from ninja import Schema
+from ninja.pagination import PaginationBase
 
 
 def default_serializer(obj):
@@ -46,9 +47,9 @@ class TestAssertionHelper:
         schema_class: Type[Schema],
         limit: int,
         offset: int,
-        pagination: bool,
+        pagination_class: Optional[Type[PaginationBase]],
     ):
-        if pagination:
+        if pagination_class is not None:
             test_case.assertIsInstance(content, dict)
 
             test_case.assertIn("count", content)
