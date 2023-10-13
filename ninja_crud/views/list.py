@@ -54,6 +54,7 @@ class ListModelView(AbstractModelView):
         ] = None,
         path: Optional[str] = None,
         decorators: Optional[List[Callable]] = None,
+        pagination_decorator: Optional[Callable] = paginate(LimitOffsetPagination),
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
@@ -79,8 +80,7 @@ class ListModelView(AbstractModelView):
 
                 Where `related_model_name_plural_to_snake_case` refers to the plural form of the related model's name,
                 converted to snake_case. For example, for a related model "ItemDetail", the path might look like
-                "/{id}/item_details/". This format is particularly useful when querying related entities or
-                sub-resources of a main resource.
+                "/{id}/item_details/".
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
         """
@@ -97,6 +97,10 @@ class ListModelView(AbstractModelView):
             path = self._get_default_path(
                 detail=detail, model_class=queryset_getter_model_class
             )
+        self.pagination_decorator = pagination_decorator
+        if pagination_decorator is not None:
+            decorators = decorators or []
+            decorators.append(pagination_decorator)
         super().__init__(
             method=HTTPMethod.GET,
             path=path,
@@ -154,7 +158,6 @@ class ListModelView(AbstractModelView):
                 )
             )
             @utils.merge_decorators(self.decorators)
-            @paginate(LimitOffsetPagination)
             @functools.wraps(route_func)
             def wrapped_func(*args, **kwargs):
                 return route_func(*args, **kwargs)

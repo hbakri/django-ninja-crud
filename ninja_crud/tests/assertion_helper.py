@@ -41,27 +41,38 @@ class TestAssertionHelper:
     @staticmethod
     def assert_content_equals_schema_list(
         test_case: TestCase,
-        content: List[dict],
+        content: dict | List[dict],
         queryset: QuerySet[Model],
         schema_class: Type[Schema],
         limit: int,
         offset: int,
+        pagination: bool,
     ):
-        test_case.assertIsInstance(content, dict)
+        if pagination:
+            test_case.assertIsInstance(content, dict)
 
-        test_case.assertIn("count", content)
-        count = content["count"]
-        test_case.assertIsInstance(count, int)
-        test_case.assertEqual(count, queryset.count())
+            test_case.assertIn("count", content)
+            count = content["count"]
+            test_case.assertIsInstance(count, int)
+            test_case.assertEqual(count, queryset.count())
 
-        test_case.assertIn("items", content)
-        items = content["items"]
-        test_case.assertIsInstance(items, list)
+            test_case.assertIn("items", content)
+            items = content["items"]
+            test_case.assertIsInstance(items, list)
 
-        queryset_items = queryset[offset : offset + limit]
-        test_case.assertEqual(len(items), queryset_items.count())
+            queryset_items = queryset[offset : offset + limit]
+            test_case.assertEqual(len(items), queryset_items.count())
 
-        for item in items:
-            TestAssertionHelper.assert_content_equals_schema(
-                test_case, item, queryset, schema_class
-            )
+            for item in items:
+                TestAssertionHelper.assert_content_equals_schema(
+                    test_case, item, queryset, schema_class
+                )
+
+        else:
+            test_case.assertIsInstance(content, list)
+            test_case.assertEqual(len(content), queryset.count())
+
+            for item in content:
+                TestAssertionHelper.assert_content_equals_schema(
+                    test_case, item, queryset, schema_class
+                )
