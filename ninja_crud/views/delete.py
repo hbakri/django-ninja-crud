@@ -43,21 +43,21 @@ class DeleteModelView(AbstractModelView):
         Initializes the DeleteModelView.
 
         Args:
-            pre_delete (PreDeleteHook, optional): A function that is called before deleting the instance.
+            pre_delete (Optional[PreDeleteHook], optional): A function that is called before deleting the instance.
                 Defaults to None.
 
                 Should have the signature (request: HttpRequest, instance: Model) -> None.
 
                 If not provided, the function will be a no-op.
-            post_delete (PostDeleteHook, optional): A function that is called after deleting the instance.
+            post_delete (Optional[PostDeleteHook], optional): A function that is called after deleting the instance.
                 Defaults to None.
 
                 Should have the signature (request: HttpRequest, id: Any, deleted_instance: Model) -> None.
 
                 If not provided, the function will be a no-op.
-            path (str, optional): The path to use for the view. Defaults to "/{id}".
-            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
+            path (Optional[str], optional): The path to use for the view. Defaults to "/{id}".
+            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
         """
         if path is None:
             path = self._get_default_path()

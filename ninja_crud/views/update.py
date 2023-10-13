@@ -49,22 +49,22 @@ class UpdateModelView(AbstractModelView):
         Args:
             input_schema (Type[Schema]): The schema used to deserialize the payload.
             output_schema (Type[Schema]): The schema used to serialize the updated instance.
-            pre_save (UpdateSaveHook, optional): A function that is called before saving the instance. Defaults to None.
+            pre_save (Optional[UpdateSaveHook], optional): A function that is called before saving the instance. Defaults to None.
 
                 The function should have the signature:
                 - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
 
                 If not provided, the function will be a no-op.
-            post_save (UpdateSaveHook, optional): A function that is called after saving the instance. Defaults to None.
+            post_save (Optional[UpdateSaveHook], optional): A function that is called after saving the instance. Defaults to None.
 
                 The function should have the signature:
                 - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
 
                 If not provided, the function will be a no-op.
             method (HTTPMethod, optional): The HTTP method for the view. Defaults to HTTPMethod.PUT.
-            path (str, optional): The path to use for the view. Defaults to "/{id}".
-            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
+            path (Optional[str], optional): The path to use for the view. Defaults to "/{id}".
+            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
         """
         if path is None:
             path = self._get_default_path()

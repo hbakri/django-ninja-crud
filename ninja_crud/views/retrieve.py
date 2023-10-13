@@ -47,14 +47,14 @@ class RetrieveModelView(AbstractModelView):
 
         Args:
             output_schema (Type[Schema]): The schema used to serialize the retrieved object.
-            queryset_getter (DetailQuerySetGetter, optional): A function to customize the queryset used
+            queryset_getter (Optional[DetailQuerySetGetter], optional): A function to customize the queryset used
                 for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet[Model].
 
                 If not provided, the default manager of the `model_class` specified in the
                 `ModelViewSet` will be used.
-            path (str, optional): The path to use for the view. Defaults to "/{id}".
-            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
+            path (Optional[str], optional): The path to use for the view. Defaults to "/{id}".
+            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
         """
         if path is None:
             path = self._get_default_path()
