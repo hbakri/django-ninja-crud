@@ -62,11 +62,11 @@ class ListModelView(AbstractModelView):
 
         Args:
             output_schema (Type[Schema]): The schema used to serialize the retrieved objects.
-            filter_schema (Type[FilterSchema], optional): The schema used to validate the filters.
+            filter_schema (Optional[Type[FilterSchema]], optional): The schema used to validate the filters.
             detail (bool, optional): Whether the view is a detail or collection view. Defaults to False.
 
                 If set to True, `queryset_getter` must be provided.
-            queryset_getter (Union[DetailQuerySetGetter, CollectionQuerySetGetter], optional): A
+            queryset_getter (Union[DetailQuerySetGetter, CollectionQuerySetGetter, None], optional): A
                 function to customize the queryset used for retrieving the objects. Defaults to None.
                 The function should have one of the following signatures:
                 - For `detail=False`: () -> QuerySet[Model]
@@ -76,15 +76,15 @@ class ListModelView(AbstractModelView):
                 `ModelViewSet` will be used.
             pagination_class (Optional[Type[PaginationBase]], optional): The pagination class to use for the view.
                 Defaults to LimitOffsetPagination.
-            path (str, optional): The path to use for the view. Defaults to:
+            path (Optional[str], optional): The path to use for the view. Defaults to:
                 - For `detail=False`: "/"
                 - For `detail=True`: "/{id}/{related_model_name_plural_to_snake_case}/"
 
                 Where `related_model_name_plural_to_snake_case` refers to the plural form of the related model's name,
                 converted to snake_case. For example, for a related model "ItemDetail", the path might look like
                 "/{id}/item_details/".
-            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
+            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
         """
         if detail and queryset_getter is None:
             raise ValueError(

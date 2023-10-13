@@ -72,7 +72,7 @@ class CreateModelView(AbstractModelView):
             detail (bool, optional): Whether the view is a detail or collection view. Defaults to False.
 
                 If set to True, `model_factory` must be provided.
-            model_factory (Union[DetailModelFactory, CollectionModelFactory], optional): A function
+            model_factory (Union[DetailModelFactory, CollectionModelFactory, None], optional): A function
                 that returns a new instance of a model. Defaults to None.
 
                 The function should have one of the following signatures:
@@ -80,7 +80,7 @@ class CreateModelView(AbstractModelView):
                 - For `detail=True`: (id: Any) -> Model
 
                 If not provided, the `model_class` specified in the `ModelViewSet` will be used.
-            pre_save (Union[CreateDetailSaveHook, CreateCollectionSaveHook], optional): A function that
+            pre_save (Union[CreateDetailSaveHook, CreateCollectionSaveHook, None], optional): A function that
                 is called before saving the instance. Defaults to None.
 
                 The function should have one of the following signatures:
@@ -88,7 +88,7 @@ class CreateModelView(AbstractModelView):
                 - For `detail=True`: (request: HttpRequest, id: Any, instance: Model) -> None
 
                 If not provided, the function will be a no-op.
-            post_save (Union[CreateDetailSaveHook, CreateCollectionSaveHook], optional): A function that
+            post_save (Union[CreateDetailSaveHook, CreateCollectionSaveHook, None], optional): A function that
                 is called after saving the instance. Defaults to None.
 
                 The function should have one of the following signatures:
@@ -96,7 +96,7 @@ class CreateModelView(AbstractModelView):
                 - For `detail=True`: (request: HttpRequest, id: Any, instance: Model) -> None
 
                 If not provided, the function will be a no-op.
-            path (str, optional): The path to use for the view. Defaults to:
+            path (Optional[str], optional): The path to use for the view. Defaults to:
                 - For `detail=False`: "/"
                 - For `detail=True`: "/{id}/{related_model_name_plural_to_snake_case}/"
 
@@ -104,8 +104,8 @@ class CreateModelView(AbstractModelView):
                 converted to snake_case. For example, for a related model "ItemDetail", the path might look like
                 "/{id}/item_details/". This format is particularly useful when querying related entities or
                 sub-resources of a main resource.
-            decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
+            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
+            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
         """
         if detail and model_factory is None:
             raise ValueError(
