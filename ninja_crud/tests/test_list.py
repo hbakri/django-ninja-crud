@@ -77,6 +77,7 @@ class TestListModelView(AbstractTestModelView):
             schema_class=self.model_view.output_schema,
             limit=limit,
             offset=offset,
+            pagination_class=self.model_view.pagination_class,
         )
 
     def on_failed_request(
