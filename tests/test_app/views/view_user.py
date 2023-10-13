@@ -17,7 +17,7 @@ class UserViewSet(ModelViewSet):
     input_schema = UserIn
     output_schema = UserOut
 
-    list = ListModelView(output_schema=output_schema, pagination_decorator=None)
+    list = ListModelView(output_schema=output_schema, pagination_class=None)
     create = CreateModelView(input_schema=input_schema, output_schema=output_schema)
     retrieve = RetrieveModelView(output_schema=output_schema)
     update = UpdateModelView(input_schema=input_schema, output_schema=output_schema)

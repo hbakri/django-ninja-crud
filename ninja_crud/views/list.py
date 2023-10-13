@@ -5,7 +5,7 @@ from typing import Any, Callable, List, Optional, Type, Union
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
 from ninja import FilterSchema, Query, Router, Schema
-from ninja.pagination import LimitOffsetPagination, paginate
+from ninja.pagination import LimitOffsetPagination, PaginationBase, paginate
 
 from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
@@ -52,9 +52,9 @@ class ListModelView(AbstractModelView):
         queryset_getter: Union[
             DetailQuerySetGetter, CollectionQuerySetGetter, None
         ] = None,
+        pagination_class: Optional[Type[PaginationBase]] = LimitOffsetPagination,
         path: Optional[str] = None,
         decorators: Optional[List[Callable]] = None,
-        pagination_decorator: Optional[Callable] = paginate(LimitOffsetPagination),
         router_kwargs: Optional[dict] = None,
     ) -> None:
         """
@@ -74,6 +74,8 @@ class ListModelView(AbstractModelView):
 
                 If not provided, the default manager of the `model_class` specified in the
                 `ModelViewSet` will be used.
+            pagination_class (Optional[Type[PaginationBase]], optional): The pagination class to use for the view.
+                Defaults to LimitOffsetPagination.
             path (str, optional): The path to use for the view. Defaults to:
                 - For `detail=False`: "/"
                 - For `detail=True`: "/{id}/{related_model_name_plural_to_snake_case}/"
@@ -82,8 +84,6 @@ class ListModelView(AbstractModelView):
                 converted to snake_case. For example, for a related model "ItemDetail", the path might look like
                 "/{id}/item_details/".
             decorators (List[Callable], optional): A list of decorators to apply to the view. Defaults to [].
-            pagination_decorator (Callable, optional): A decorator to apply to the view for pagination. Defaults to
-                `ninja.pagination.paginate(LimitOffsetPagination)`.
             router_kwargs (dict, optional): Additional arguments to pass to the router. Defaults to {}.
         """
         if detail and queryset_getter is None:
@@ -99,10 +99,10 @@ class ListModelView(AbstractModelView):
             path = self._get_default_path(
                 detail=detail, model_class=queryset_getter_model_class
             )
-        self.pagination_decorator = pagination_decorator
-        if pagination_decorator is not None:
+        self.pagination_class = pagination_class
+        if pagination_class is not None:
             decorators = decorators or []
-            decorators.append(pagination_decorator)
+            decorators.append(paginate(pagination_class))
         super().__init__(
             method=HTTPMethod.GET,
             path=path,
