@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
@@ -12,6 +12,9 @@ from ninja_crud.views.types import DetailQuerySetGetter
 from ninja_crud.views.validators.queryset_getter_validator import (
     QuerySetGetterValidator,
 )
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ninja_crud.views.viewset import ModelViewSet
 
 
 class RetrieveModelView(AbstractModelView):
@@ -36,7 +39,7 @@ class RetrieveModelView(AbstractModelView):
 
     def __init__(
         self,
-        output_schema: Type[Schema],
+        output_schema: Optional[Type[Schema]] = None,
         queryset_getter: Optional[DetailQuerySetGetter] = None,
         path: Optional[str] = None,
         decorators: Optional[List[Callable]] = None,
@@ -46,7 +49,8 @@ class RetrieveModelView(AbstractModelView):
         Initializes the RetrieveModelView.
 
         Args:
-            output_schema (Type[Schema]): The schema used to serialize the retrieved object.
+            output_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved object.
+                Defaults to None. If not provided, the default output schema of the `ModelViewSet` will be used.
             queryset_getter (Optional[DetailQuerySetGetter], optional): A function to customize the queryset used
                 for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet[Model].
 
@@ -109,3 +113,17 @@ class RetrieveModelView(AbstractModelView):
     @staticmethod
     def _get_summary(model_class: Type[Model]) -> str:
         return f"Retrieve {model_class.__name__}"
+
+    def bind_to_viewset(
+        self, viewset_class: Type["ModelViewSet"], model_view_name: str
+    ) -> None:
+        super().bind_to_viewset(viewset_class, model_view_name)
+        if not self.output_schema:
+            default_output_schema = getattr(
+                viewset_class, "default_output_schema", None
+            )
+            if default_output_schema is None:
+                raise ValueError(
+                    f"Could not determine output schema for {viewset_class.__name__}.{model_view_name}. "
+                )
+            self.output_schema = viewset_class.default_output_schema

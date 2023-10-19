@@ -1,38 +1,58 @@
 from __future__ import annotations
 
-from typing import Type
+from typing import Optional, Type
 
 from django.db.models import Model
-from ninja import Router
+from ninja import Router, Schema
 
 from ninja_crud.views import AbstractModelView
 
 
 class ModelViewSetMeta(type):
-    @staticmethod
-    def validate_model_class(
-        new_cls: ModelViewSetMeta,
-    ):  # pragma: no cover
+    def validate_model_class(cls) -> None:  # pragma: no cover
         cls_attr_name = "model_class"
-        if not hasattr(new_cls, cls_attr_name):
+        if not hasattr(cls, cls_attr_name):
             raise ValueError(
-                f"{new_cls.__name__}.{cls_attr_name} class attribute must be set"
+                f"{cls.__name__}.{cls_attr_name} class attribute must be set"
             )
-        cls_attr_value = getattr(new_cls, cls_attr_name)
+        cls_attr_value = getattr(cls, cls_attr_name)
         if not isinstance(cls_attr_value, type) or not issubclass(
             cls_attr_value, Model
         ):
             raise ValueError(
-                f"{new_cls.__name__}.{cls_attr_name} must be a subclass of django.db.models.Model"
+                f"{cls.__name__}.{cls_attr_name} must be a subclass of django.db.models.Model"
             )
 
-    def __new__(mcs, name, bases, attrs):
-        new_cls = super().__new__(mcs, name, bases, attrs)
+    def validate_schema_class(cls, schema_attr_name: str) -> None:  # pragma: no cover
+        if not hasattr(cls, schema_attr_name):
+            return
+        schema_attr_value = getattr(cls, schema_attr_name)
+        if schema_attr_value is None:
+            return
+        if not isinstance(schema_attr_value, type) or not issubclass(
+            schema_attr_value, Schema
+        ):
+            raise ValueError(
+                f"{cls.__name__}.{schema_attr_name} must be a subclass of ninja.Schema"
+            )
+
+    def validate_input_schema_class(cls) -> None:
+        return cls.validate_schema_class("default_input_schema")
+
+    def validate_output_schema_class(cls) -> None:
+        return cls.validate_schema_class("default_output_schema")
+
+    def __init__(cls: Type["ModelViewSet"], name, bases, attrs):
+        super().__init__(name, bases, attrs)
 
         if name != "ModelViewSet":
-            mcs.validate_model_class(new_cls)
+            cls.validate_model_class()
+            cls.validate_input_schema_class()
+            cls.validate_output_schema_class()
 
-        return new_cls
+        for attr_name, attr_value in attrs.items():
+            if isinstance(attr_value, AbstractModelView):
+                attr_value.bind_to_viewset(cls, model_view_name=attr_name)
 
 
 class ModelViewSet(metaclass=ModelViewSetMeta):
@@ -45,6 +65,10 @@ class ModelViewSet(metaclass=ModelViewSetMeta):
 
     Attributes:
         - model_class (Type[Model]): The Django model class for CRUD operations.
+        - default_input_schema (Optional[Type[Schema]], optional): The default schema to use for
+            deserializing the request payload. Defaults to None.
+        - default_output_schema (Optional[Type[Schema]], optional): The default schema to use for
+            serializing the response payload. Defaults to None.
 
     Example:
     ```python
@@ -95,6 +119,8 @@ class ModelViewSet(metaclass=ModelViewSetMeta):
     """
 
     model_class: Type[Model]
+    default_input_schema: Optional[Type[Schema]]
+    default_output_schema: Optional[Type[Schema]]
 
     @classmethod
     def register_routes(cls, router: Router) -> None:

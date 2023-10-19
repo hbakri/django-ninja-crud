@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 from django.test import TestCase
 
-from ninja_crud.views import RetrieveModelView
+from ninja_crud.views import ModelViewSet, RetrieveModelView
 from tests.test_app.models import Item
 from tests.test_app.schemas import ItemOut
 
@@ -42,3 +42,34 @@ class TestRetrieveModelView(TestCase):
                 queryset_getter=lambda: Item.objects.get_queryset(),
                 output_schema=ItemOut,
             )
+
+    def test_bind_to_viewset_with_output_schema(self):
+        model_view = RetrieveModelView(output_schema=ItemOut)
+
+        class ItemModelViewSet(ModelViewSet):
+            model_class = Item
+            default_input_schema = None
+            default_output_schema = None
+
+        model_view.bind_to_viewset(ItemModelViewSet, model_view_name="retrieve")
+
+    def test_bind_to_viewset_without_output_schema(self):
+        model_view = RetrieveModelView()
+
+        class ItemModelViewSet(ModelViewSet):
+            model_class = Item
+            default_input_schema = None
+            default_output_schema = ItemOut
+
+        model_view.bind_to_viewset(ItemModelViewSet, model_view_name="retrieve")
+
+    def test_bind_to_viewset_without_output_schema_error(self):
+        model_view = RetrieveModelView()
+
+        class ItemModelViewSet(ModelViewSet):
+            model_class = Item
+            default_input_schema = None
+            default_output_schema = None
+
+        with self.assertRaises(ValueError):
+            model_view.bind_to_viewset(ItemModelViewSet, model_view_name="retrieve")

@@ -1,12 +1,15 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Callable, List, Optional, Type
+from typing import TYPE_CHECKING, Callable, List, Optional, Type
 
 from django.db.models import Model
 from ninja import Router
 
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.validators.path_validator import PathValidator
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ninja_crud.views.viewset import ModelViewSet
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +49,7 @@ class AbstractModelView(ABC):
         self.detail = detail
         self.decorators = decorators or []
         self.router_kwargs = router_kwargs or {}
+        self.viewset_class: Optional[Type[ModelViewSet]] = None
 
     @abstractmethod
     def register_route(
@@ -75,3 +79,8 @@ class AbstractModelView(ABC):
                 router_kwargs.pop(locked_key)
 
         return {**default_router_kwargs, **router_kwargs}
+
+    def bind_to_viewset(
+        self, viewset_class: Type["ModelViewSet"], model_view_name: str
+    ) -> None:
+        self.viewset_class = viewset_class
