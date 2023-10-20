@@ -1,6 +1,6 @@
 import functools
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, Union
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
@@ -14,6 +14,9 @@ from ninja_crud.views.types import CollectionQuerySetGetter, DetailQuerySetGette
 from ninja_crud.views.validators.queryset_getter_validator import (
     QuerySetGetterValidator,
 )
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ninja_crud.views.viewset import ModelViewSet
 
 
 class ListModelView(AbstractModelView):
@@ -46,7 +49,7 @@ class ListModelView(AbstractModelView):
 
     def __init__(
         self,
-        output_schema: Type[Schema],
+        output_schema: Optional[Type[Schema]] = None,
         filter_schema: Optional[Type[FilterSchema]] = None,
         detail: bool = False,
         queryset_getter: Union[
@@ -61,7 +64,8 @@ class ListModelView(AbstractModelView):
         Initializes the ListModelView.
 
         Args:
-            output_schema (Type[Schema]): The schema used to serialize the retrieved objects.
+            output_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved objects.
+                Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
             filter_schema (Optional[Type[FilterSchema]], optional): The schema used to validate the filters.
             detail (bool, optional): Whether the view is a detail or collection view. Defaults to False.
 
@@ -221,3 +225,14 @@ class ListModelView(AbstractModelView):
         else:
             verbose_model_name_plural = model_class._meta.verbose_name_plural
             return f"List {verbose_model_name_plural}"
+
+    def bind_to_viewset(
+        self, viewset_class: Type["ModelViewSet"], model_view_name: str
+    ) -> None:
+        super().bind_to_viewset(viewset_class, model_view_name)
+        self.bind_default_value(
+            viewset_class=viewset_class,
+            model_view_name=model_view_name,
+            attribute_name="output_schema",
+            default_attribute_name="default_output_schema",
+        )

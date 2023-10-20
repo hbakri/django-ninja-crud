@@ -50,7 +50,7 @@ class RetrieveModelView(AbstractModelView):
 
         Args:
             output_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved object.
-                Defaults to None. If not provided, the default output schema of the `ModelViewSet` will be used.
+                Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
             queryset_getter (Optional[DetailQuerySetGetter], optional): A function to customize the queryset used
                 for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet[Model].
 
@@ -118,12 +118,9 @@ class RetrieveModelView(AbstractModelView):
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         super().bind_to_viewset(viewset_class, model_view_name)
-        if not self.output_schema:
-            default_output_schema = getattr(
-                viewset_class, "default_output_schema", None
-            )
-            if default_output_schema is None:
-                raise ValueError(
-                    f"Could not determine output schema for {viewset_class.__name__}.{model_view_name}. "
-                )
-            self.output_schema = viewset_class.default_output_schema
+        self.bind_default_value(
+            viewset_class=viewset_class,
+            model_view_name=model_view_name,
+            attribute_name="output_schema",
+            default_attribute_name="default_output_schema",
+        )

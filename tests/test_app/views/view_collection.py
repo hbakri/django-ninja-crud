@@ -37,7 +37,6 @@ def user_is_creator(func):
 
 class CollectionViewSet(ModelViewSet):
     model_class = Collection
-    default_output_schema = CollectionOut
     input_schema = CollectionIn
     output_schema = CollectionOut
     filter_schema = CollectionFilter
@@ -52,7 +51,7 @@ class CollectionViewSet(ModelViewSet):
         ),
         post_save=lambda request, instance: None,
     )
-    retrieve = RetrieveModelView()
+    retrieve = RetrieveModelView(output_schema=output_schema)
     update = UpdateModelView(
         input_schema=input_schema,
         output_schema=output_schema,
