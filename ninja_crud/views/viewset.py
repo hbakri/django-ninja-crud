@@ -24,9 +24,7 @@ class ModelViewSetMeta(type):
             )
 
     def validate_schema_class(cls, schema_attr_name: str) -> None:  # pragma: no cover
-        if not hasattr(cls, schema_attr_name):
-            return
-        schema_attr_value = getattr(cls, schema_attr_name)
+        schema_attr_value = getattr(cls, schema_attr_name, None)
         if schema_attr_value is None:
             return
         if not isinstance(schema_attr_value, type) or not issubclass(
