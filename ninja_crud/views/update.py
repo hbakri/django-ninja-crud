@@ -1,6 +1,6 @@
 import copy
 from http import HTTPStatus
-from typing import Callable, List, Optional, Type
+from typing import TYPE_CHECKING, Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -10,6 +10,9 @@ from ninja_crud.views import utils
 from ninja_crud.views.abstract import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.types import UpdateSaveHook
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ninja_crud.views.viewset import ModelViewSet
 
 
 class UpdateModelView(AbstractModelView):
@@ -34,8 +37,8 @@ class UpdateModelView(AbstractModelView):
 
     def __init__(
         self,
-        input_schema: Type[Schema],
-        output_schema: Type[Schema],
+        input_schema: Optional[Type[Schema]] = None,
+        output_schema: Optional[Type[Schema]] = None,
         pre_save: Optional[UpdateSaveHook] = None,
         post_save: Optional[UpdateSaveHook] = None,
         method: HTTPMethod = HTTPMethod.PUT,
@@ -47,8 +50,10 @@ class UpdateModelView(AbstractModelView):
         Initializes the UpdateModelView.
 
         Args:
-            input_schema (Type[Schema]): The schema used to deserialize the payload.
-            output_schema (Type[Schema]): The schema used to serialize the updated instance.
+            input_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
+                Defaults to None. If not provided, the `default_input_schema` of the `ModelViewSet` will be used.
+            output_schema (Optional[Type[Schema]], optional): The schema used to serialize the updated instance.
+                Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
             pre_save (Optional[UpdateSaveHook], optional): A function that is called before saving the instance. Defaults to None.
 
                 The function should have the signature:
@@ -139,3 +144,20 @@ class UpdateModelView(AbstractModelView):
     @staticmethod
     def _get_summary(model_class: Type[Model]) -> str:
         return f"Update {model_class.__name__}"
+
+    def bind_to_viewset(
+        self, viewset_class: Type["ModelViewSet"], model_view_name: str
+    ) -> None:
+        super().bind_to_viewset(viewset_class, model_view_name)
+        self.bind_default_value(
+            viewset_class=viewset_class,
+            model_view_name=model_view_name,
+            attribute_name="output_schema",
+            default_attribute_name="default_output_schema",
+        )
+        self.bind_default_value(
+            viewset_class=viewset_class,
+            model_view_name=model_view_name,
+            attribute_name="input_schema",
+            default_attribute_name="default_input_schema",
+        )

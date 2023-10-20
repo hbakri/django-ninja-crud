@@ -14,13 +14,13 @@ from ninja_crud.views import (
 
 class DepartmentViewSet(ModelViewSet):
     model_class = Department
-    input_schema = DepartmentIn
-    output_schema = DepartmentOut
+    default_input_schema = DepartmentIn
+    default_output_schema = DepartmentOut
 
-    list = ListModelView(output_schema=output_schema)
-    create = CreateModelView(input_schema=input_schema, output_schema=output_schema)
-    retrieve = RetrieveModelView(output_schema=output_schema)
-    update = UpdateModelView(input_schema=input_schema, output_schema=output_schema)
+    list = ListModelView()
+    create = CreateModelView()
+    retrieve = RetrieveModelView()
+    update = UpdateModelView()
     delete = DeleteModelView()
 
     list_employees = ListModelView(

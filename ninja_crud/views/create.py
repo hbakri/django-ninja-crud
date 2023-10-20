@@ -1,6 +1,6 @@
 import functools
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, Union
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -16,6 +16,9 @@ from ninja_crud.views.types import (
     DetailModelFactory,
 )
 from ninja_crud.views.validators.model_factory_validator import ModelFactoryValidator
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ninja_crud.views.viewset import ModelViewSet
 
 
 class CreateModelView(AbstractModelView):
@@ -53,8 +56,8 @@ class CreateModelView(AbstractModelView):
 
     def __init__(
         self,
-        input_schema: Type[Schema],
-        output_schema: Type[Schema],
+        input_schema: Optional[Type[Schema]] = None,
+        output_schema: Optional[Type[Schema]] = None,
         detail: bool = False,
         model_factory: Union[DetailModelFactory, CollectionModelFactory, None] = None,
         pre_save: Union[CreateDetailSaveHook, CreateCollectionSaveHook, None] = None,
@@ -67,8 +70,10 @@ class CreateModelView(AbstractModelView):
         Initializes the CreateModelView.
 
         Args:
-            input_schema (Type[Schema]): The schema used to deserialize the payload.
-            output_schema (Type[Schema]): The schema used to serialize the created instance.
+            input_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
+                Defaults to None. If not provided, the `default_input_schema` of the `ModelViewSet` will be used.
+            output_schema (Optional[Type[Schema]], optional): The schema used to serialize the created instance.
+                Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
             detail (bool, optional): Whether the view is a detail or collection view. Defaults to False.
 
                 If set to True, `model_factory` must be provided.
@@ -252,3 +257,20 @@ class CreateModelView(AbstractModelView):
             return f"Create {verbose_related_model_name} for {verbose_model_name}"
         else:
             return f"Create {verbose_model_name}"
+
+    def bind_to_viewset(
+        self, viewset_class: Type["ModelViewSet"], model_view_name: str
+    ) -> None:
+        super().bind_to_viewset(viewset_class, model_view_name)
+        self.bind_default_value(
+            viewset_class=viewset_class,
+            model_view_name=model_view_name,
+            attribute_name="output_schema",
+            default_attribute_name="default_output_schema",
+        )
+        self.bind_default_value(
+            viewset_class=viewset_class,
+            model_view_name=model_view_name,
+            attribute_name="input_schema",
+            default_attribute_name="default_input_schema",
+        )
