@@ -2,26 +2,14 @@ from example.models import Department, Employee
 from example.schemas import DepartmentIn, DepartmentOut, EmployeeIn, EmployeeOut
 from ninja import Router
 
-from ninja_crud.views import (
-    CreateModelView,
-    DeleteModelView,
-    ListModelView,
-    ModelViewSet,
-    RetrieveModelView,
-    UpdateModelView,
-)
+from ninja_crud.views import CreateModelView, ListModelView
+from ninja_crud.viewsets import BaseModelViewSet
 
 
-class DepartmentViewSet(ModelViewSet):
+class DepartmentViewSet(BaseModelViewSet):
     model_class = Department
     default_input_schema = DepartmentIn
     default_output_schema = DepartmentOut
-
-    list = ListModelView()
-    create = CreateModelView()
-    retrieve = RetrieveModelView()
-    update = UpdateModelView()
-    delete = DeleteModelView()
 
     list_employees = ListModelView(
         detail=True,

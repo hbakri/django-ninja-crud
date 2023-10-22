@@ -23,10 +23,15 @@ class ModelViewSetMeta(type):
                 f"{cls.__name__}.{cls_attr_name} must be a subclass of django.db.models.Model"
             )
 
-    def validate_schema_class(cls, schema_attr_name: str) -> None:  # pragma: no cover
+    def validate_schema_class(cls, schema_attr_name: str, optional: bool) -> None:
         schema_attr_value = getattr(cls, schema_attr_name, None)
         if schema_attr_value is None:
-            return
+            if optional:
+                return
+            else:
+                raise ValueError(
+                    f"{cls.__name__}.{schema_attr_name} class attribute must be set"
+                )
         if not isinstance(schema_attr_value, type) or not issubclass(
             schema_attr_value, Schema
         ):
@@ -34,23 +39,23 @@ class ModelViewSetMeta(type):
                 f"{cls.__name__}.{schema_attr_name} must be a subclass of ninja.Schema"
             )
 
-    def validate_input_schema_class(cls) -> None:
-        return cls.validate_schema_class("default_input_schema")
+    def validate_input_schema_class(cls, optional: bool = True) -> None:
+        return cls.validate_schema_class("default_input_schema", optional=optional)
 
-    def validate_output_schema_class(cls) -> None:
-        return cls.validate_schema_class("default_output_schema")
+    def validate_output_schema_class(cls, optional: bool = True) -> None:
+        return cls.validate_schema_class("default_output_schema", optional=optional)
 
     def __init__(cls: Type["ModelViewSet"], name, bases, attrs):
         super().__init__(name, bases, attrs)
 
-        if name != "ModelViewSet":
+        if name not in ("ModelViewSet", "BaseModelViewSet"):
             cls.validate_model_class()
             cls.validate_input_schema_class()
             cls.validate_output_schema_class()
 
-        for attr_name, attr_value in attrs.items():
-            if isinstance(attr_value, AbstractModelView):
-                attr_value.bind_to_viewset(cls, model_view_name=attr_name)
+            for attr_name, attr_value in attrs.items():
+                if isinstance(attr_value, AbstractModelView):
+                    attr_value.bind_to_viewset(cls, model_view_name=attr_name)
 
 
 class ModelViewSet(metaclass=ModelViewSetMeta):
