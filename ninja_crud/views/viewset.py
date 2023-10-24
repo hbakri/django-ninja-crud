@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Optional, Type
+from typing import Any, Optional, Type
 
 from django.db.models import Model
 from ninja import Router, Schema
 
+from ninja_crud import utils
 from ninja_crud.views import AbstractModelView
 
 
@@ -23,7 +24,9 @@ class ModelViewSetMeta(type):
                 f"{cls.__name__}.{cls_attr_name} must be a subclass of django.db.models.Model"
             )
 
-    def validate_schema_class(cls, schema_attr_name: str, optional: bool) -> None:
+    def validate_schema_class(
+        cls, schema_attr_name: str, optional: bool
+    ) -> None:  # pragma: no cover
         schema_attr_value = getattr(cls, schema_attr_name, None)
         if schema_attr_value is None:
             if optional:
@@ -52,10 +55,6 @@ class ModelViewSetMeta(type):
             cls.validate_model_class()
             cls.validate_input_schema_class()
             cls.validate_output_schema_class()
-
-            for attr_name, attr_value in attrs.items():
-                if isinstance(attr_value, AbstractModelView):
-                    attr_value.bind_to_viewset(cls, model_view_name=attr_name)
 
 
 class ModelViewSet(metaclass=ModelViewSetMeta):
@@ -125,18 +124,34 @@ class ModelViewSet(metaclass=ModelViewSetMeta):
     default_input_schema: Optional[Type[Schema]]
     default_output_schema: Optional[Type[Schema]]
 
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+
+        if hasattr(cls, "model_class"):
+            cls.bind_model_views()
+
+    @classmethod
+    def bind_model_views(cls):
+        def bind_model_view(attr_name: str, attr_value: Any):
+            if isinstance(attr_value, AbstractModelView):
+                attr_value.bind_to_viewset(cls, model_view_name=attr_name)
+
+        utils.iterate_class_attributes(cls, func=bind_model_view)
+
     @classmethod
     def register_routes(cls, router: Router) -> None:
         """
-        Registers the routes for this viewset with the given router.
+        Register the routes with the given Ninja Router.
 
-        This method should be called after defining the viewset and before using the
-        router.
+        This method should be called after all the views have been attached to the
+        ModelViewSet subclass.
 
         Args:
             router (Router): The Ninja Router to register the routes with.
         """
-        for attr_name in dir(cls):
-            attr_value = getattr(cls, attr_name)
+
+        def register_model_view_route(attr_name: str, attr_value: Any):
             if isinstance(attr_value, AbstractModelView):
                 attr_value.register_route(router, cls.model_class)
+
+        utils.iterate_class_attributes(cls, func=register_model_view_route)
