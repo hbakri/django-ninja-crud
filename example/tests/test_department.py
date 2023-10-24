@@ -45,13 +45,13 @@ class TestDepartmentViewSet(TestModelViewSet, TestCase):
         conflict={"title": "department-2"},
     )
 
-    test_list = TestListModelView()
-    test_create = TestCreateModelView(payloads=department_payloads)
-    test_retrieve = TestRetrieveModelView(path_parameters=get_path_parameters)
-    test_update = TestUpdateModelView(
+    test_list_view = TestListModelView()
+    test_create_view = TestCreateModelView(payloads=department_payloads)
+    test_retrieve_view = TestRetrieveModelView(path_parameters=get_path_parameters)
+    test_update_view = TestUpdateModelView(
         path_parameters=get_path_parameters, payloads=department_payloads
     )
-    test_delete = TestDeleteModelView(path_parameters=get_path_parameters)
+    test_delete_view = TestDeleteModelView(path_parameters=get_path_parameters)
 
     employee_payloads = Payloads(
         ok={
