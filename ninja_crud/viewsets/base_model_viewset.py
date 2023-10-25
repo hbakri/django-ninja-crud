@@ -67,5 +67,5 @@ class BaseModelViewSet(ModelViewSet):
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        cls.validate_input_schema_class(optional=False)
-        cls.validate_output_schema_class(optional=False)
+        cls._validate_input_schema_class(optional=False)
+        cls._validate_output_schema_class(optional=False)
