@@ -7,6 +7,7 @@ from django.test import TestCase
 
 from ninja_crud.tests.test_abstract import AbstractTestModelView
 from ninja_crud.tests.test_matcher import TestModelViewSetMatcher
+from ninja_crud.utils import validate_class_attribute_type
 from ninja_crud.views import ModelViewSet
 
 logger = logging.getLogger(__name__)
@@ -86,6 +87,12 @@ class TestModelViewSetMeta(type):
 class TestModelViewSet(metaclass=TestModelViewSetMeta):
     model_view_set_class: Type[ModelViewSet]
     base_path: str
+
+    @classmethod
+    def _validate_model_view_set_class(cls) -> None:
+        return validate_class_attribute_type(
+            cls, "model_view_set_class", expected_type=ModelViewSet
+        )
 
 
 class ModelViewSetTest(TestModelViewSet):

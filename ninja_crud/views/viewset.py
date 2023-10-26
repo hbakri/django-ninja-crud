@@ -6,6 +6,7 @@ from django.db.models import Model
 from ninja import Router, Schema
 
 from ninja_crud import utils
+from ninja_crud.utils import validate_class_attribute_type
 from ninja_crud.views import AbstractModelView
 
 
@@ -112,36 +113,17 @@ class ModelViewSet:
         utils.iterate_class_attributes(cls, func=register_model_view_route)
 
     @classmethod
-    def _validate_class_attribute(
-        cls, attr_name: str, expected_type: Type, optional: bool = False
-    ) -> None:
-        attr_value = getattr(cls, attr_name, None)
-        if attr_value is None:
-            if optional:
-                return
-            else:
-                raise ValueError(
-                    f"{cls.__name__}.{attr_name} class attribute must be set"
-                )
-        if not isinstance(attr_value, type) or not issubclass(
-            attr_value, expected_type
-        ):
-            raise ValueError(
-                f"{cls.__name__}.{attr_name} must be an instance of {expected_type.__name__}"
-            )
-
-    @classmethod
     def _validate_model_class(cls) -> None:
-        return cls._validate_class_attribute("model_class", expected_type=Model)
+        return validate_class_attribute_type(cls, "model_class", expected_type=Model)
 
     @classmethod
     def _validate_input_schema_class(cls, optional: bool = True) -> None:
-        return cls._validate_class_attribute(
-            "default_input_schema", expected_type=Schema, optional=optional
+        return validate_class_attribute_type(
+            cls, "default_input_schema", expected_type=Schema, optional=optional
         )
 
     @classmethod
     def _validate_output_schema_class(cls, optional: bool = True) -> None:
-        return cls._validate_class_attribute(
-            "default_output_schema", expected_type=Schema, optional=optional
+        return validate_class_attribute_type(
+            cls, "default_output_schema", expected_type=Schema, optional=optional
         )

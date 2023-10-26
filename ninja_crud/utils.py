@@ -39,3 +39,37 @@ def iterate_class_attributes(cls: Type, func: Callable[[str, Any], None]):
                 continue
             func(attr_name, attr_value)
             processed_attr_names.add(attr_name)
+
+
+def validate_class_attribute_type(
+    cls: Type, attr_name: str, expected_type: Type, optional: bool = False
+) -> None:
+    """
+    Validates that a class attribute is of the expected type or is a subclass of the expected type.
+
+    Args:
+        cls (Type): The class whose attribute should be validated.
+        attr_name (str): The name of the attribute to validate.
+        expected_type (Type): The type that the attribute is expected to be or be a subclass of.
+        optional (bool, optional): Whether the attribute is optional. If set to True, the attribute is allowed to be
+                                   None or not present. Defaults to False.
+
+    Raises:
+        ValueError: If the attribute is not present (and 'optional' is False), or if the attribute value is not
+                    of the expected type.
+
+    Example:
+        >>> class ExampleClass:
+        ...     attribute = dict
+        ...
+        >>> validate_class_attribute_type(ExampleClass, 'attribute', dict)
+        >>> validate_class_attribute_type(ExampleClass, 'non_existent_attribute', dict, optional=True)
+        >>> validate_class_attribute_type(ExampleClass, 'attribute', str)  # Raises ValueError
+    """
+    attr_value = getattr(cls, attr_name, None)
+    if attr_value is None and not optional:
+        raise ValueError(f"{cls.__name__}.{attr_name} class attribute must be set")
+    elif not isinstance(attr_value, type) or not issubclass(attr_value, expected_type):
+        raise ValueError(
+            f"{cls.__name__}.{attr_name} must be a subclass of {expected_type.__name__}"
+        )
