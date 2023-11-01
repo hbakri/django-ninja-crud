@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestPartialUpdateModelView(TestUpdateModelView):
-    model_view_class = PartialUpdateModelView
     model_view: PartialUpdateModelView
 
     def __init__(
@@ -22,6 +21,7 @@ class TestPartialUpdateModelView(TestUpdateModelView):
         auth_headers: Optional[ArgOrCallable[AuthHeaders, TestCaseType]] = None,
     ) -> None:
         super().__init__(path_parameters, payloads, auth_headers)
+        self.model_view_class = PartialUpdateModelView
         self.test_composer.perform_request = self.perform_request
 
     def perform_request(

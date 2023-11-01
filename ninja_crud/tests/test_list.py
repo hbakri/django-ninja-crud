@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestListModelView(AbstractTestModelView):
-    model_view_class = ListModelView
     model_view: ListModelView
 
     def __init__(
@@ -26,6 +25,7 @@ class TestListModelView(AbstractTestModelView):
         query_parameters: Optional[ArgOrCallable[QueryParameters, TestCaseType]] = None,
         auth_headers: Optional[ArgOrCallable[AuthHeaders, TestCaseType]] = None,
     ) -> None:
+        super().__init__(model_view_class=ListModelView)
         self.test_composer = TestComposer(
             perform_request=self.perform_request,
             path_parameters=path_parameters,

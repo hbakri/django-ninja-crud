@@ -1,8 +1,8 @@
 from http import HTTPStatus
 from typing import Callable, List, Optional, TypeVar, Union
+from unittest import TestCase
 
 from django.http import HttpResponse
-from django.test import TestCase
 
 from ninja_crud.tests.request_components import (
     AuthHeaders,
@@ -142,7 +142,7 @@ class TestComposer:
         auth_headers = self.get_auth_headers(test_case)
         payloads = self.get_payloads(test_case)
         if payloads.bad_request is None:
-            test_case.skipTest("No 'bad_request' payload provided")
+            test_case.skipTest(reason="No 'bad_request' payload provided")
         self.run_combinatorial_tests(
             test_case=test_case,
             path_parameters_list=path_parameters.ok,
@@ -165,7 +165,7 @@ class TestComposer:
         auth_headers = self.get_auth_headers(test_case)
         payloads = self.get_payloads(test_case)
         if payloads.conflict is None:
-            test_case.skipTest("No 'conflict' payload provided")
+            test_case.skipTest(reason="No 'conflict' payload provided")
         self.run_combinatorial_tests(
             test_case=test_case,
             path_parameters_list=path_parameters.ok,
@@ -188,7 +188,7 @@ class TestComposer:
         auth_headers = self.get_auth_headers(test_case)
         payloads = self.get_payloads(test_case)
         if query_parameters.bad_request is None:
-            test_case.skipTest("No 'bad_request' query parameters provided")
+            test_case.skipTest(reason="No 'bad_request' query parameters provided")
         self.run_combinatorial_tests(
             test_case=test_case,
             path_parameters_list=path_parameters.ok,
@@ -211,7 +211,7 @@ class TestComposer:
         auth_headers = self.get_auth_headers(test_case)
         payloads = self.get_payloads(test_case)
         if auth_headers.unauthorized is None:
-            test_case.skipTest("No 'unauthorized' auth headers provided")
+            test_case.skipTest(reason="No 'unauthorized' auth headers provided")
         self.run_combinatorial_tests(
             test_case=test_case,
             path_parameters_list=path_parameters.ok,
@@ -234,7 +234,7 @@ class TestComposer:
         auth_headers = self.get_auth_headers(test_case)
         payloads = self.get_payloads(test_case)
         if auth_headers.forbidden is None:
-            test_case.skipTest("No 'forbidden' auth headers provided")
+            test_case.skipTest(reason="No 'forbidden' auth headers provided")
         self.run_combinatorial_tests(
             test_case=test_case,
             path_parameters_list=path_parameters.ok,
@@ -257,7 +257,7 @@ class TestComposer:
         auth_headers = self.get_auth_headers(test_case)
         payloads = self.get_payloads(test_case)
         if path_parameters.not_found is None:
-            test_case.skipTest("No 'not_found' path parameters provided")
+            test_case.skipTest(reason="No 'not_found' path parameters provided")
         self.run_combinatorial_tests(
             test_case=test_case,
             path_parameters_list=path_parameters.not_found,

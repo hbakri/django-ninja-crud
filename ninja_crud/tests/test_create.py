@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestCreateModelView(AbstractTestModelView):
-    model_view_class = CreateModelView
     model_view: CreateModelView
 
     def __init__(
@@ -25,6 +24,7 @@ class TestCreateModelView(AbstractTestModelView):
         path_parameters: Optional[ArgOrCallable[PathParameters, TestCaseType]] = None,
         auth_headers: Optional[ArgOrCallable[AuthHeaders, TestCaseType]] = None,
     ) -> None:
+        super().__init__(model_view_class=CreateModelView)
         self.test_composer = TestComposer(
             perform_request=self.perform_request,
             path_parameters=path_parameters,

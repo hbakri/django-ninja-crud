@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Type
+import inspect
+from typing import Optional, Type
 
 from django.db.models import Model
 from ninja import Router, Schema
 
 from ninja_crud import utils
-from ninja_crud.utils import validate_class_attribute_type
 from ninja_crud.views import AbstractModelView
 
 
@@ -25,19 +25,14 @@ class ModelViewSet:
         - default_output_schema (Optional[Type[Schema]], optional): The default schema to use for
             serializing the response payload. Defaults to None.
 
-    Example:
+    Example Usage:
+    1. Define your `ModelViewSet` and register its routes:
     ```python
     # example/views.py
     from ninja import Router
     from django.http import HttpRequest
-    from ninja_crud.views import (
-        CreateModelView,
-        DeleteModelView,
-        ListModelView,
-        ModelViewSet,
-        RetrieveModelView,
-        UpdateModelView,
-    )
+    from ninja_crud import views
+    from ninja_crud.views import ModelViewSet
     from example.models import Department
     from example.schemas import DepartmentIn, DepartmentOut
 
@@ -46,12 +41,11 @@ class ModelViewSet:
     class DepartmentViewSet(ModelViewSet):
         model_class = Department
 
-        # AbstractModelView subclasses can be used as-is
-        list = ListModelView(output_schema=DepartmentOut)
-        create = CreateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
-        retrieve = RetrieveModelView(output_schema=DepartmentOut)
-        update = UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
-        delete = DeleteModelView()
+        list = views.ListModelView(output_schema=DepartmentOut)
+        create = views.CreateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+        retrieve = views.RetrieveModelView(output_schema=DepartmentOut)
+        update = views.UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+        delete = views.DeleteModelView()
 
     # The register_routes method must be called to register the routes with the router
     DepartmentViewSet.register_routes(router)
@@ -62,9 +56,9 @@ class ModelViewSet:
         return Department.objects.get(name=name)
     ```
 
-    And then in your `api.py` file:
+    2. Include your router in your Ninja API configuration:
     ```python
-    # example/api.py
+    # config/api.py
     from ninja import NinjaAPI
     from example.views import router as department_router
 
@@ -78,21 +72,36 @@ class ModelViewSet:
     default_output_schema: Optional[Type[Schema]]
 
     def __init_subclass__(cls, **kwargs):
+        """
+        Special method in Python that is automatically called when a class is subclassed.
+
+        For `ModelViewSet` subclasses, this method validates the class attributes and binds
+        the views to the subclass. It should not be called directly.
+        """
         super().__init_subclass__(**kwargs)
 
         if hasattr(cls, "model_class"):
             cls._validate_model_class()
             cls._validate_input_schema_class(optional=True)
             cls._validate_output_schema_class(optional=True)
-            cls.bind_model_views()
+            cls._bind_model_views()
 
     @classmethod
-    def bind_model_views(cls):
-        def bind_model_view(attr_name: str, attr_value: Any):
+    def _bind_model_views(cls):
+        """
+        Binds instances of `AbstractModelView` to the ModelViewSet subclass.
+
+        This allows the views to access the ModelViewSet subclass via the `viewset_class`
+        attribute, and access default schemas via the `default_input_schema` and
+        `default_output_schema` attributes.
+
+        Note:
+            This method is called automatically during the subclass initialization of
+            `TestModelViewSet` and should not be called directly.
+        """
+        for attr_name, attr_value in inspect.getmembers(cls):
             if isinstance(attr_value, AbstractModelView):
                 attr_value.bind_to_viewset(cls, model_view_name=attr_name)
-
-        utils.iterate_class_attributes(cls, func=bind_model_view)
 
     @classmethod
     def register_routes(cls, router: Router) -> None:
@@ -102,28 +111,54 @@ class ModelViewSet:
         This method should be called after all the views have been attached to the
         ModelViewSet subclass.
 
-        Args:
+        Parameters:
             router (Router): The Ninja Router to register the routes with.
         """
-
-        def register_model_view_route(attr_name: str, attr_value: Any):
+        for attr_name, attr_value in inspect.getmembers(cls):
             if isinstance(attr_value, AbstractModelView):
                 attr_value.register_route(router, cls.model_class)
 
-        utils.iterate_class_attributes(cls, func=register_model_view_route)
-
     @classmethod
     def _validate_model_class(cls) -> None:
-        return validate_class_attribute_type(cls, "model_class", expected_type=Model)
+        """
+        Validates that the `model_class` attribute is a subclass of `Model`.
+
+        Raises:
+            - ValueError: If the attribute is not set.
+            - TypeError: If the attribute is not a subclass of `Model`.
+        """
+        utils.validate_class_attribute_type(
+            cls, "model_class", expected_type=Type[Model]
+        )
 
     @classmethod
     def _validate_input_schema_class(cls, optional: bool = True) -> None:
-        return validate_class_attribute_type(
-            cls, "default_input_schema", expected_type=Schema, optional=optional
+        """
+        Validates that the `default_input_schema` attribute is a subclass of `Schema`.
+
+        Parameters:
+            - optional (bool, optional): Whether the attribute is optional. Defaults to True.
+
+        Raises:
+            - ValueError: If the attribute is not optional and is not set.
+            - TypeError: If the attribute is not a subclass of `Schema`.
+        """
+        utils.validate_class_attribute_type(
+            cls, "default_input_schema", expected_type=Type[Schema], optional=optional
         )
 
     @classmethod
     def _validate_output_schema_class(cls, optional: bool = True) -> None:
-        return validate_class_attribute_type(
-            cls, "default_output_schema", expected_type=Schema, optional=optional
+        """
+        Validates that the `default_output_schema` attribute is a subclass of `Schema`.
+
+        Parameters:
+            - optional (bool, optional): Whether the attribute is optional. Defaults to True.
+
+        Raises:
+            - ValueError: If the attribute is not optional and is not set.
+            - TypeError: If the attribute is not a subclass of `Schema`.
+        """
+        utils.validate_class_attribute_type(
+            cls, "default_output_schema", expected_type=Type[Schema], optional=optional
         )
