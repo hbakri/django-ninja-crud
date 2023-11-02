@@ -1,7 +1,4 @@
-import inspect
-from typing import TYPE_CHECKING, Callable, List, Tuple, Type, Union
-
-from django.test import TestCase
+from typing import TYPE_CHECKING, Type
 
 from ninja_crud.views import AbstractModelView
 
@@ -10,14 +7,14 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class AbstractTestModelView:
-    model_view_class: Type[AbstractModelView]
+    test_model_view_set: "TestModelViewSet"
     model_view: AbstractModelView
 
-    test_model_view_set: Union["TestModelViewSet", TestCase]
+    def __init__(self, model_view_class: Type[AbstractModelView]) -> None:
+        self.model_view_class = model_view_class
 
-    def get_test_methods(self) -> List[Tuple[str, Callable]]:
-        return [
-            (name, method)
-            for name, method in inspect.getmembers(self, predicate=inspect.ismethod)
-            if name.startswith("test")
-        ]
+    def bind_to_test_viewset(self, test_viewset: "TestModelViewSet") -> None:
+        self.test_model_view_set = test_viewset
+
+    def bind_to_view(self, view: AbstractModelView) -> None:
+        self.model_view = view

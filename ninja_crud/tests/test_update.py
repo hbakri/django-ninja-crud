@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestUpdateModelView(AbstractTestModelView):
-    model_view_class = UpdateModelView
     model_view: UpdateModelView
 
     def __init__(
@@ -25,6 +24,7 @@ class TestUpdateModelView(AbstractTestModelView):
         payloads: ArgOrCallable[Payloads, TestCaseType],
         auth_headers: Optional[ArgOrCallable[AuthHeaders, TestCaseType]] = None,
     ) -> None:
+        super().__init__(model_view_class=UpdateModelView)
         self.test_composer = TestComposer(
             perform_request=self.perform_request,
             path_parameters=path_parameters,

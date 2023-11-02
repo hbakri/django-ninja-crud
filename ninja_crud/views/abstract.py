@@ -49,7 +49,7 @@ class AbstractModelView(ABC):
         self.detail = detail
         self.decorators = decorators or []
         self.router_kwargs = router_kwargs or {}
-        self.viewset_class: Optional[Type[ModelViewSet]] = None
+        self.viewset_class: Optional[Type["ModelViewSet"]] = None
 
     @abstractmethod
     def register_route(

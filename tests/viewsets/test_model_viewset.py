@@ -32,13 +32,13 @@ class TestModelViewSet(unittest.TestCase):
         with self.assertRaises(ValueError):
             DepartmentModelViewSet._validate_output_schema_class(optional=False)
 
-    def test_validate_default_schemas_invalid(self):
+    def test_validate_default_schemas_wrong_type(self):
         class DepartmentModelViewSet(ModelViewSet):
             default_input_schema = 0
             default_output_schema = 0
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             DepartmentModelViewSet._validate_input_schema_class(optional=False)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             DepartmentModelViewSet._validate_output_schema_class(optional=False)

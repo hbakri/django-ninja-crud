@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestRetrieveModelView(AbstractTestModelView):
-    model_view_class = RetrieveModelView
     model_view: RetrieveModelView
 
     def __init__(
@@ -24,6 +23,7 @@ class TestRetrieveModelView(AbstractTestModelView):
         path_parameters: ArgOrCallable[PathParameters, TestCaseType],
         auth_headers: Optional[ArgOrCallable[AuthHeaders, TestCaseType]] = None,
     ) -> None:
+        super().__init__(model_view_class=RetrieveModelView)
         self.test_composer = TestComposer(
             perform_request=self.perform_request,
             path_parameters=path_parameters,
