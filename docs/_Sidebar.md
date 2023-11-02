@@ -19,7 +19,6 @@
   - [CreateModelView](CreateModelView)
   - [RetrieveModelView](RetrieveModelView)
   - [UpdateModelView](UpdateModelView)
-  - [PartialUpdateModelView](PartialUpdateModelView)
   - [DeleteModelView](DeleteModelView)
   - [Types](Types)
 

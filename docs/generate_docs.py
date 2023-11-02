@@ -9,7 +9,6 @@ modules = [
     ("views/abstract", "AbstractModelView"),
     ("views/retrieve", "RetrieveModelView"),
     ("views/update", "UpdateModelView"),
-    ("views/partial_update", "PartialUpdateModelView"),
     ("views/delete", "DeleteModelView"),
     ("views/list", "ListModelView"),
     ("views/create", "CreateModelView"),
