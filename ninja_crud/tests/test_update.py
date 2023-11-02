@@ -40,9 +40,10 @@ class TestUpdateModelView(AbstractTestModelView):
         payload: dict,
     ) -> HttpResponse:
         path = "/" + self.test_model_view_set.base_path + self.model_view.path
-        return self.test_model_view_set.client_class().put(
+        return self.test_model_view_set.client_class().generic(
+            method=self.model_view.method.value,
             path=path.format(**path_parameters),
-            data=payload,
+            data=json.dumps(payload),
             content_type="application/json",
             **auth_headers,
         )

@@ -10,7 +10,6 @@ from ninja_crud.tests import (
     TestDeleteModelView,
     TestListModelView,
     TestModelViewSet,
-    TestPartialUpdateModelView,
     TestRetrieveModelView,
     TestUpdateModelView,
 )
@@ -64,19 +63,6 @@ class TestCollectionViewSet(TestModelViewSet, BaseTestCase):
         path_parameters=get_path_parameters,
         auth_headers=get_auth_headers_ok_forbidden,
         payloads=collection_payloads,
-    )
-    test_partial_update = TestPartialUpdateModelView(
-        path_parameters=get_path_parameters,
-        auth_headers=get_auth_headers_ok_forbidden,
-        payloads=Payloads(
-            ok=[
-                {"name": "new-name", "description": "new-description"},
-                {"name": "new-name"},
-                {"description": "new-description"},
-            ],
-            bad_request={"name": []},
-            conflict={"name": "collection-2"},
-        ),
     )
     test_delete = TestDeleteModelView(
         path_parameters=get_path_parameters, auth_headers=get_auth_headers_ok_forbidden
