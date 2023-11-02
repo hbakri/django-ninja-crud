@@ -28,13 +28,13 @@ class ModelViewSet:
     Example Usage:
     1. Define your `ModelViewSet` and register its routes:
     ```python
-    # example/views.py
+    # examples/views.py
     from ninja import Router
     from django.http import HttpRequest
     from ninja_crud import views
     from ninja_crud.views import ModelViewSet
-    from example.models import Department
-    from example.schemas import DepartmentIn, DepartmentOut
+    from examples.models import Department
+    from examples.schemas import DepartmentIn, DepartmentOut
 
     router = Router()
 
@@ -60,7 +60,7 @@ class ModelViewSet:
     ```python
     # config/api.py
     from ninja import NinjaAPI
-    from example.views import router as department_router
+    from examples.views import router as department_router
 
     api = NinjaAPI(...)
     api.add_router("departments", department_router)

@@ -25,8 +25,8 @@ class RetrieveModelView(AbstractModelView):
     Example:
     ```python
     from ninja_crud.views import ModelViewSet, RetrieveModelView
-    from example.models import Department
-    from example.schemas import DepartmentOut
+    from examples.models import Department
+    from examples.schemas import DepartmentOut
 
     class DepartmentViewSet(ModelViewSet):
         model_class = Department

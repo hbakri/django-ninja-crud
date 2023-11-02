@@ -19,8 +19,8 @@ class DeleteModelView(AbstractModelView):
     Example:
     ```python
     from ninja_crud.views import ModelViewSet, DeleteModelView
-    from example.models import Department, Employee
-    from example.schemas import DepartmentOut, EmployeeOut
+    from examples.models import Department, Employee
+    from examples.schemas import DepartmentOut, EmployeeOut
 
     class DepartmentViewSet(ModelViewSet):
         model_class = Department

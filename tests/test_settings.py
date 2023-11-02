@@ -3,7 +3,7 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "tests.test_app",
-    "example",
+    "examples",
 ]
 DATABASES = {
     "default": {

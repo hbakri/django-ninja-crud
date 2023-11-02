@@ -6,14 +6,14 @@ from django.core.exceptions import (
     PermissionDenied,
     ValidationError,
 )
-from example.views.view_department import router as department_router
-from example.views.view_employee import router as employee_router
 from ninja import NinjaAPI
 from ninja.errors import ValidationError as NinjaValidationError
 
-from tests.test_app.views.view_collection import router as collection_router
-from tests.test_app.views.view_item import router as item_router
-from tests.test_app.views.view_user import router as user_router
+from examples.views.department_views import router as department_router
+from examples.views.employee_views import router as employee_router
+from tests.test_app.views.collection_views import router as collection_router
+from tests.test_app.views.item_views import router as item_router
+from tests.test_app.views.user_views import router as user_router
 from tests.test_authentication import TokenBearer
 
 api = NinjaAPI(urls_namespace="api")
