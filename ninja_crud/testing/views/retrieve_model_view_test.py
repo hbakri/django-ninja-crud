@@ -9,7 +9,7 @@ from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters
 from ninja_crud.testing.views import AbstractModelViewTest
 from ninja_crud.testing.views.helpers import TestAssertionHelper
-from ninja_crud.views.retrieve import RetrieveModelView
+from ninja_crud.views.retrieve_model_view import RetrieveModelView
 
 
 class RetrieveModelViewTest(AbstractModelViewTest):

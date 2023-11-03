@@ -9,7 +9,7 @@ from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters, Payloads
 from ninja_crud.testing.views import AbstractModelViewTest
 from ninja_crud.testing.views.helpers import TestAssertionHelper
-from ninja_crud.views.create import CreateModelView
+from ninja_crud.views.create_model_view import CreateModelView
 
 
 class CreateModelViewTest(AbstractModelViewTest):
@@ -55,7 +55,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         content = json.loads(response.content)
 
         if self.model_view.detail:
-            model = self.model_view._related_model
+            model = self.model_view._related_model_class
         else:
             model = self.test_model_view_set.model_view_set_class.model_class
         TestAssertionHelper.assert_content_equals_schema(

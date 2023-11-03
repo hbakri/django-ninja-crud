@@ -4,7 +4,7 @@ from typing import Union
 
 from django.db.models import Model
 
-from ninja_crud.views.types import CollectionModelFactory, DetailModelFactory
+from ninja_crud.views.helpers.types import CollectionModelFactory, DetailModelFactory
 
 
 class ModelFactoryValidator:

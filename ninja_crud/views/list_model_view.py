@@ -7,16 +7,19 @@ from django.http import HttpRequest
 from ninja import FilterSchema, Query, Router, Schema
 from ninja.pagination import LimitOffsetPagination, PaginationBase, paginate
 
-from ninja_crud.views import utils
-from ninja_crud.views.abstract import AbstractModelView
+from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.types import CollectionQuerySetGetter, DetailQuerySetGetter
+from ninja_crud.views.helpers import utils
+from ninja_crud.views.helpers.types import (
+    CollectionQuerySetGetter,
+    DetailQuerySetGetter,
+)
 from ninja_crud.views.validators.queryset_getter_validator import (
     QuerySetGetterValidator,
 )
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ninja_crud.views.viewset import ModelViewSet
+    from ninja_crud.viewsets import ModelViewSet
 
 
 class ListModelView(AbstractModelView):
@@ -118,7 +121,7 @@ class ListModelView(AbstractModelView):
         self.output_schema = output_schema
         self.filter_schema = filter_schema
         self.queryset_getter = queryset_getter
-        self._related_model = queryset_getter_model_class
+        self._related_model_class = queryset_getter_model_class
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         if self.detail:
@@ -210,7 +213,7 @@ class ListModelView(AbstractModelView):
     def _get_operation_id(self, model_class: Type[Model]) -> str:
         model_name = utils.to_snake_case(model_class.__name__)
         if self.detail:
-            related_model_name = utils.to_snake_case(self._related_model.__name__)
+            related_model_name = utils.to_snake_case(self._related_model_class.__name__)
             return f"list_{model_name}_{related_model_name}s"
         else:
             return f"list_{model_name}s"
@@ -219,7 +222,7 @@ class ListModelView(AbstractModelView):
         if self.detail:
             verbose_model_name = model_class._meta.verbose_name
             verbose_related_model_name_plural = (
-                self._related_model._meta.verbose_name_plural
+                self._related_model_class._meta.verbose_name_plural
             )
             return f"List {verbose_related_model_name_plural} related to a {verbose_model_name}"
         else:

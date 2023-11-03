@@ -6,7 +6,8 @@ import django.test
 
 from ninja_crud import utils
 from ninja_crud.testing.views import AbstractModelViewTest
-from ninja_crud.views import AbstractModelView, ModelViewSet
+from ninja_crud.views import AbstractModelView
+from ninja_crud.viewsets import ModelViewSet
 
 logger = logging.getLogger(__name__)
 

@@ -5,10 +5,10 @@ from ninja_crud.views import (
     CreateModelView,
     DeleteModelView,
     ListModelView,
-    ModelViewSet,
     RetrieveModelView,
     UpdateModelView,
 )
+from ninja_crud.viewsets import ModelViewSet
 from tests.test_app.schemas import UserIn, UserOut
 
 router = Router()

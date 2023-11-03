@@ -6,13 +6,13 @@ from django.db.models import Model
 from django.http import HttpRequest
 from ninja import Router, Schema
 
-from ninja_crud.views import utils
-from ninja_crud.views.abstract import AbstractModelView
+from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.types import UpdateSaveHook
+from ninja_crud.views.helpers import utils
+from ninja_crud.views.helpers.types import UpdateSaveHook
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ninja_crud.views.viewset import ModelViewSet
+    from ninja_crud.viewsets import ModelViewSet
 
 
 class UpdateModelView(AbstractModelView):

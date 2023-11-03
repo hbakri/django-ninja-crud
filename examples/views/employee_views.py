@@ -2,13 +2,12 @@ from ninja import Router
 
 from examples.models import Employee
 from examples.schemas import EmployeeIn, EmployeeOut
-from ninja_crud import views
-from ninja_crud.views import ModelViewSet
+from ninja_crud import views, viewsets
 
 router = Router()
 
 
-class EmployeeViewSet(ModelViewSet):
+class EmployeeViewSet(viewsets.ModelViewSet):
     model_class = Employee
     default_input_schema = EmployeeIn
     default_output_schema = EmployeeOut

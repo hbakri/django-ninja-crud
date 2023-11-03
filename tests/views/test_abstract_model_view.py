@@ -34,7 +34,7 @@ class TestAbstractModelView(TestCase):
             "operation_id": "list_objects",
             "summary": "List objects",
         }
-        with patch("ninja_crud.views.abstract.logger") as mock_logger:
+        with patch("ninja_crud.views.abstract_model_view.logger") as mock_logger:
             router_kwargs = AbstractModelView._sanitize_and_merge_router_kwargs(
                 default_router_kwargs=default_router_kwargs,
                 custom_router_kwargs=custom_router_kwargs,

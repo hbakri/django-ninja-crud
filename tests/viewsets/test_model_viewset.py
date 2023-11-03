@@ -1,7 +1,7 @@
 import unittest
 
 from examples.schemas import DepartmentIn, DepartmentOut
-from ninja_crud.views import ModelViewSet
+from ninja_crud.viewsets import ModelViewSet
 
 
 class TestModelViewSet(unittest.TestCase):

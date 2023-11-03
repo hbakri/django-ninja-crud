@@ -5,7 +5,8 @@ from examples.models import Department
 from examples.schemas import DepartmentOut
 from ninja_crud.testing.views import ListModelViewTest
 from ninja_crud.testing.viewsets import ModelViewSetTestCase
-from ninja_crud.views import ListModelView, ModelViewSet
+from ninja_crud.views import ListModelView
+from ninja_crud.viewsets import ModelViewSet
 
 
 class TestModelViewSetTestCase(unittest.TestCase):

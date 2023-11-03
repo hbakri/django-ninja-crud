@@ -7,7 +7,7 @@ from django.test import tag
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters
 from ninja_crud.testing.views import AbstractModelViewTest
-from ninja_crud.views.delete import DeleteModelView
+from ninja_crud.views.delete_model_view import DeleteModelView
 
 
 class DeleteModelViewTest(AbstractModelViewTest):

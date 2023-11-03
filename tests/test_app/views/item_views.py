@@ -9,10 +9,10 @@ from ninja_crud.schemas import OrderableFilterSchema
 from ninja_crud.views import (
     DeleteModelView,
     ListModelView,
-    ModelViewSet,
     RetrieveModelView,
     UpdateModelView,
 )
+from ninja_crud.viewsets import ModelViewSet
 from tests.test_app.models import Item, Tag
 from tests.test_app.schemas import ItemIn, ItemOut
 
