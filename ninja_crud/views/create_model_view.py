@@ -6,10 +6,10 @@ from django.db.models import Model
 from django.http import HttpRequest
 from ninja import Router, Schema
 
-from ninja_crud.views import utils
-from ninja_crud.views.abstract import AbstractModelView
+from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.types import (
+from ninja_crud.views.helpers import utils
+from ninja_crud.views.helpers.types import (
     CollectionModelFactory,
     CreateCollectionSaveHook,
     CreateDetailSaveHook,
@@ -18,7 +18,7 @@ from ninja_crud.views.types import (
 from ninja_crud.views.validators.model_factory_validator import ModelFactoryValidator
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ninja_crud.views.viewset import ModelViewSet
+    from ninja_crud.viewsets import ModelViewSet
 
 
 class CreateModelView(AbstractModelView):
@@ -138,7 +138,7 @@ class CreateModelView(AbstractModelView):
         self.model_factory = model_factory
         self.pre_save = pre_save
         self.post_save = post_save
-        self._related_model = model_factory_class
+        self._related_model_class = model_factory_class
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         if self.detail:
@@ -244,7 +244,7 @@ class CreateModelView(AbstractModelView):
     def _get_operation_id(self, model_class: Type[Model]) -> str:
         model_name = utils.to_snake_case(model_class.__name__)
         if self.detail:
-            related_model_name = utils.to_snake_case(self._related_model.__name__)
+            related_model_name = utils.to_snake_case(self._related_model_class.__name__)
             return f"create_{model_name}_{related_model_name}"
         else:
             return f"create_{model_name}"
@@ -253,7 +253,7 @@ class CreateModelView(AbstractModelView):
         verbose_model_name = model_class._meta.verbose_name
         if self.detail:
             verbose_model_name = model_class._meta.verbose_name
-            verbose_related_model_name = self._related_model._meta.verbose_name
+            verbose_related_model_name = self._related_model_class._meta.verbose_name
             return f"Create {verbose_related_model_name} for {verbose_model_name}"
         else:
             return f"Create {verbose_model_name}"

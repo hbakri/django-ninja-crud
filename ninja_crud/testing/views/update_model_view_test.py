@@ -9,7 +9,7 @@ from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters, Payloads
 from ninja_crud.testing.views import AbstractModelViewTest
 from ninja_crud.testing.views.helpers import TestAssertionHelper
-from ninja_crud.views.update import UpdateModelView
+from ninja_crud.views.update_model_view import UpdateModelView
 
 
 class UpdateModelViewTest(AbstractModelViewTest):

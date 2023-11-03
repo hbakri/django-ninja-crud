@@ -6,10 +6,10 @@ from ninja_crud.views import (
     CreateModelView,
     DeleteModelView,
     ListModelView,
-    ModelViewSet,
     RetrieveModelView,
     UpdateModelView,
 )
+from ninja_crud.viewsets.model_viewset import ModelViewSet
 
 
 class BaseModelViewSet(ModelViewSet):

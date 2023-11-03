@@ -9,10 +9,10 @@ from ninja_crud.views import (
     CreateModelView,
     DeleteModelView,
     ListModelView,
-    ModelViewSet,
     RetrieveModelView,
     UpdateModelView,
 )
+from ninja_crud.viewsets import ModelViewSet
 from tests.test_app.models import Collection, Item
 from tests.test_app.schemas import (
     CollectionFilter,

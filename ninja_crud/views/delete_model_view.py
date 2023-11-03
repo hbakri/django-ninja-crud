@@ -5,10 +5,10 @@ from django.db.models import Model
 from django.http import HttpRequest
 from ninja import Router
 
-from ninja_crud.views import utils
-from ninja_crud.views.abstract import AbstractModelView
+from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.types import PostDeleteHook, PreDeleteHook
+from ninja_crud.views.helpers import utils
+from ninja_crud.views.helpers.types import PostDeleteHook, PreDeleteHook
 
 
 class DeleteModelView(AbstractModelView):

@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 from django.test import TestCase
 
-from ninja_crud.views.list import ListModelView
+from ninja_crud.views.list_model_view import ListModelView
 from tests.test_app.models import Item
 from tests.test_app.schemas import ItemOut
 

@@ -4,7 +4,10 @@ from typing import Union
 
 from django.db.models import Model, QuerySet
 
-from ninja_crud.views.types import CollectionQuerySetGetter, DetailQuerySetGetter
+from ninja_crud.views.helpers.types import (
+    CollectionQuerySetGetter,
+    DetailQuerySetGetter,
+)
 
 
 class QuerySetGetterValidator:

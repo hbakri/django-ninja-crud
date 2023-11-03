@@ -9,7 +9,7 @@ from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.validators.path_validator import PathValidator
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ninja_crud.views.viewset import ModelViewSet
+    from ninja_crud.viewsets import ModelViewSet
 
 logger = logging.getLogger(__name__)
 
