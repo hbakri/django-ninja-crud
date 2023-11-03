@@ -5,7 +5,7 @@ from ninja import FilterSchema
 
 
 class OrderableFilterSchema(FilterSchema):
-    order_by: Optional[List[str]]
+    order_by: Optional[List[str]] = None
 
     def filter_order_by(self, value) -> Q:
         return Q()

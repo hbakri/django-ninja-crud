@@ -16,7 +16,7 @@ class Representable(Schema):
 
 
 class CollectionFilter(OrderableFilterSchema):
-    name: Optional[str]
+    name: Optional[str] = None
 
 
 class CollectionIn(Representable):
