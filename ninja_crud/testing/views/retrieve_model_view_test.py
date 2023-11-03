@@ -34,8 +34,8 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.test_model_view_set.base_path + self.model_view.path
-        return self.test_model_view_set.client_class().get(
+        path = "/" + self.model_viewset_test_case.base_path + self.model_view.path
+        return self.model_viewset_test_case.client_class().get(
             path=path.format(**path_parameters),
             content_type="application/json",
             **headers,
@@ -52,11 +52,11 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         content = json.loads(response.content)
 
         queryset = self.model_view._get_queryset(
-            self.test_model_view_set.model_view_set_class.model_class,
+            self.model_viewset_test_case.model_viewset_class.model_class,
             path_parameters["id"],
         )
         TestAssertionHelper.assert_content_equals_schema(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             content=content,
             queryset=queryset,
             schema_class=self.model_view.output_schema,
@@ -75,7 +75,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
     @tag("retrieve")
     def test_retrieve_model_ok(self):
         self.view_test_manager.test_view_ok(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_successful_request,
             status=HTTPStatus.OK,
         )
@@ -83,20 +83,20 @@ class RetrieveModelViewTest(AbstractModelViewTest):
     @tag("retrieve")
     def test_retrieve_model_unauthorized(self):
         self.view_test_manager.test_view_headers_unauthorized(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
     @tag("retrieve")
     def test_retrieve_model_forbidden(self):
         self.view_test_manager.test_view_headers_forbidden(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
     @tag("retrieve")
     def test_retrieve_model_not_found(self):
         self.view_test_manager.test_view_path_parameters_not_found(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )

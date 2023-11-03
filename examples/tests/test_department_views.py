@@ -14,7 +14,7 @@ from ninja_crud.testing.viewsets import ModelViewSetTestCase
 
 
 class TestDepartmentViewSet(ModelViewSetTestCase):
-    model_view_set_class = DepartmentViewSet
+    model_viewset_class = DepartmentViewSet
     base_path = "api/departments"
 
     department_1: Department

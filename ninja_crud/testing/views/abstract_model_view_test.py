@@ -7,14 +7,16 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class AbstractModelViewTest:
-    test_model_view_set: "ModelViewSetTestCase"
+    model_viewset_test_case: "ModelViewSetTestCase"
     model_view: AbstractModelView
 
     def __init__(self, model_view_class: Type[AbstractModelView]) -> None:
         self.model_view_class = model_view_class
 
-    def bind_to_test_viewset(self, test_viewset: "ModelViewSetTestCase") -> None:
-        self.test_model_view_set = test_viewset
+    def bind_to_model_viewset_test_case(
+        self, model_viewset_test_case: "ModelViewSetTestCase"
+    ) -> None:
+        self.model_viewset_test_case = model_viewset_test_case
 
-    def bind_to_view(self, view: AbstractModelView) -> None:
-        self.model_view = view
+    def bind_to_model_view(self, model_view: AbstractModelView) -> None:
+        self.model_view = model_view

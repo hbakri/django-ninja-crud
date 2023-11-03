@@ -36,10 +36,10 @@ class ListModelViewTest(AbstractModelViewTest):
         headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.test_model_view_set.base_path + self.model_view.path
+        path = "/" + self.model_viewset_test_case.base_path + self.model_view.path
         # TODO: make it work with generic, and then move it to ViewTestManager
         # or to AbstractModelViewTest :woman_shrugging:
-        return self.test_model_view_set.client_class().get(
+        return self.model_viewset_test_case.client_class().get(
             path=path.format(**path_parameters),
             data=query_parameters,
             content_type="application/json",
@@ -57,7 +57,7 @@ class ListModelViewTest(AbstractModelViewTest):
         content = json.loads(response.content)
 
         queryset = self.model_view._get_queryset(
-            self.test_model_view_set.model_view_set_class.model_class,
+            self.model_viewset_test_case.model_viewset_class.model_class,
             path_parameters["id"] if "id" in path_parameters else None,
         )
 
@@ -68,7 +68,7 @@ class ListModelViewTest(AbstractModelViewTest):
             queryset = self.model_view._filter_queryset(queryset, filters)
 
         TestAssertionHelper.assert_content_equals_schema_list(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             content=content,
             queryset=queryset,
             schema_class=self.model_view.output_schema,
@@ -90,7 +90,7 @@ class ListModelViewTest(AbstractModelViewTest):
     @tag("list")
     def test_list_model_ok(self):
         self.view_test_manager.test_view_ok(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_successful_request,
             status=HTTPStatus.OK,
         )
@@ -98,27 +98,27 @@ class ListModelViewTest(AbstractModelViewTest):
     @tag("list")
     def test_list_model_bad_request(self):
         self.view_test_manager.test_view_query_parameters_bad_request(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
     @tag("list")
     def test_list_model_unauthorized(self):
         self.view_test_manager.test_view_headers_unauthorized(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
     @tag("list")
     def test_list_model_forbidden(self):
         self.view_test_manager.test_view_headers_forbidden(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
     @tag("list")
     def test_list_model_not_found(self):
         self.view_test_manager.test_view_path_parameters_not_found(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )

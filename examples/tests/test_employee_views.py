@@ -12,7 +12,7 @@ from ninja_crud.testing.viewsets import ModelViewSetTestCase
 
 
 class TestEmployeeViewSet(ModelViewSetTestCase):
-    model_view_set_class = EmployeeViewSet
+    model_viewset_class = EmployeeViewSet
     base_path = "api/employees"
 
     department_1: Department

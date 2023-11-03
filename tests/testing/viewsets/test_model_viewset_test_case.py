@@ -19,9 +19,9 @@ class TestModelViewSetTestCase(unittest.TestCase):
         class TestExampleModelViewSet(ModelViewSetTestCase):
             test_list_view = ListModelViewTest()
 
-        TestExampleModelViewSet.model_view_set_class = ExampleModelViewSet
+        TestExampleModelViewSet.model_viewset_class = ExampleModelViewSet
         associated_model_view = TestExampleModelViewSet._get_associated_model_view(
-            test_attr_name="test_list_view", view_class=ListModelView
+            test_attr_name="test_list_view", model_view_class=ListModelView
         )
         self.assertEqual(associated_model_view, ExampleModelViewSet.list_view)
 
@@ -32,10 +32,10 @@ class TestModelViewSetTestCase(unittest.TestCase):
         class TestExampleModelViewSet(ModelViewSetTestCase):
             test_list_view = ListModelViewTest()
 
-        TestExampleModelViewSet.model_view_set_class = ExampleModelViewSet
+        TestExampleModelViewSet.model_viewset_class = ExampleModelViewSet
         with self.assertRaises(ValueError):
             TestExampleModelViewSet._get_associated_model_view(
-                test_attr_name="test_list_view", view_class=ListModelView
+                test_attr_name="test_list_view", model_view_class=ListModelView
             )
 
     def test_check_all_model_views_associated_ok(self):
@@ -47,7 +47,7 @@ class TestModelViewSetTestCase(unittest.TestCase):
         class TestExampleModelViewSet(ModelViewSetTestCase):
             test_list_view = ListModelViewTest()
 
-        TestExampleModelViewSet.model_view_set_class = ExampleModelViewSet
+        TestExampleModelViewSet.model_viewset_class = ExampleModelViewSet
         TestExampleModelViewSet._check_all_model_views_associated(
             associated_model_views=[ExampleModelViewSet.list_view]
         )
@@ -62,7 +62,7 @@ class TestModelViewSetTestCase(unittest.TestCase):
         class TestExampleModelViewSet(ModelViewSetTestCase):
             test_list_view = ListModelViewTest()
 
-        TestExampleModelViewSet.model_view_set_class = ExampleModelViewSet
+        TestExampleModelViewSet.model_viewset_class = ExampleModelViewSet
         with patch(
             "ninja_crud.testing.viewsets.model_viewset_test_case.logger"
         ) as mock_logger:

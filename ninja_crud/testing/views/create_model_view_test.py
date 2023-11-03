@@ -36,8 +36,8 @@ class CreateModelViewTest(AbstractModelViewTest):
         headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.test_model_view_set.base_path + self.model_view.path
-        return self.test_model_view_set.client_class().post(
+        path = "/" + self.model_viewset_test_case.base_path + self.model_view.path
+        return self.model_viewset_test_case.client_class().post(
             path=path.format(**path_parameters),
             data=payload,
             content_type="application/json",
@@ -57,9 +57,9 @@ class CreateModelViewTest(AbstractModelViewTest):
         if self.model_view.detail:
             model = self.model_view._related_model_class
         else:
-            model = self.test_model_view_set.model_view_set_class.model_class
+            model = self.model_viewset_test_case.model_viewset_class.model_class
         TestAssertionHelper.assert_content_equals_schema(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             content=content,
             queryset=model.objects.get_queryset(),
             schema_class=self.model_view.output_schema,
@@ -78,7 +78,7 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_ok(self):
         self.view_test_manager.test_view_ok(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_successful_request,
             status=HTTPStatus.CREATED,
         )
@@ -86,34 +86,34 @@ class CreateModelViewTest(AbstractModelViewTest):
     @tag("create")
     def test_create_model_bad_request(self):
         self.view_test_manager.test_view_payloads_bad_request(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
     @tag("create")
     def test_create_model_conflict(self):
         self.view_test_manager.test_view_payloads_conflict(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
     @tag("create")
     def test_create_model_unauthorized(self):
         self.view_test_manager.test_view_headers_unauthorized(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
     @tag("create")
     def test_create_model_forbidden(self):
         self.view_test_manager.test_view_headers_forbidden(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
     @tag("create")
     def test_create_model_not_found(self):
         self.view_test_manager.test_view_path_parameters_not_found(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )

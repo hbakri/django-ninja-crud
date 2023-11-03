@@ -20,7 +20,7 @@ from tests.test_app.views.collection_views import CollectionViewSet
 
 
 class TestCollectionViewSet(ModelViewSetTestCase, BaseTestCase):
-    model_view_set_class = CollectionViewSet
+    model_viewset_class = CollectionViewSet
     base_path = "api/collections"
 
     def get_path_parameters(self):
