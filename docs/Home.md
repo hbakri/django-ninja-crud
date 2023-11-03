@@ -1,6 +1,6 @@
 # The Django Ninja CRUD Documentation
 
-![Django Ninja CRUD](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/assets/images/django-ninja-crud-cover.png)
+![Django Ninja CRUD](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/docs/assets/images/django-ninja-crud-cover.png)
 
 Django Ninja CRUD is a powerful tool designed to streamline the development of **CRUD** (**C**reate, **R**ead, **U**pdate, **D**elete) operations in Django applications using the [Django Ninja](https://django-ninja.rest-framework.com) framework. It is intended to help developers save significant time by eliminating the need to write repetitive code for each operation and even more on the associated tests.
 
