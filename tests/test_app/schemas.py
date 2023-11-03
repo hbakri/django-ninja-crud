@@ -12,11 +12,11 @@ class Identifiable(Schema):
 
 class Representable(Schema):
     name: str
-    description: str = None
+    description: Optional[str] = None
 
 
 class CollectionFilter(OrderableFilterSchema):
-    name: Optional[str]
+    name: Optional[str] = None
 
 
 class CollectionIn(Representable):

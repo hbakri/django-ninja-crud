@@ -25,7 +25,7 @@ By using this package, developers can write efficient and clear code, saving tim
 
 ![Python versions](https://img.shields.io/badge/python-3.8%20|%203.9%20|%203.10%20|%203.11-blue)
 ![Django versions](https://img.shields.io/badge/django-3.2%20|%204.1%20|%204.2-blue)
-![Django Ninja versions](https://img.shields.io/badge/django--ninja-0.21.0%20|%200.22.0-blue)
+![Django Ninja versions](https://img.shields.io/badge/django--ninja-0.21.0%20|%200.22.0%20|%201.0b2-blue)
 
 ## 📈 Installation
 ```bash

@@ -1,5 +1,4 @@
 from functools import wraps
-from uuid import UUID
 
 from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest
@@ -21,11 +20,12 @@ router = Router()
 
 def user_is_collection_creator(func):
     @wraps(func)
-    def wrapper(request: HttpRequest, id: UUID, *args, **kwargs):
-        item = Item.objects.get(id=id)
+    def wrapper(request: HttpRequest, *args, **kwargs):
+        item_id = kwargs.get("id")
+        item = Item.objects.get(id=item_id)
         if item.collection.created_by != request.user:
             raise PermissionDenied()
-        return func(request, id, *args, **kwargs)
+        return func(request, *args, **kwargs)
 
     return wrapper
 
