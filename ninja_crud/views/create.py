@@ -30,8 +30,8 @@ class CreateModelView(AbstractModelView):
     Example:
     ```python
     from ninja_crud.views import ModelViewSet, CreateModelView
-    from example.models import Department, Employee
-    from example.schemas import DepartmentIn, DepartmentOut, EmployeeIn, EmployeeOut
+    from examples.models import Department, Employee
+    from examples.schemas import DepartmentIn, DepartmentOut, EmployeeIn, EmployeeOut
 
     class DepartmentViewSet(ModelViewSet):
         model_class = Department

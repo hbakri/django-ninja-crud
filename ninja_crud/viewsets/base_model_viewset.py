@@ -38,8 +38,8 @@ class BaseModelViewSet(ModelViewSet):
     ```python
     from ninja import Router
     from ninja_crud.viewsets import BaseModelViewSet
-    from example.models import Department
-    from example.schemas import DepartmentIn, DepartmentOut
+    from examples.models import Department
+    from examples.schemas import DepartmentIn, DepartmentOut
 
     router = Router()
 

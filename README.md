@@ -75,10 +75,11 @@ from ninja_crud.views import (
     RetrieveModelView,
     UpdateModelView,
 )
-from example.models import Department
-from example.schemas import DepartmentIn, DepartmentOut
+from examples.models import Department
+from examples.schemas import DepartmentIn, DepartmentOut
 
 router = Router()
+
 
 class DepartmentViewSet(ModelViewSet):
     model_class = Department
@@ -90,8 +91,10 @@ class DepartmentViewSet(ModelViewSet):
     update = UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
     delete = DeleteModelView()
 
+
 # The register_routes method must be called to register the routes with the router
 DepartmentViewSet.register_routes(router)
+
 
 # The router can then be used as normal
 @router.get("/{name}", response=DepartmentOut)
@@ -105,8 +108,8 @@ A key advantage of this package is that it makes your views easy to test. Once y
 ```python
 # tests.py
 from django.test import TestCase
-from example.models import Department
-from example.views.view_department import DepartmentViewSet
+from examples.models import Department
+from examples.views.department_views import DepartmentViewSet
 from ninja_crud.tests import (
     PathParameters,
     Payloads,

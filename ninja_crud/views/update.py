@@ -23,8 +23,8 @@ class UpdateModelView(AbstractModelView):
     Example:
     ```python
     from ninja_crud.views import ModelViewSet, UpdateModelView
-    from example.models import Department
-    from example.schemas import DepartmentIn, DepartmentOut
+    from examples.models import Department
+    from examples.schemas import DepartmentIn, DepartmentOut
 
     class DepartmentViewSet(ModelViewSet):
         model_class = Department
