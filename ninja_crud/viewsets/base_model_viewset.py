@@ -9,7 +9,7 @@ from ninja_crud.views import (
     RetrieveModelView,
     UpdateModelView,
 )
-from ninja_crud.viewsets import ModelViewSet
+from ninja_crud.viewsets.model_viewset import ModelViewSet
 
 
 class BaseModelViewSet(ModelViewSet):
