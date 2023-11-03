@@ -39,7 +39,7 @@ classifiers = [
 packages = [{ include = "ninja_crud" },]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<4.0"
+python = ">=3.8,<4.0"
 Django = ">=3.2"
 django-ninja = ">=0.21,<1.0"
 
