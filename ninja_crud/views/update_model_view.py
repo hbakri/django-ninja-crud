@@ -129,13 +129,13 @@ class UpdateModelView(AbstractModelView):
         return "/{id}"
 
     def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
-        return dict(
-            methods=[self.method.value],
-            path=self.path,
-            response={HTTPStatus.OK: self.output_schema},
-            operation_id=self._get_operation_id(model_class),
-            summary=self._get_summary(model_class),
-        )
+        return {
+            "methods": [self.method.value],
+            "path": self.path,
+            "response": {HTTPStatus.OK: self.output_schema},
+            "operation_id": self._get_operation_id(model_class),
+            "summary": self._get_summary(model_class),
+        }
 
     @staticmethod
     def _get_operation_id(model_class: Type[Model]) -> str:

@@ -60,7 +60,7 @@ def handle_ninja_validation_error(request, exc: NinjaValidationError):
 @api.exception_handler(ValidationError)
 def handle_validation_error(request, exc: ValidationError):
     status = HTTPStatus.BAD_REQUEST
-    for field, errors in exc.error_dict.items():
+    for _, errors in exc.error_dict.items():
         for error in errors:
             if error.code in ["unique", "unique_together"]:
                 status = HTTPStatus.CONFLICT
