@@ -7,7 +7,7 @@ Before installing the `django-ninja-crud` package, please ensure you have the fo
 - ```shell
   pip install --upgrade django
   ```
-- **Django Ninja**: This package requires Django Ninja version 0.21.0 or higher. If you need to install or upgrade Django Ninja, you can use the following command:
+- **Django Ninja**: This package requires Django Ninja version 0.21 or higher. If you need to install or upgrade Django Ninja, you can use the following command:
 - ```shell
   pip install --upgrade django-ninja
   ```

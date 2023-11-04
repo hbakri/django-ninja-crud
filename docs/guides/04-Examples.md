@@ -1,11 +1,10 @@
 In this section, we'll walk through some quick examples of how to use Django Ninja CRUD. The goal is to illustrate how simple it is to define data operations and tests with this tool.
 
 # 👨‍🎨 Usage
-
 Let's imagine you're building a system for a university and you have a model called `Department`. Each department in your university has a unique title.
 
 ```python
-# models.py
+# examples/models.py
 from django.db import models
 
 class Department(models.Model):
@@ -15,7 +14,7 @@ class Department(models.Model):
 To interact with this data, we need a way to convert it between Python objects and a format that's easy to read and write (like JSON). In Django Ninja, we do this with `Schema`:
 
 ```python
-# schemas.py
+# examples/schemas.py
 from ninja import Schema
 
 class DepartmentIn(Schema):
@@ -31,37 +30,30 @@ The `DepartmentIn` schema defines what data we need when creating or updating a 
 Now, here comes the power of Django Ninja CRUD. With it, you can set up the **CRUD** operations for the `Department` model with just a few lines of code:
 
 ```python
-# views.py
-from ninja import Router
+# examples/views/department_views.py
 from django.http import HttpRequest
-from ninja_crud.views import (
-    CreateModelView,
-    DeleteModelView,
-    ListModelView,
-    ModelViewSet,
-    RetrieveModelView,
-    UpdateModelView,
-)
+from ninja import Router
+from ninja_crud import views, viewsets
+
 from examples.models import Department
 from examples.schemas import DepartmentIn, DepartmentOut
 
 router = Router()
 
 
-class DepartmentViewSet(ModelViewSet):
+class DepartmentViewSet(viewsets.ModelViewSet):
     model_class = Department
+    default_input_schema = DepartmentIn
+    default_output_schema = DepartmentOut
 
-    # AbstractModelView subclasses can be used as-is
-    list = ListModelView(output_schema=DepartmentOut)
-    create = CreateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
-    retrieve = RetrieveModelView(output_schema=DepartmentOut)
-    update = UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
-    delete = DeleteModelView()
-
+    list_view = views.ListModelView()
+    create_view = views.CreateModelView()
+    retrieve_view = views.RetrieveModelView()
+    update_view = views.UpdateModelView()
+    delete_view = views.DeleteModelView()
 
 # The register_routes method must be called to register the routes with the router
 DepartmentViewSet.register_routes(router)
-
 
 # The router can then be used as normal
 @router.get("/{name}", response=DepartmentOut)
@@ -73,25 +65,24 @@ def get_department_by_name(request: HttpRequest, name: str):
 A key advantage of this package is that it makes your views easy to test. Once you've set up your **CRUD** operations, you can write tests to ensure they're working as expected. Here's an example of how you might test the `Department` operations:
 
 ```python
-# tests.py
-from django.test import TestCase
+# examples/tests/test_department_views.py
+from ninja_crud.testing.core.components import PathParameters, Payloads
+from ninja_crud.testing.views import (
+    CreateModelViewTest,
+    DeleteModelViewTest,
+    ListModelViewTest,
+    RetrieveModelViewTest,
+    UpdateModelViewTest,
+)
+from ninja_crud.testing.viewsets import ModelViewSetTestCase
+
 from examples.models import Department
 from examples.views.department_views import DepartmentViewSet
-from ninja_crud.tests import (
-    PathParameters,
-    Payloads,
-    TestCreateModelView,
-    TestDeleteModelView,
-    TestListModelView,
-    TestModelViewSet,
-    TestRetrieveModelView,
-    TestUpdateModelView,
-)
 
 
-class TestDepartmentViewSet(TestModelViewSet, TestCase):
-    model_view_set_class = DepartmentViewSet
-    base_path = "api/departments"
+class TestDepartmentViewSet(ModelViewSetTestCase):
+    model_viewset_class = DepartmentViewSet  # The viewset class to test
+    base_path = "api/departments"  # The base path for the routes in the viewset
 
     @classmethod
     def setUpTestData(cls):
@@ -103,17 +94,21 @@ class TestDepartmentViewSet(TestModelViewSet, TestCase):
         return PathParameters(ok={"id": self.department_1.id}, not_found={"id": 9999})
 
     payloads = Payloads(
-        ok={"title": "new_title"},
-        bad_request={"bad-title": 1},
+        ok={"title": "department-3"},
+        bad_request={"wrong_field": "wrong_value"},
         conflict={"title": "department-2"},
     )
 
-    test_list = TestListModelView()
-    test_create = TestCreateModelView(payloads=payloads)
-    test_retrieve = TestRetrieveModelView(path_parameters=get_path_parameters)
-    test_update = TestUpdateModelView(path_parameters=get_path_parameters, payloads=payloads)
-    test_delete = TestDeleteModelView(path_parameters=get_path_parameters)
+    test_list_view = ListModelViewTest()
+    test_create_view = CreateModelViewTest(payloads=payloads)
+    test_retrieve_view = RetrieveModelViewTest(path_parameters=get_path_parameters)
+    test_update_view = UpdateModelViewTest(path_parameters=get_path_parameters, payloads=payloads)
+    test_delete_view = DeleteModelViewTest(path_parameters=get_path_parameters)
+
+    # You can then add additional tests as needed
+    def test_get_department_by_name(self):
+        response = self.client.get(f"{self.base_path}/department-1")
+        self.assertEqual(response.status_code, 200)
+        ... # Additional assertions
 ```
 With this package, these tests can be written in a consistent, straightforward way, making it easier to ensure your views are working as expected.
-
-In summary, this package simplifies the process of setting up and testing **CRUD** operations in Django Ninja, letting you focus on what makes your application unique. By providing a flexible, transparent, and configurable solution, this package is a powerful tool for accelerating web development.

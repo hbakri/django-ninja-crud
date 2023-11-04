@@ -6,14 +6,15 @@ import yaml
 root_dir = os.path.abspath(os.path.join(os.getcwd()))
 project_name = "ninja_crud"
 modules = [
-    ("views/abstract", "AbstractModelView"),
-    ("views/retrieve", "RetrieveModelView"),
-    ("views/update", "UpdateModelView"),
-    ("views/delete", "DeleteModelView"),
-    ("views/list", "ListModelView"),
-    ("views/create", "CreateModelView"),
-    ("views/types", "Types"),
-    ("views/viewset", "ModelViewSet"),
+    ("views/abstract_model_view", "AbstractModelView"),
+    ("views/list_model_view", "ListModelView"),
+    ("views/create_model_view", "CreateModelView"),
+    ("views/retrieve_model_view", "RetrieveModelView"),
+    ("views/update_model_view", "UpdateModelView"),
+    ("views/delete_model_view", "DeleteModelView"),
+    ("views/helpers/types", "Types"),
+    ("viewsets/model_viewset", "ModelViewSet"),
+    ("viewsets/base_model_viewset", "BaseModelViewSet"),
 ]
 
 template_path = "docs/pydoc-markdown.yml"

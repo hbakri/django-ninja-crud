@@ -13,7 +13,6 @@
 
 ### Views
 
-  - [ModelViewSet](ModelViewSet)
   - [AbstractModelView](AbstractModelView)
   - [ListModelView](ListModelView)
   - [CreateModelView](CreateModelView)
@@ -21,6 +20,11 @@
   - [UpdateModelView](UpdateModelView)
   - [DeleteModelView](DeleteModelView)
   - [Types](Types)
+
+### Viewsets
+
+  - [ModelViewSet](ModelViewSet)
+  - [BaseModelViewSet](BaseModelViewSet)
 
 ### Tests
 
