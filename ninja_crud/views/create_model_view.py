@@ -34,7 +34,7 @@ class CreateModelView(AbstractModelView):
     from examples.schemas import DepartmentIn, DepartmentOut, EmployeeIn, EmployeeOut
 
     class DepartmentViewSet(ModelViewSet):
-        model_class = Department
+        model = Department
 
         # Basic usage: Create a department
         # POST /departments/
@@ -84,7 +84,7 @@ class CreateModelView(AbstractModelView):
                 - For `detail=False`: () -> Model
                 - For `detail=True`: (id: Any) -> Model
 
-                If not provided, the `model_class` specified in the `ModelViewSet` will be used.
+                If not provided, the `model` specified in the `ModelViewSet` will be used.
             pre_save (Union[CreateDetailSaveHook, CreateCollectionSaveHook, None], optional): A function that
                 is called before saving the instance. Defaults to None.
 

@@ -22,7 +22,7 @@ class BaseModelViewSet(ModelViewSet):
     for serialization and deserialization of data.
 
     Attributes:
-        - model_class (Type[Model]): The Django model class for CRUD operations.
+        - model (Type[Model]): The Django model class for CRUD operations.
         - default_input_schema (Type[Schema]): The default schema to use for
             deserializing the request payload.
         - default_output_schema (Type[Schema]): The default schema to use for
@@ -44,7 +44,7 @@ class BaseModelViewSet(ModelViewSet):
     router = Router()
 
     class DepartmentViewSet(BaseModelViewSet):
-        model_class = Department
+        model = Department
         default_input_schema = DepartmentIn
         default_output_schema = DepartmentOut
 

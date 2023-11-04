@@ -12,12 +12,12 @@ class ModelViewSet:
     """
     A viewset offering CRUD operations for a Django model.
 
-    Subclasses should specify the Django model via the `model_class` class attribute. You
+    Subclasses should specify the Django model via the `model` class attribute. You
     can then attach various views (subclasses of `AbstractModelView`) to the subclass to
     define the CRUD behavior.
 
     Attributes:
-        - model_class (Type[Model]): The Django model class for CRUD operations.
+        - model (Type[Model]): The Django model class for CRUD operations.
         - default_input_schema (Optional[Type[Schema]], optional): The default schema to use for
             deserializing the request payload. Defaults to None.
         - default_output_schema (Optional[Type[Schema]], optional): The default schema to use for
@@ -37,7 +37,7 @@ class ModelViewSet:
     router = Router()
 
     class DepartmentViewSet(ModelViewSet):
-        model_class = Department
+        model = Department
 
         list = views.ListModelView(output_schema=DepartmentOut)
         create = views.CreateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
@@ -65,7 +65,7 @@ class ModelViewSet:
     ```
     """
 
-    model_class: Type[Model]
+    model: Type[Model]
     default_input_schema: Optional[Type[Schema]]
     default_output_schema: Optional[Type[Schema]]
 
@@ -78,7 +78,7 @@ class ModelViewSet:
         """
         super().__init_subclass__(**kwargs)
 
-        if hasattr(cls, "model_class"):
+        if hasattr(cls, "model"):
             cls._validate_model_class()
             cls._validate_input_schema_class(optional=True)
             cls._validate_output_schema_class(optional=True)
@@ -114,20 +114,18 @@ class ModelViewSet:
         """
         for attr_name, attr_value in inspect.getmembers(cls):
             if isinstance(attr_value, AbstractModelView):
-                attr_value.register_route(router, cls.model_class)
+                attr_value.register_route(router, cls.model)
 
     @classmethod
     def _validate_model_class(cls) -> None:
         """
-        Validates that the `model_class` attribute is a subclass of `Model`.
+        Validates that the `model` attribute is a subclass of `Model`.
 
         Raises:
             - ValueError: If the attribute is not set.
             - TypeError: If the attribute is not a subclass of `Model`.
         """
-        utils.validate_class_attribute_type(
-            cls, "model_class", expected_type=Type[Model]
-        )
+        utils.validate_class_attribute_type(cls, "model", expected_type=Type[Model])
 
     @classmethod
     def _validate_input_schema_class(cls, optional: bool = True) -> None:

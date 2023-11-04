@@ -42,7 +42,7 @@ router = Router()
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
-    model_class = Department
+    model = Department
     default_input_schema = DepartmentIn
     default_output_schema = DepartmentOut
 
@@ -52,8 +52,10 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     update_view = views.UpdateModelView()
     delete_view = views.DeleteModelView()
 
+
 # The register_routes method must be called to register the routes with the router
 DepartmentViewSet.register_routes(router)
+
 
 # The router can then be used as normal
 @router.get("/{name}", response=DepartmentOut)

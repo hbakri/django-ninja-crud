@@ -36,7 +36,7 @@ class ModelViewSetTestCase(django.test.TestCase):
     router = Router()
 
     class DepartmentViewSet(ModelViewSet):
-        model_class = Department
+        model = Department
         default_input_schema = DepartmentIn
         default_output_schema = DepartmentOut
 

@@ -15,7 +15,7 @@ router = Router()
 
 
 class UserViewSet(ModelViewSet):
-    model_class = User
+    model = User
     input_schema = UserIn
     output_schema = UserOut
 

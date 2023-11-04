@@ -37,7 +37,7 @@ def user_is_creator(func):
 
 
 class CollectionViewSet(ModelViewSet):
-    model_class = Collection
+    model = Collection
     input_schema = CollectionIn
     output_schema = CollectionOut
     filter_schema = CollectionFilter

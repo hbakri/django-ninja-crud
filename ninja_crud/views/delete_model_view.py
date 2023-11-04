@@ -23,7 +23,7 @@ class DeleteModelView(AbstractModelView):
     from examples.schemas import DepartmentOut, EmployeeOut
 
     class DepartmentViewSet(ModelViewSet):
-        model_class = Department
+        model = Department
 
         # Usage: Delete a department by id
         # DELETE /departments/{id}/

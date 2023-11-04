@@ -12,7 +12,7 @@ from ninja_crud.viewsets import ModelViewSet
 class TestModelViewSetTestCase(unittest.TestCase):
     def test_get_associated_model_view_ok(self):
         class ExampleModelViewSet(ModelViewSet):
-            model_class = Department
+            model = Department
 
             list_view = ListModelView(output_schema=DepartmentOut)
 
@@ -27,7 +27,7 @@ class TestModelViewSetTestCase(unittest.TestCase):
 
     def test_get_associated_model_view_not_found(self):
         class ExampleModelViewSet(ModelViewSet):
-            model_class = Department
+            model = Department
 
         class TestExampleModelViewSet(ModelViewSetTestCase):
             test_list_view = ListModelViewTest()
@@ -40,7 +40,7 @@ class TestModelViewSetTestCase(unittest.TestCase):
 
     def test_check_all_model_views_associated_ok(self):
         class ExampleModelViewSet(ModelViewSet):
-            model_class = Department
+            model = Department
 
             list_view = ListModelView(output_schema=DepartmentOut)
 
@@ -54,7 +54,7 @@ class TestModelViewSetTestCase(unittest.TestCase):
 
     def test_check_all_model_views_associated_not_found(self):
         class ExampleModelViewSet(ModelViewSet):
-            model_class = Department
+            model = Department
 
             list_view = ListModelView(output_schema=DepartmentOut)
             other_list_view = ListModelView(output_schema=DepartmentOut)
