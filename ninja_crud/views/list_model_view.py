@@ -79,8 +79,7 @@ class ListModelView(AbstractModelView):
                 - For `detail=False`: () -> QuerySet[Model]
                 - For `detail=True`: (id: Any) -> QuerySet[Model]
 
-                If not provided, the default manager of the `model_class` specified in the
-                `ModelViewSet` will be used.
+                If not provided, the default manager of the `model` specified in the `ModelViewSet` will be used.
             pagination_class (Optional[Type[PaginationBase]], optional): The pagination class to use for the view.
                 Defaults to LimitOffsetPagination.
             path (Optional[str], optional): The path to use for the view. Defaults to:
