@@ -1,16 +1,18 @@
-Django Ninja CRUD is a powerful tool designed to streamline the development of **CRUD** (**C**reate, **R**ead, **U**pdate, **D**elete) operations in Django applications using the [Django Ninja](https://django-ninja.rest-framework.com) framework. It is intended to help developers save significant time by eliminating the need to write repetitive code for each operation and even more on the associated tests.
+Django Ninja CRUD is an opinionated and powerful framework that accelerates the development of **CRUD** ([**C**reate, **R**ead, **U**pdate, **D**elete](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete)) operations with [Django Ninja](https://github.com/vitalik/django-ninja), promoting best practices for efficient, robust endpoint creation.
+Equally significant is its integrated testing suite: a robust, user-friendly toolset ensuring that your endpoints are not only swiftly constructed but also meticulously tested and validated, reflecting a commitment to quality and reliability in your development workflow.
 
-Developing these features from scratch every time can be _time-consuming_ and _error-prone_. That's where Django Ninja CRUD comes in—it provides a set of predefined, customizable "blueprints" for these operations, allowing developers to set them up quickly and reliably. Instead of getting bogged down with the details of how these operations are performed, developers can focus on the unique, creative aspects of their applications.
+# ⚡️ Key Features
 
-# 🏄‍♂️ Key Features
+- **Streamlined Setup**: With just a few lines of code, your **CRUD** operations are ready to roll. No more copy-pasting or reinventing the wheel for each project.
+- **Focus on What Matters**: Spend your precious time solving real problems, not stitching together basic operations. Django Ninja CRUD is like a trusty sidekick, handling the routine while you strategize the big picture.
+- **Reliable Code**: Predefined blueprints are battle-tested and developer-approved. They're customizable, transparent, and designed with best practices in mind.
+- **Integrated Testing Framework**: A robust, user-friendly toolset ensures that your endpoints are not only swiftly constructed but also meticulously tested and validated, reflecting a commitment to quality and reliability in your development workflow.
 
-Django Ninja CRUD is a flexible, transparent, and configurable solution to a common challenge in web development.
+# 📝 Requirements
 
-- **Flexibility:** _Designed to adapt to your needs_. Whether you're creating, retrieving, updating, or deleting data, you can shape your operations as you see fit. It allows developers to either use the standard operations or to define their own, tailored to their specific requirements.
-- **Transparency:** _What you see is what you get_. The operations you define are the operations you perform, making it easy to understand and follow the data flow. It encourages practices that make your code easy to read and maintain. Also, it allows for easy testing of the defined operations, ensuring that everything works as expected.
-- **Configurability:** _Provides a high degree of customization_. You're not locked into a rigid structure; instead, you can adjust and fine-tune your operations to suit your project's unique needs. You can use the built-in tools to quickly set up standard operations, and if needed, you can customize them or even build your own from scratch.
-
-By using this package, developers can write efficient and clear code, saving time and reducing potential errors. It's a tool that accommodates the developer's workflow, rather than forcing the developer to adapt to it.
+![Python versions](https://img.shields.io/badge/python-3.8%20|%203.9%20|%203.10%20|%203.11-blue)
+![Django versions](https://img.shields.io/badge/django-3.2%20|%204.1%20|%204.2-blue)
+![Django Ninja versions](https://img.shields.io/badge/django--ninja-0.21%20|%200.22%20|%201.0b2-blue)
 
 # 📝 Installation
 
