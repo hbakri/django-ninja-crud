@@ -8,7 +8,7 @@ router = Router()
 
 
 class DepartmentViewSet(viewsets.BaseModelViewSet):
-    model_class = Department
+    model = Department
     default_input_schema = DepartmentIn
     default_output_schema = DepartmentOut
 

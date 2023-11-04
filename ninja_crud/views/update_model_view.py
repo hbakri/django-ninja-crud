@@ -27,7 +27,7 @@ class UpdateModelView(AbstractModelView):
     from examples.schemas import DepartmentIn, DepartmentOut
 
     class DepartmentViewSet(ModelViewSet):
-        model_class = Department
+        model = Department
 
         # Usage: Update a department by id
         # PUT /departments/{id}/

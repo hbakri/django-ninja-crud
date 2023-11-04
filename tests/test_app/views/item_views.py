@@ -31,7 +31,7 @@ def user_is_collection_creator(func):
 
 
 class ItemViewSet(ModelViewSet):
-    model_class = Item
+    model = Item
     input_schema = ItemIn
     output_schema = ItemOut
     filter_schema = OrderableFilterSchema

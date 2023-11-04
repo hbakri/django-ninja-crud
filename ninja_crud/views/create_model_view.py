@@ -34,7 +34,7 @@ class CreateModelView(AbstractModelView):
     from examples.schemas import DepartmentIn, DepartmentOut, EmployeeIn, EmployeeOut
 
     class DepartmentViewSet(ModelViewSet):
-        model_class = Department
+        model = Department
 
         # Basic usage: Create a department
         # POST /departments/

@@ -8,7 +8,7 @@ router = Router()
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
-    model_class = Employee
+    model = Employee
     default_input_schema = EmployeeIn
     default_output_schema = EmployeeOut
 

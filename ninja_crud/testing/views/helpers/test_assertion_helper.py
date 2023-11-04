@@ -32,8 +32,8 @@ class TestAssertionHelper:
         test_case.assertTrue(queryset.filter(pk=content["id"]).exists())
         test_case.assertEqual(queryset.filter(pk=content["id"]).count(), 1)
 
-        model = queryset.get(pk=content["id"])
-        schema = schema_class.from_orm(model)
+        instance = queryset.get(pk=content["id"])
+        schema = schema_class.from_orm(instance)
         test_case.assertDictEqual(
             content,
             json.loads(json.dumps(schema.dict(), default=default_serializer)),

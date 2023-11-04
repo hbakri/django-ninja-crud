@@ -34,7 +34,7 @@ class ListModelView(AbstractModelView):
     from examples.schemas import DepartmentOut, EmployeeOut
 
     class DepartmentViewSet(ModelViewSet):
-        model_class = Department
+        model = Department
 
         # Basic usage: List all departments
         # GET /departments/

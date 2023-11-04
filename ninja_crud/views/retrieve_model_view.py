@@ -29,7 +29,7 @@ class RetrieveModelView(AbstractModelView):
     from examples.schemas import DepartmentOut
 
     class DepartmentViewSet(ModelViewSet):
-        model_class = Department
+        model = Department
 
         # Usage: Retrieve a department by id
         # GET /departments/{id}/
@@ -54,8 +54,7 @@ class RetrieveModelView(AbstractModelView):
             queryset_getter (Optional[DetailQuerySetGetter], optional): A function to customize the queryset used
                 for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet[Model].
 
-                If not provided, the default manager of the `model_class` specified in the
-                `ModelViewSet` will be used.
+                If not provided, the default manager of the `model` specified in the `ModelViewSet` will be used.
             path (Optional[str], optional): The path to use for the view. Defaults to "/{id}".
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.

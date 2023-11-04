@@ -49,7 +49,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
     ):
         self.model_viewset_test_case.assertEqual(response.content, b"")
 
-        model_class = self.model_viewset_test_case.model_viewset_class.model_class
+        model_class = self.model_viewset_test_case.model_viewset_class.model
         queryset = model_class.objects.filter(id=path_parameters["id"])
         self.model_viewset_test_case.assertEqual(queryset.count(), 0)
 

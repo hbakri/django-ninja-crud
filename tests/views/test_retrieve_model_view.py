@@ -48,7 +48,7 @@ class TestRetrieveModelView(TestCase):
         model_view = RetrieveModelView(output_schema=ItemOut)
 
         class ItemModelViewSet(ModelViewSet):
-            model_class = Item
+            model = Item
             default_input_schema = None
             default_output_schema = None
 
@@ -58,7 +58,7 @@ class TestRetrieveModelView(TestCase):
         model_view = RetrieveModelView()
 
         class ItemModelViewSet(ModelViewSet):
-            model_class = Item
+            model = Item
             default_input_schema = None
             default_output_schema = ItemOut
 
@@ -68,7 +68,7 @@ class TestRetrieveModelView(TestCase):
         model_view = RetrieveModelView()
 
         class ItemModelViewSet(ModelViewSet):
-            model_class = Item
+            model = Item
             default_input_schema = None
             default_output_schema = None
 

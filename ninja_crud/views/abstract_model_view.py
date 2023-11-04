@@ -64,6 +64,10 @@ class AbstractModelView(ABC):
 
         Raises:
             NotImplementedError: This method must be implemented by a subclass.
+
+        Note:
+            This method should be called by the `register_routes` method of the `ModelViewSet` subclass.
+            It should not be called directly.
         """
         pass
 

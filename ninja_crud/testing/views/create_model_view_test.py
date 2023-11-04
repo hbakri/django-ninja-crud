@@ -55,13 +55,13 @@ class CreateModelViewTest(AbstractModelViewTest):
         content = json.loads(response.content)
 
         if self.model_view.detail:
-            model = self.model_view._related_model_class
+            model_class = self.model_view._related_model_class
         else:
-            model = self.model_viewset_test_case.model_viewset_class.model_class
+            model_class = self.model_viewset_test_case.model_viewset_class.model
         TestAssertionHelper.assert_content_equals_schema(
             test_case=self.model_viewset_test_case,
             content=content,
-            queryset=model.objects.get_queryset(),
+            queryset=model_class.objects.get_queryset(),
             schema_class=self.model_view.output_schema,
         )
 
