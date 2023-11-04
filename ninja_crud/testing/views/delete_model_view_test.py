@@ -32,8 +32,8 @@ class DeleteModelViewTest(AbstractModelViewTest):
         headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.test_model_view_set.base_path + self.model_view.path
-        return self.test_model_view_set.client_class().delete(
+        path = "/" + self.model_viewset_test_case.base_path + self.model_view.path
+        return self.model_viewset_test_case.client_class().delete(
             path=path.format(**path_parameters),
             content_type="application/json",
             **headers,
@@ -47,11 +47,11 @@ class DeleteModelViewTest(AbstractModelViewTest):
         headers: dict,
         payload: dict,
     ):
-        self.test_model_view_set.assertEqual(response.content, b"")
+        self.model_viewset_test_case.assertEqual(response.content, b"")
 
-        model_class = self.test_model_view_set.model_view_set_class.model_class
+        model_class = self.model_viewset_test_case.model_viewset_class.model_class
         queryset = model_class.objects.filter(id=path_parameters["id"])
-        self.test_model_view_set.assertEqual(queryset.count(), 0)
+        self.model_viewset_test_case.assertEqual(queryset.count(), 0)
 
     def on_failed_request(
         self,
@@ -66,7 +66,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
     @tag("delete")
     def test_delete_model_ok(self):
         self.view_test_manager.test_view_ok(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_successful_request,
             status=HTTPStatus.NO_CONTENT,
         )
@@ -74,20 +74,20 @@ class DeleteModelViewTest(AbstractModelViewTest):
     @tag("delete")
     def test_delete_model_unauthorized(self):
         self.view_test_manager.test_view_headers_unauthorized(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
     @tag("delete")
     def test_delete_model_forbidden(self):
         self.view_test_manager.test_view_headers_forbidden(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
     @tag("delete")
     def test_delete_model_not_found(self):
         self.view_test_manager.test_view_path_parameters_not_found(
-            test_case=self.test_model_view_set,
+            test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )

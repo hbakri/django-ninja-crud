@@ -12,7 +12,7 @@ from tests.test_app.views.user_views import UserViewSet
 
 
 class TestUserViewSet(ModelViewSetTestCase, BaseTestCase):
-    model_view_set_class = UserViewSet
+    model_viewset_class = UserViewSet
     base_path = "api/users"
 
     def get_path_parameters(self):

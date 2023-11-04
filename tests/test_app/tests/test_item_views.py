@@ -18,7 +18,7 @@ from tests.test_app.views.item_views import ItemViewSet
 
 
 class TestItemViewSet(ModelViewSetTestCase, BaseTestCase):
-    model_view_set_class = ItemViewSet
+    model_viewset_class = ItemViewSet
     base_path = "api/items"
 
     def get_path_parameters(self):

@@ -20,7 +20,7 @@ class ModelViewSetTestCase(django.test.TestCase):
     ensuring comprehensive and consistent testing of `ModelViewSet` instances.
 
     Attributes:
-        - model_view_set_class (Type[ModelViewSet]): The ModelViewSet subclass to test.
+        - model_viewset_class (Type[ModelViewSet]): The ModelViewSet subclass to test.
         - base_path (str): The base path for the model views.
 
     Example Usage:
@@ -76,7 +76,7 @@ class ModelViewSetTestCase(django.test.TestCase):
     )
 
     class TestDepartmentViewSet(TestModelViewSet):
-        model_view_set_class = DepartmentViewSet
+        model_viewset_class = DepartmentViewSet
         base_path = "examples/departments"
 
         @classmethod
@@ -107,7 +107,7 @@ class ModelViewSetTestCase(django.test.TestCase):
         binding of `AbstractTestModelView` instances, and registration of test methods.
     """
 
-    model_view_set_class: Type[ModelViewSet]
+    model_viewset_class: Type[ModelViewSet]
     base_path: str
 
     def __init_subclass__(cls, **kwargs):
@@ -121,8 +121,8 @@ class ModelViewSetTestCase(django.test.TestCase):
         """
         super().__init_subclass__(**kwargs)
 
-        if hasattr(cls, "model_view_set_class"):
-            cls._validate_model_view_set_class()
+        if hasattr(cls, "model_viewset_class"):
+            cls._validate_model_viewset_class()
             cls._validate_base_path()
             cls._bind_test_model_views()
             cls._register_test_methods()
@@ -148,12 +148,14 @@ class ModelViewSetTestCase(django.test.TestCase):
                 attr_value, AbstractModelViewTest
             ):
                 test_model_view_name, test_model_view = attr_name, attr_value
-                test_model_view.bind_to_test_viewset(test_viewset=cls_instance)
+                test_model_view.bind_to_model_viewset_test_case(
+                    model_viewset_test_case=cls_instance
+                )
                 associated_model_view = cls._get_associated_model_view(
                     test_attr_name=test_model_view_name,
-                    view_class=test_model_view.model_view_class,
+                    model_view_class=test_model_view.model_view_class,
                 )
-                test_model_view.bind_to_view(view=associated_model_view)
+                test_model_view.bind_to_model_view(model_view=associated_model_view)
                 associated_model_views.append(associated_model_view)
 
         cls._check_all_model_views_associated(
@@ -189,7 +191,7 @@ class ModelViewSetTestCase(django.test.TestCase):
 
     @classmethod
     def _get_associated_model_view(
-        cls, test_attr_name: str, view_class: Type[AbstractModelView]
+        cls, test_attr_name: str, model_view_class: Type[AbstractModelView]
     ) -> AbstractModelView:
         """
         Finds the model view associated with a `AbstractTestModelView` instance.
@@ -200,7 +202,7 @@ class ModelViewSetTestCase(django.test.TestCase):
 
         Parameters:
             - test_attr_name (str): The name of the `AbstractTestModelView` attribute.
-            - view_class (Type[AbstractModelView]): The class of the model view to find.
+            - model_view_class (Type[AbstractModelView]): The class of the model view to find.
 
         Returns:
             - AbstractModelView: The model view associated with the `AbstractTestModelView` instance.
@@ -208,9 +210,9 @@ class ModelViewSetTestCase(django.test.TestCase):
         Raises:
             - ValueError: If the associated model view cannot be found.
         """
-        for attr_name, attr_value in inspect.getmembers(cls.model_view_set_class):
+        for attr_name, attr_value in inspect.getmembers(cls.model_viewset_class):
             if (
-                isinstance(attr_value, view_class)
+                isinstance(attr_value, model_view_class)
                 and test_attr_name == f"test_{attr_name}"
             ):
                 return attr_value
@@ -232,26 +234,26 @@ class ModelViewSetTestCase(django.test.TestCase):
             - associated_model_views (List[AbstractModelView]): A list of all model views
                 that have been associated with a test.
         """
-        for attr_name, attr_value in inspect.getmembers(cls.model_view_set_class):
+        for attr_name, attr_value in inspect.getmembers(cls.model_viewset_class):
             if (
                 isinstance(attr_value, AbstractModelView)
                 and attr_value not in associated_model_views
             ):
                 logger.warning(
-                    f"Model view '{cls.model_view_set_class.__name__}.{attr_name}' is not associated with any test"
+                    f"Model view '{cls.model_viewset_class.__name__}.{attr_name}' is not associated with any test"
                 )
 
     @classmethod
-    def _validate_model_view_set_class(cls) -> None:
+    def _validate_model_viewset_class(cls) -> None:
         """
-        Validates that the `model_view_set_class` attribute is a subclass of `ModelViewSet`.
+        Validates that the `model_viewset_class` attribute is a subclass of `ModelViewSet`.
 
         Raises:
             - ValueError: If the attribute is not set.
             - TypeError: If the attribute is not a subclass of `ModelViewSet`.
         """
         utils.validate_class_attribute_type(
-            cls, attr_name="model_view_set_class", expected_type=Type[ModelViewSet]
+            cls, attr_name="model_viewset_class", expected_type=Type[ModelViewSet]
         )
 
     @classmethod
