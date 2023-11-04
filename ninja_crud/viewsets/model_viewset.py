@@ -112,7 +112,7 @@ class ModelViewSet:
         Parameters:
             router (Router): The Ninja Router to register the routes with.
         """
-        for attr_name, attr_value in inspect.getmembers(cls):
+        for _, attr_value in inspect.getmembers(cls):
             if isinstance(attr_value, AbstractModelView):
                 attr_value.register_route(router, cls.model)
 

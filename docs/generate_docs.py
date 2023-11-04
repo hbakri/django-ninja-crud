@@ -18,7 +18,7 @@ modules = [
 ]
 
 template_path = "docs/pydoc-markdown.yml"
-with open(template_path, "r") as file:
+with open(template_path) as file:
     template = yaml.load(file, Loader=yaml.FullLoader)
 
 for module_path, module_title in modules:
