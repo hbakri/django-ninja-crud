@@ -156,12 +156,13 @@ For more information, see the [documentation](https://github.com/hbakri/django-n
 > Currently, the documentation for the views has been thoroughly updated to reflect these changes. I'm in the process of updating and expanding the documentation for the revamped testing suite. Your patience and understanding are deeply valued as I work towards delivering a more detailed and up-to-date documentation experience. Thank you for supporting this project and its continuous growth!
 
 ## 🫶 Support
-First and foremost, thank you for taking the time to explore this project. If you find it valuable or promising, please give it a star! Your recognition not only motivates but also helps others discover the project.
+First and foremost, a heartfelt thank you for taking an interest in this project. If it has been helpful to you or you believe in its potential, kindly consider giving it a star on GitHub. Such recognition not only fuels my drive to maintain and improve this work but also makes it more visible to new potential users and contributors.
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/hbakri/django-ninja-crud?style=social)
 
 If you've benefited from this project or appreciate the dedication behind it, consider showing further support. Whether it's the price of a coffee, a word of encouragement, or a sponsorship, every gesture adds fuel to the open-source fire, making it shine even brighter. ✨
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/hbakri)
+[![Sponsor](https://img.shields.io/badge/sponsor-donate-pink?logo=github-sponsors&logoColor=white)](https://github.com/sponsors/hbakri)
+[![Buy me a coffee](https://img.shields.io/badge/buy%20me%20a%20coffee-donate-pink?logo=buy-me-a-coffee&logoColor=white)](https://www.buymeacoffee.com/hbakri)
 
-Your kindness and support make a world of difference. Thank you!
+Your kindness and support make a world of difference. Thank you! 🙏
