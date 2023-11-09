@@ -20,9 +20,9 @@ Equally significant is its integrated testing suite: a robust, user-friendly too
 
 ## 📝 Requirements
 
-![Python versions](https://img.shields.io/badge/python-3.8%20|%203.9%20|%203.10%20|%203.11-blue)
-![Django versions](https://img.shields.io/badge/django-3.2%20|%204.1%20|%204.2-blue)
-![Django Ninja versions](https://img.shields.io/badge/django--ninja-0.21%20|%200.22%20|%201.0b2-blue)
+![Python versions](https://img.shields.io/pypi/pyversions/django-ninja-crud.svg?color=306998&label=python&logo=python&logoColor=white)
+![Django versions](https://img.shields.io/pypi/frameworkversions/django/django-ninja-crud.svg?color=0C4B33&label=django&logo=django&logoColor=white)
+![Django Ninja versions](https://img.shields.io/badge/0.21%20|%200.22%20|%201.0rc0-blue?color=black&label=django-ninja&logo=fastapi&logoColor=white)
 
 ## 📈 Installation
 ```bash
