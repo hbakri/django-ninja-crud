@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
         django-version: ['3.2.*', '4.1.*', '4.2.*', '5.0b1']
         django-ninja-version: ['0.21.*', '0.22.*', '1.0rc0']
         exclude:
@@ -21,6 +21,10 @@ jobs:
             django-version: '5.0b1'
           - python-version: '3.9'
             django-version: '5.0b1'
+          - python-version: '3.12'
+            django-version: '3.2.*'
+          - python-version: '3.12'
+            django-version: '4.1.*'
 
     steps:
     - name: Checkout code
