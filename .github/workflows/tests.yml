@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-run-tests:
+  run-tests-across-versions:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -47,10 +47,4 @@ jobs:
         DJANGO_SETTINGS_MODULE: tests.test_settings
       run: |
         coverage run -m django test
-        coverage report
-        coverage xml
-
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        coverage report --fail-under=100
