@@ -13,18 +13,15 @@ class Headers:
     responses.
 
     Example:
-        >>> from ninja_crud.testing.core.components import Headers
-        >>> headers = Headers(
-        ...     ok=[{"HTTP_AUTHORIZATION": "Bearer ok"}],
-        ...     forbidden=[{"HTTP_AUTHORIZATION": "Bearer forbidden"}],
-        ...     unauthorized=[{}]
-        ... )
-        >>> headers.ok
-        [{"HTTP_AUTHORIZATION": "Bearer ok"}]
-        >>> headers.forbidden
-        [{"HTTP_AUTHORIZATION": "Bearer forbidden"}]
-        >>> headers.unauthorized
-        [{}]
+    ```python
+    from ninja_crud.testing.core.components import Headers
+
+    headers = Headers(
+        ok=[{"HTTP_AUTHORIZATION": "Bearer ok"}],
+        forbidden=[{"HTTP_AUTHORIZATION": "Bearer forbidden"}],
+        unauthorized=[{}]
+    )
+    ```
     """
 
     def __init__(

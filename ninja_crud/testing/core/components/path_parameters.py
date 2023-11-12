@@ -12,15 +12,14 @@ class PathParameters:
     that should result in 'not found' responses.
 
     Example:
-        >>> from ninja_crud.testing.core.components import PathParameters
-        >>> path_parameters = PathParameters(
-        ...     ok=[{"id": 1}, {"id": 2}],
-        ...     not_found=[{"id": 3}, {"id": 4}],
-        ... )
-        >>> path_parameters.ok
-        [{'id': 1}, {'id': 2}]
-        >>> path_parameters.not_found
-        [{'id': 3}, {'id': 4}]
+    ```python
+    from ninja_crud.testing.core.components import PathParameters
+
+    path_parameters = PathParameters(
+        ok=[{"id": 1}, {"id": 2}],
+        not_found=[{"id": 3}, {"id": 4}],
+    )
+    ```
     """
 
     def __init__(

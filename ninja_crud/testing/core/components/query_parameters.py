@@ -12,15 +12,13 @@ class QueryParameters:
     that should result in 'bad request' responses.
 
     Example:
-        >>> from ninja_crud.testing.core.components import QueryParameters
-        >>> query_parameters = QueryParameters(
-        ...     ok=[{"search": "item"}, {"page": 2, "limit": 10}],
-        ...     bad_request=[{"page": -1}, {"limit": "invalid"}],
-        ... )
-        >>> query_parameters.ok
-        [{'search': 'item'}, {'page': 2, 'limit': 10}]
-        >>> query_parameters.bad_request
-        [{'page': -1}, {'limit': 'invalid'}]
+    ```python
+    from ninja_crud.testing.core.components import QueryParameters
+
+    query_parameters = QueryParameters(
+        ok=[{"search": "item"}, {"page": 2, "limit": 10}],
+        bad_request=[{"page": -1}, {"limit": "invalid"}],
+    )
     """
 
     def __init__(

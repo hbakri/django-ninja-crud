@@ -164,9 +164,8 @@ cython_debug/
 Icon?
 Icon
 
-# Pydoc-markdown
-docs/reference/views/*.md
-docs/reference/tests/*.md
+# Documentation
+docs/reference/
 
 # Ruff
 .ruff_cache/

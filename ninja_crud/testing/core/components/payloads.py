@@ -13,18 +13,14 @@ class Payloads:
     responses.
 
     Example:
-        >>> from ninja_crud.testing.core.components import Payloads
-        >>> payloads = Payloads(
-        ...     ok=[{"name": "item 1"}, {"name": "item 2"}],
-        ...     bad_request=[{"name": ""}],
-        ...     conflict=[{"name": "existing item"}],
-        ... )
-        >>> payloads.ok
-        [{'name': 'item 1'}, {'name': 'item 2'}]
-        >>> payloads.bad_request
-        [{'name': ''}]
-        >>> payloads.conflict
-        [{'name': 'existing item'}]
+    ```python
+    from ninja_crud.testing.core.components import Payloads
+
+    payloads = Payloads(
+        ok=[{"name": "item 1"}, {"name": "item 2"}],
+        bad_request=[{"name": ""}],
+        conflict=[{"name": "existing item"}],
+    )
     """
 
     def __init__(
