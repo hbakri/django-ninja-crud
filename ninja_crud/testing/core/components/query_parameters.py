@@ -5,19 +5,28 @@ from ninja_crud.testing.core.components import utils
 
 class QueryParameters:
     """
-    This class is used to manage query parameters used in HTTP requests.
+    Manages HTTP query parameters for various test scenarios.
 
-    This class allows you to define sets of query parameters for different test scenarios. Specifically,
-    it enables you to set up parameters that should result in successful requests ('ok') and parameters
-    that should result in 'bad request' responses.
+    The QueryParameters class is designed to simplify the process of defining and using different sets of
+    query parameters for multiple test scenarios. It supports defining query parameters for successful
+    requests ('ok'), as well as query parameters expected to result in bad request ('bad_request')
+    responses.
+
+    One of the key features is its ability to accept either a single dictionary (for testing a single
+    case) or a list of dictionaries (for testing multiple cases), providing a convenient way to test
+    various scenarios with minimal setup.
 
     Example:
     ```python
     from ninja_crud.testing.core.components import QueryParameters
 
-    query_parameters = QueryParameters(
-        ok=[{"search": "item"}, {"page": 2, "limit": 10}],
-        bad_request=[{"page": -1}, {"limit": "invalid"}],
+    # Single case
+    single_query_parameters = QueryParameters(ok={"page": 2, "limit": 10})
+
+    # Multiple cases
+    multiple_query_parameters = QueryParameters(
+        ok=[{"page": 1, "limit": 10}, {"page": 2, "limit": 10}],
+        bad_request=[{"page": 1, "limit": 0}]
     )
     """
 

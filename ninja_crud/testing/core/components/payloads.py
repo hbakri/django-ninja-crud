@@ -5,21 +5,29 @@ from ninja_crud.testing.core.components import utils
 
 class Payloads:
     """
-    This class is used to manage payloads used in HTTP requests.
+    Manages HTTP request payloads for various test scenarios.
 
-    This class allows you to define sets of payloads for different test scenarios. Specifically,
-    it enables you to set up payloads that should result in successful requests ('ok'), payloads
-    that should result in 'bad request' responses, and payloads that should result in 'conflict'
+    The Payloads class is designed to simplify the process of defining and using different sets of
+    payloads for multiple test scenarios. It supports defining payloads for successful requests ('ok'),
+    as well as payloads expected to result in bad request ('bad_request') or conflict ('conflict')
     responses.
+
+    One of the key features is its ability to accept either a single dictionary (for testing a single
+    case) or a list of dictionaries (for testing multiple cases), providing a convenient way to test
+    various scenarios with minimal setup.
 
     Example:
     ```python
     from ninja_crud.testing.core.components import Payloads
 
-    payloads = Payloads(
-        ok=[{"name": "item 1"}, {"name": "item 2"}],
-        bad_request=[{"name": ""}],
-        conflict=[{"name": "existing item"}],
+    # Single case
+    single_payloads = Payloads(ok={"name": "ok"})
+
+    # Multiple cases
+    multiple_payloads = Payloads(
+        ok=[{"name": "ok1"}, {"name": "ok2"}],
+        bad_request=[{"name": "bad_request"}],
+        conflict=[{"name": "conflict"}]
     )
     """
 
