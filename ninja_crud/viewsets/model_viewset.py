@@ -98,7 +98,7 @@ class ModelViewSet:
 
         Note:
             This method is called automatically during the subclass initialization of
-            `TestModelViewSet` and should not be called directly.
+            `ModelViewSet`. It should not be called directly.
         """
         for attr_name, attr_value in inspect.getmembers(cls):
             if isinstance(attr_value, AbstractModelView):

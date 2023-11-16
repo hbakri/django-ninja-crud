@@ -59,7 +59,7 @@ class ModelViewSetTestCase(django.test.TestCase):
     api.add_router("departments", department_router)
     ```
 
-    3. Create your test class by subclassing `TestModelViewSet`:
+    3. Create your test class by subclassing `ModelViewSetTestCase`:
     ```python
     # examples/tests/test_department_views.py
     from ninja_crud.testing.core.components import PathParameters, Payloads
@@ -104,7 +104,7 @@ class ModelViewSetTestCase(django.test.TestCase):
     Note:
         This class should not be instantiated directly. Instead, it should be subclassed.
         It utilizes the `__init_subclass__` method to perform automatic validation,
-        binding of `AbstractTestModelView` instances, and registration of test methods.
+        binding of `AbstractModelViewTest` instances, and registration of test methods.
     """
 
     model_viewset_class: Type[ModelViewSet]
@@ -114,8 +114,8 @@ class ModelViewSetTestCase(django.test.TestCase):
         """
         Special method in Python that is automatically called when a class is subclassed.
 
-        For `TestModelViewSet` subclasses, this method is used to validate the class
-        attributes, bind the `AbstractTestModelView` instances to the subclass and to
+        For `ModelViewSetTestCase` subclasses, this method is used to validate the class
+        attributes, bind the `AbstractModelViewTest` instances to the subclass and to
         their corresponding model views, and register the test methods. It should not be
         called directly.
         """
@@ -130,16 +130,16 @@ class ModelViewSetTestCase(django.test.TestCase):
     @classmethod
     def _bind_test_model_views(cls):
         """
-        Binds instances of `AbstractTestModelView` to their corresponding model views.
+        Binds instances of `AbstractModelViewTest` to their corresponding model views.
 
-        This method creates an instance of `TestModelViewSet` and uses it to bind each
-        `AbstractTestModelView` instance to the `TestModelViewSet` subclass and to the
+        This method creates an instance of `ModelViewSetTestCase` and uses it to bind each
+        `AbstractModelViewTest` instance to the `ModelViewSetTestCase` subclass and to the
         corresponding model view in the `ModelViewSet`. It also checks that all model views
         in the `ModelViewSet` are associated with a test.
 
         Note:
             This method is called automatically during the subclass initialization of
-            `TestModelViewSet` and should not be called directly.
+            `ModelViewSetTestCase` and should not be called directly.
         """
         associated_model_views = []
         cls_instance = cls()
@@ -165,18 +165,18 @@ class ModelViewSetTestCase(django.test.TestCase):
     @classmethod
     def _register_test_methods(cls):
         """
-        Registers test methods from `AbstractTestModelView` instances as class methods.
+        Registers test methods from `AbstractModelViewTest` instances as class methods.
 
-        Iterates over all attributes of the class, finds `AbstractTestModelView` instances
+        Iterates over all attributes of the class, finds `AbstractModelViewTest` instances
         with names starting with "test", and registers their test methods (methods starting
-        with "test") as class methods on the `TestModelViewSet` subclass.
+        with "test") as class methods on the `ModelViewSetTestCase` subclass.
 
         The registered test methods follow the naming convention:
-        `<name of AbstractTestModelView instance>__<name of test method>`
+        `<name of AbstractModelViewTest instance>__<name of test method>`
 
         Note:
             This method is called automatically during the subclass initialization of
-            `TestModelViewSet` and should not be called directly.
+            `ModelViewSetTestCase` and should not be called directly.
         """
         for attr_name, attr_value in inspect.getmembers(cls):
             if attr_name.startswith("test") and isinstance(
@@ -194,18 +194,18 @@ class ModelViewSetTestCase(django.test.TestCase):
         cls, test_attr_name: str, model_view_class: Type[AbstractModelView]
     ) -> AbstractModelView:
         """
-        Finds the model view associated with a `AbstractTestModelView` instance.
+        Finds the model view associated with a `AbstractModelViewTest` instance.
 
-        This method relies on a naming convention where the `AbstractTestModelView` instance
+        This method relies on a naming convention where the `AbstractModelViewTest` instance
         must be named as "test_<name of model view>". It raises a `ValueError` if the associated
         model view cannot be found.
 
         Parameters:
-            - test_attr_name (str): The name of the `AbstractTestModelView` attribute.
+            - test_attr_name (str): The name of the `AbstractModelViewTest` attribute.
             - model_view_class (Type[AbstractModelView]): The class of the model view to find.
 
         Returns:
-            - AbstractModelView: The model view associated with the `AbstractTestModelView` instance.
+            - AbstractModelView: The model view associated with the `AbstractModelViewTest` instance.
 
         Raises:
             - ValueError: If the associated model view cannot be found.
