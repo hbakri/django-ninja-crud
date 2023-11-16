@@ -37,16 +37,41 @@ class BaseModelViewSet(ModelViewSet):
     Example:
     ```python
     from ninja import Router
-    from ninja_crud.viewsets import BaseModelViewSet
+    from ninja_crud import viewsets
+
     from examples.models import Department
     from examples.schemas import DepartmentIn, DepartmentOut
 
     router = Router()
 
-    class DepartmentViewSet(BaseModelViewSet):
+    class DepartmentViewSet(viewsets.BaseModelViewSet):
         model = Department
         default_input_schema = DepartmentIn
         default_output_schema = DepartmentOut
+
+    DepartmentViewSet.register_routes(router)
+    ```
+
+    It is the exact equivalent and shorthand for the following:
+    ```python
+    from ninja import Router
+    from ninja_crud import viewsets, views
+
+    from examples.models import Department
+    from examples.schemas import DepartmentIn, DepartmentOut
+
+    router = Router()
+
+    class DepartmentViewSet(viewsets.ModelViewSet):
+        model = Department
+        default_input_schema = DepartmentIn
+        default_output_schema = DepartmentOut
+
+        list_view = views.ListModelView()
+        create_view = views.CreateModelView()
+        retrieve_view = views.RetrieveModelView()
+        update_view = views.UpdateModelView()
+        delete_view = views.DeleteModelView()
 
     DepartmentViewSet.register_routes(router)
     ```
