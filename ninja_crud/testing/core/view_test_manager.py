@@ -13,7 +13,7 @@ from ninja_crud.testing.core.components import (
 
 T = TypeVar("T")
 TestCaseType = TypeVar("TestCaseType", bound=TestCase)
-ArgOrCallable = Union[T, Callable[[TestCaseType], T]]
+ArgOrCallable = Union[T, property, Callable[[TestCaseType], T]]
 CompletionCallback = Callable[[HttpResponse, dict, dict, dict, dict], None]
 
 
@@ -36,19 +36,48 @@ class ViewTestManager:
     def _get_arg_or_callable(
         test_case: TestCase, params: ArgOrCallable[T, TestCaseType]
     ) -> T:
-        return params(test_case) if callable(params) else params
+        if callable(params):
+            return params(test_case)
+        elif isinstance(params, property):
+            return params.fget(test_case)
+        else:
+            return params
 
     def get_path_parameters(self, test_case: TestCase) -> PathParameters:
-        return self._get_arg_or_callable(test_case, self.path_parameters)
+        path_parameters = self._get_arg_or_callable(test_case, self.path_parameters)
+        if not isinstance(path_parameters, PathParameters):
+            raise TypeError(
+                f"Expected 'path_parameters' to be an instance of 'PathParameters', "
+                f"but got {type(path_parameters)}"
+            )
+        return path_parameters
 
     def get_query_parameters(self, test_case: TestCase) -> QueryParameters:
-        return self._get_arg_or_callable(test_case, self.query_parameters)
+        query_parameters = self._get_arg_or_callable(test_case, self.query_parameters)
+        if not isinstance(query_parameters, QueryParameters):
+            raise TypeError(
+                f"Expected 'query_parameters' to be an instance of 'QueryParameters', "
+                f"but got {type(query_parameters)}"
+            )
+        return query_parameters
 
     def get_headers(self, test_case: TestCase) -> Headers:
-        return self._get_arg_or_callable(test_case, self.headers)
+        headers = self._get_arg_or_callable(test_case, self.headers)
+        if not isinstance(headers, Headers):
+            raise TypeError(
+                f"Expected 'headers' to be an instance of 'Headers', "
+                f"but got {type(headers)}"
+            )
+        return headers
 
     def get_payloads(self, test_case: TestCase) -> Payloads:
-        return self._get_arg_or_callable(test_case, self.payloads)
+        payloads = self._get_arg_or_callable(test_case, self.payloads)
+        if not isinstance(payloads, Payloads):
+            raise TypeError(
+                f"Expected 'payloads' to be an instance of 'Payloads', "
+                f"but got {type(payloads)}"
+            )
+        return payloads
 
     @staticmethod
     def wrap_completion_with_status_check(
