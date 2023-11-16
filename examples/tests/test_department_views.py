@@ -30,7 +30,8 @@ class TestDepartmentViewSet(ModelViewSetTestCase):
             first_name="first_name", last_name="last_name", department=cls.department_1
         )
 
-    def get_path_parameters(self):
+    @property
+    def path_parameters(self) -> PathParameters:
         return PathParameters(
             ok={"id": self.department_1.id}, not_found={"id": uuid.uuid4()}
         )
@@ -43,11 +44,11 @@ class TestDepartmentViewSet(ModelViewSetTestCase):
 
     test_list_view = ListModelViewTest()
     test_create_view = CreateModelViewTest(payloads=department_payloads)
-    test_retrieve_view = RetrieveModelViewTest(path_parameters=get_path_parameters)
+    test_retrieve_view = RetrieveModelViewTest(path_parameters=path_parameters)
     test_update_view = UpdateModelViewTest(
-        path_parameters=get_path_parameters, payloads=department_payloads
+        path_parameters=path_parameters, payloads=department_payloads
     )
-    test_delete_view = DeleteModelViewTest(path_parameters=get_path_parameters)
+    test_delete_view = DeleteModelViewTest(path_parameters=path_parameters)
 
     employee_payloads = Payloads(
         ok={
@@ -57,7 +58,7 @@ class TestDepartmentViewSet(ModelViewSetTestCase):
         bad_request={"first_name": 1},
     )
 
-    test_list_employees_view = ListModelViewTest(path_parameters=get_path_parameters)
+    test_list_employees_view = ListModelViewTest(path_parameters=path_parameters)
     test_create_employee_view = CreateModelViewTest(
-        path_parameters=get_path_parameters, payloads=employee_payloads
+        path_parameters=path_parameters, payloads=employee_payloads
     )
