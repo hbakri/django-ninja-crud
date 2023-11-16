@@ -8,8 +8,8 @@ class Payloads:
     Manages HTTP request payloads for various test scenarios.
 
     The Payloads class is designed to simplify the process of defining and using different sets of
-    payloads for multiple test scenarios. It supports defining payloads for successful requests ('ok'),
-    as well as payloads expected to result in bad request ('bad_request') or conflict ('conflict')
+    payloads for multiple test scenarios. It supports defining payloads for successful requests (`ok`),
+    as well as payloads expected to result in bad request (`bad_request`) or conflict (`conflict`)
     responses.
 
     One of the key features is its ability to accept either a single dictionary (for testing a single
@@ -46,7 +46,7 @@ class Payloads:
             bad_request (Union[dict, List[dict], None], optional): Payloads expected to yield a 'bad request'
                 response. Accepts a single dictionary or a list of dictionaries. Defaults to None.
             conflict (Union[dict, List[dict], None], optional): Payloads expected to yield a 'conflict'
-                response. Like 'ok' and 'bad_request', it accepts both a single dictionary or a list. Defaults to None.
+                response. Like `ok` and `bad_request`, it accepts both a single dictionary or a list. Defaults to None.
         """
         self.ok: List[dict] = utils.ensure_list_of_dicts(ok)
         self.bad_request: Optional[List[dict]] = (

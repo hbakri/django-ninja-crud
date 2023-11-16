@@ -9,7 +9,7 @@ class PathParameters:
 
     The PathParameters class is designed to simplify the process of defining and using different sets of
     path parameters for multiple test scenarios. It supports defining path parameters for successful
-    requests ('ok'), as well as path parameters expected to result in not found ('not_found') responses.
+    requests (`ok`), as well as path parameters expected to result in not found (`not_found`) responses.
 
     One of the key features is its ability to accept either a single dictionary (for testing a single
     case) or a list of dictionaries (for testing multiple cases), providing a convenient way to test

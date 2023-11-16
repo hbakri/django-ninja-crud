@@ -8,8 +8,8 @@ class Headers:
     Manages HTTP request headers for various test scenarios.
 
     The Headers class is designed to simplify the process of defining and using different sets of
-    headers for multiple test scenarios. It supports defining headers for successful requests ('ok'),
-    as well as headers expected to result in forbidden ('forbidden') or unauthorized ('unauthorized')
+    headers for multiple test scenarios. It supports defining headers for successful requests (`ok`),
+    as well as headers expected to result in forbidden (`forbidden`) or unauthorized (`unauthorized`)
     responses.
 
     One of the key features is its ability to accept either a single dictionary (for testing a single
@@ -47,7 +47,7 @@ class Headers:
             forbidden (Union[dict, List[dict], None], optional): Headers expected to yield a 'forbidden'
                 response. Accepts a single dictionary or a list of dictionaries. Defaults to None.
             unauthorized (Union[dict, List[dict], None], optional): Headers expected to yield an 'unauthorized'
-                response. Like 'ok' and 'forbidden', it accepts both a single dictionary or a list. Defaults to None.
+                response. Like `ok` and `forbidden`, it accepts both a single dictionary or a list. Defaults to None.
         """
         self.ok: List[dict] = utils.ensure_list_of_dicts(ok)
         self.forbidden: Optional[List[dict]] = (

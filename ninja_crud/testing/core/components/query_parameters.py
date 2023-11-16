@@ -9,7 +9,7 @@ class QueryParameters:
 
     The QueryParameters class is designed to simplify the process of defining and using different sets of
     query parameters for multiple test scenarios. It supports defining query parameters for successful
-    requests ('ok'), as well as query parameters expected to result in bad request ('bad_request')
+    requests (`ok`), as well as query parameters expected to result in bad request (`bad_request`)
     responses.
 
     One of the key features is its ability to accept either a single dictionary (for testing a single
