@@ -35,10 +35,12 @@
   - [Headers](Headers)
   - [Payloads](Payloads)
 
-#### Viewsets
-
-  - [ModelViewSetTestCase](ModelViewSetTestCase)
+#### Views
 
 > 🚧 **Work in Progress**
 >
 > Thank you for your patience.
+
+#### Viewsets
+
+  - [ModelViewSetTestCase](ModelViewSetTestCase)

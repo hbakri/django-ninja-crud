@@ -28,7 +28,7 @@ Equally significant is its integrated testing suite: a robust, user-friendly too
 ```bash
 pip install django-ninja-crud
 ```
-For more information, see the [installation guide](https://github.com/hbakri/django-ninja-crud/wiki/02_installation).
+For more information, see the [installation guide](https://github.com/hbakri/django-ninja-crud/wiki/02-Installation).
 
 ## 👨‍🎨 Example
 ### Usage
