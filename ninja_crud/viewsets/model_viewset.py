@@ -48,9 +48,9 @@ class ModelViewSet:
     DepartmentViewSet.register_routes(router)
 
     # The router can then be used as normal
-    @router.get("/name/{name}", response=DepartmentOut)
-    def get_department_by_name(request: HttpRequest, name: str):
-        return Department.objects.get(name=name)
+    @router.get("/title/{title}", response=DepartmentOut)
+    def retrieve_department_by_title(request: HttpRequest, title: str):
+        return Department.objects.get(title=title)
     ```
 
     2. Include your router in your Ninja API configuration:

@@ -58,9 +58,9 @@ DepartmentViewSet.register_routes(router)
 
 
 # The router can then be used as normal
-@router.get("/name/{name}", response=DepartmentOut)
-def get_department_by_name(request: HttpRequest, name: str):
-    return Department.objects.get(name=name)
+@router.get("/title/{title}", response=DepartmentOut)
+def retrieve_department_by_title(request: HttpRequest, title: str):
+    return Department.objects.get(title=title)
 ```
 
 # 🥷 Testing
@@ -108,8 +108,8 @@ class TestDepartmentViewSet(ModelViewSetTestCase):
     test_delete_view = DeleteModelViewTest(path_parameters=get_path_parameters)
 
     # You can then add additional tests as needed
-    def test_get_department_by_name(self):
-        response = self.client.get(f"{self.base_path}/department-1")
+    def test_retrieve_department_by_title(self):
+        response = self.client.get(f"{self.base_path}/title/{self.department_1.title}")
         self.assertEqual(response.status_code, 200)
         ... # Additional assertions
 ```
