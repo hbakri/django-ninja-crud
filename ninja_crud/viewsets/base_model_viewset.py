@@ -91,6 +91,12 @@ class BaseModelViewSet(ModelViewSet):
     delete_view = DeleteModelView()
 
     def __init_subclass__(cls, **kwargs):
+        """
+        Special method in Python that is automatically called when a class is subclassed.
+
+        For `BaseModelViewSet` subclasses, this method validates the class attributes and binds
+        the views to the subclass. It should not be called directly.
+        """
         super().__init_subclass__(**kwargs)
         cls._validate_input_schema_class(optional=False)
         cls._validate_output_schema_class(optional=False)

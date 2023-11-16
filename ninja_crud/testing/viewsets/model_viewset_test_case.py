@@ -20,8 +20,8 @@ class ModelViewSetTestCase(django.test.TestCase):
     ensuring comprehensive and consistent testing of `ModelViewSet` instances.
 
     Attributes:
-        - model_viewset_class (Type[ModelViewSet]): The ModelViewSet subclass to test.
-        - base_path (str): The base path for the model views.
+        model_viewset_class (Type[ModelViewSet]): The ModelViewSet subclass to test.
+        base_path (str): The base path for the model views.
 
     Example Usage:
     1. Define your `ModelViewSet` and register its routes:

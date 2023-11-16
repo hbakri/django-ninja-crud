@@ -19,6 +19,7 @@ modules = [
     ("testing/core/components/path_parameters", "PathParameters"),
     ("testing/core/components/payloads", "Payloads"),
     ("testing/core/components/query_parameters", "QueryParameters"),
+    ("testing/viewsets/model_viewset_test_case", "ModelViewSetTestCase"),
 ]
 
 template_path = "docs/pydoc-markdown.yml"
