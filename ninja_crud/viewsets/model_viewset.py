@@ -19,24 +19,24 @@ class ModelViewSet:
     Attributes:
         - model (Type[Model]): The Django model class for CRUD operations.
         - default_input_schema (Optional[Type[Schema]], optional): The default schema to use for
-            deserializing the request payload. Defaults to None.
+            deserializing the request payload. Defaults to `None`.
         - default_output_schema (Optional[Type[Schema]], optional): The default schema to use for
-            serializing the response payload. Defaults to None.
+            serializing the response payload. Defaults to `None`.
 
     Example Usage:
     1. Define your `ModelViewSet` and register its routes:
     ```python
-    # examples/views.py
-    from ninja import Router
+    # examples/views/department_views.py
     from django.http import HttpRequest
-    from ninja_crud import views
-    from ninja_crud.views import ModelViewSet
+    from ninja import Router
+    from ninja_crud import views, viewsets
+
     from examples.models import Department
     from examples.schemas import DepartmentIn, DepartmentOut
 
     router = Router()
 
-    class DepartmentViewSet(ModelViewSet):
+    class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
         list = views.ListModelView(output_schema=DepartmentOut)
@@ -58,7 +58,7 @@ class ModelViewSet:
     ```python
     # config/api.py
     from ninja import NinjaAPI
-    from examples.views import router as department_router
+    from examples.views.department_views import router as department_router
 
     api = NinjaAPI(...)
     api.add_router("departments", department_router)
@@ -133,7 +133,7 @@ class ModelViewSet:
         Validates that the `default_input_schema` attribute is a subclass of `Schema`.
 
         Parameters:
-            - optional (bool, optional): Whether the attribute is optional. Defaults to True.
+            - optional (bool, optional): Whether the attribute is optional. Defaults to `True`.
 
         Raises:
             - ValueError: If the attribute is not optional and is not set.
@@ -149,7 +149,7 @@ class ModelViewSet:
         Validates that the `default_output_schema` attribute is a subclass of `Schema`.
 
         Parameters:
-            - optional (bool, optional): Whether the attribute is optional. Defaults to True.
+            - optional (bool, optional): Whether the attribute is optional. Defaults to `True`.
 
         Raises:
             - ValueError: If the attribute is not optional and is not set.
