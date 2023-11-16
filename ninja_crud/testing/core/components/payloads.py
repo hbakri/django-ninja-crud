@@ -5,26 +5,31 @@ from ninja_crud.testing.core.components import utils
 
 class Payloads:
     """
-    This class is used to manage payloads used in HTTP requests.
+    Manages HTTP request payloads for various test scenarios.
 
-    This class allows you to define sets of payloads for different test scenarios. Specifically,
-    it enables you to set up payloads that should result in successful requests ('ok'), payloads
-    that should result in 'bad request' responses, and payloads that should result in 'conflict'
+    The Payloads class is designed to simplify the process of defining and using different sets of
+    payloads for multiple test scenarios. It supports defining payloads for successful requests (`ok`),
+    as well as payloads expected to result in bad request (`bad_request`) or conflict (`conflict`)
     responses.
 
+    One of the key features is its ability to accept either a single dictionary (for testing a single
+    case) or a list of dictionaries (for testing multiple cases), providing a convenient way to test
+    various scenarios with minimal setup.
+
     Example:
-        >>> from ninja_crud.testing.core.components import Payloads
-        >>> payloads = Payloads(
-        ...     ok=[{"name": "item 1"}, {"name": "item 2"}],
-        ...     bad_request=[{"name": ""}],
-        ...     conflict=[{"name": "existing item"}],
-        ... )
-        >>> payloads.ok
-        [{'name': 'item 1'}, {'name': 'item 2'}]
-        >>> payloads.bad_request
-        [{'name': ''}]
-        >>> payloads.conflict
-        [{'name': 'existing item'}]
+    ```python
+    from ninja_crud.testing.core.components import Payloads
+
+    # Single case
+    single_payloads = Payloads(ok={"name": "ok"})
+
+    # Multiple cases
+    multiple_payloads = Payloads(
+        ok=[{"name": "ok1"}, {"name": "ok2"}],
+        bad_request=[{"name": "bad_request"}],
+        conflict=[{"name": "conflict"}]
+    )
+    ```
     """
 
     def __init__(
@@ -33,6 +38,18 @@ class Payloads:
         bad_request: Union[dict, List[dict], None] = None,
         conflict: Union[dict, List[dict], None] = None,
     ) -> None:
+        """
+        Initializes the Payloads instance, allowing for the specification of various payload configurations.
+
+        Args:
+            ok (Union[dict, List[dict]]): Payloads for successful requests. Can be a single dictionary
+                for one test case, or a list of dictionaries for multiple cases.
+            bad_request (Union[dict, List[dict], None], optional): Payloads expected to yield a 'bad request'
+                response. Accepts a single dictionary or a list of dictionaries. Defaults to `None`.
+            conflict (Union[dict, List[dict], None], optional): Payloads expected to yield a 'conflict'
+                response. Like `ok` and `bad_request`, it accepts both a single dictionary or a list.
+                Defaults to `None`.
+        """
         self.ok: List[dict] = utils.ensure_list_of_dicts(ok)
         self.bad_request: Optional[List[dict]] = (
             utils.ensure_list_of_dicts(bad_request) if bad_request is not None else None

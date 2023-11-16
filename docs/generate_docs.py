@@ -15,6 +15,10 @@ modules = [
     ("views/helpers/types", "Types"),
     ("viewsets/model_viewset", "ModelViewSet"),
     ("viewsets/base_model_viewset", "BaseModelViewSet"),
+    ("testing/core/components/headers", "Headers"),
+    ("testing/core/components/path_parameters", "PathParameters"),
+    ("testing/core/components/payloads", "Payloads"),
+    ("testing/core/components/query_parameters", "QueryParameters"),
 ]
 
 template_path = "docs/pydoc-markdown.yml"

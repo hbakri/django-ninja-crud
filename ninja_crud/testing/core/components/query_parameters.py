@@ -5,22 +5,30 @@ from ninja_crud.testing.core.components import utils
 
 class QueryParameters:
     """
-    This class is used to manage query parameters used in HTTP requests.
+    Manages HTTP query parameters for various test scenarios.
 
-    This class allows you to define sets of query parameters for different test scenarios. Specifically,
-    it enables you to set up parameters that should result in successful requests ('ok') and parameters
-    that should result in 'bad request' responses.
+    The QueryParameters class is designed to simplify the process of defining and using different sets of
+    query parameters for multiple test scenarios. It supports defining query parameters for successful
+    requests (`ok`), as well as query parameters expected to result in bad request (`bad_request`)
+    responses.
+
+    One of the key features is its ability to accept either a single dictionary (for testing a single
+    case) or a list of dictionaries (for testing multiple cases), providing a convenient way to test
+    various scenarios with minimal setup.
 
     Example:
-        >>> from ninja_crud.testing.core.components import QueryParameters
-        >>> query_parameters = QueryParameters(
-        ...     ok=[{"search": "item"}, {"page": 2, "limit": 10}],
-        ...     bad_request=[{"page": -1}, {"limit": "invalid"}],
-        ... )
-        >>> query_parameters.ok
-        [{'search': 'item'}, {'page': 2, 'limit': 10}]
-        >>> query_parameters.bad_request
-        [{'page': -1}, {'limit': 'invalid'}]
+    ```python
+    from ninja_crud.testing.core.components import QueryParameters
+
+    # Single case
+    single_query_parameters = QueryParameters(ok={"page": 2, "limit": 10})
+
+    # Multiple cases
+    multiple_query_parameters = QueryParameters(
+        ok=[{"page": 1, "limit": 10}, {"page": 2, "limit": 10}],
+        bad_request=[{"page": 1, "limit": 0}]
+    )
+    ```
     """
 
     def __init__(
@@ -28,6 +36,17 @@ class QueryParameters:
         ok: Union[dict, List[dict]],
         bad_request: Union[dict, List[dict], None] = None,
     ) -> None:
+        """
+        Initializes the QueryParameters instance, allowing for the specification of various
+        query parameter configurations.
+
+        Args:
+            ok (Union[dict, List[dict]]): Query parameters for successful resolution. Can be a single
+                dictionary representing one test case or a list of dictionaries for multiple test cases.
+            bad_request (Union[dict, List[dict], None], optional): Query parameters expected to lead to a
+                'bad request' outcome. Accepts either a single dictionary or a list of dictionaries.
+                Defaults to `None`.
+        """
         self.ok: List[dict] = utils.ensure_list_of_dicts(ok)
         self.bad_request: Optional[List[dict]] = (
             utils.ensure_list_of_dicts(bad_request) if bad_request is not None else None
