@@ -19,9 +19,9 @@ class ModelViewSet:
     Attributes:
         - model (Type[Model]): The Django model class for CRUD operations.
         - default_input_schema (Optional[Type[Schema]], optional): The default schema to use for
-            deserializing the request payload. Defaults to `None`.
+            deserializing the request payload. Defaults to None.
         - default_output_schema (Optional[Type[Schema]], optional): The default schema to use for
-            serializing the response payload. Defaults to `None`.
+            serializing the response payload. Defaults to None.
 
     Example Usage:
     1. Define your `ModelViewSet` and register its routes:

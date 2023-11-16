@@ -26,16 +26,16 @@ class ModelViewSetTestCase(django.test.TestCase):
     Example Usage:
     1. Define your `ModelViewSet` and register its routes:
     ```python
-    # examples/views.py
+    # examples/views/department_views.py
     from ninja import Router
-    from ninja_crud import views
-    from ninja_crud.views import ModelViewSet
+    from ninja_crud import views, viewsets
+
     from examples.models import Department
     from examples.schemas import DepartmentIn, DepartmentOut
 
     router = Router()
 
-    class DepartmentViewSet(ModelViewSet):
+    class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
         default_input_schema = DepartmentIn
         default_output_schema = DepartmentOut
@@ -61,21 +61,21 @@ class ModelViewSetTestCase(django.test.TestCase):
 
     3. Create your test class by subclassing `TestModelViewSet`:
     ```python
-    # examples/tests.py
-    from examples.models import Department
-    from examples.views import DepartmentViewSet
-    from ninja_crud.tests import (
-        PathParameters,
-        Payloads,
-        TestCreateModelView,
-        TestDeleteModelView,
-        TestListModelView,
-        TestModelViewSet,
-        TestRetrieveModelView,
-        TestUpdateModelView,
+    # examples/tests/test_department_views.py
+    from ninja_crud.testing.core.components import PathParameters, Payloads
+    from ninja_crud.testing.views import (
+        CreateModelViewTest,
+        DeleteModelViewTest,
+        ListModelViewTest,
+        RetrieveModelViewTest,
+        UpdateModelViewTest,
     )
+    from ninja_crud.testing.viewsets import ModelViewSetTestCase
 
-    class TestDepartmentViewSet(TestModelViewSet):
+    from examples.models import Department
+    from examples.views.department_views import DepartmentViewSet
+
+    class TestDepartmentViewSet(ModelViewSetTestCase):
         model_viewset_class = DepartmentViewSet
         base_path = "examples/departments"
 
@@ -89,16 +89,16 @@ class ModelViewSetTestCase(django.test.TestCase):
             return PathParameters(ok={"id": self.department_1.id}, not_found={"id": 9999})
 
         payloads = Payloads(
-            ok={"title": "new_title"},
-            bad_request={"bad-title": 1},
+            ok={"title": "department-3"},
+            bad_request={"wrong_field": "wrong_value"},
             conflict={"title": "department-2"},
         )
 
-        test_list_view = TestListModelView()
-        test_create_view = TestCreateModelView(payloads=payloads)
-        test_retrieve_view = TestRetrieveModelView(path_parameters=get_path_parameters)
-        test_update_view = TestUpdateModelView(path_parameters=get_path_parameters, payloads=payloads)
-        test_delete_view = TestDeleteModelView(path_parameters=get_path_parameters)
+        test_list_view = ListModelViewTest()
+        test_create_view = CreateModelViewTest(payloads=payloads)
+        test_retrieve_view = RetrieveModelViewTest(path_parameters=get_path_parameters)
+        test_update_view = UpdateModelViewTest(path_parameters=get_path_parameters, payloads=payloads)
+        test_delete_view = DeleteModelViewTest(path_parameters=get_path_parameters)
     ```
 
     Note:

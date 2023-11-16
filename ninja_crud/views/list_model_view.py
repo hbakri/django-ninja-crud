@@ -29,20 +29,21 @@ class ListModelView(AbstractModelView):
 
     Example:
     ```python
-    from ninja_crud.views import ModelViewSet, ListModelView
+    from ninja_crud import views, viewsets
+
     from examples.models import Department, Employee
     from examples.schemas import DepartmentOut, EmployeeOut
 
-    class DepartmentViewSet(ModelViewSet):
+    class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
         # Basic usage: List all departments
         # GET /departments/
-        list = ListModelView(output_schema=DepartmentOut)
+        list_departments_view = views.ListModelView(output_schema=DepartmentOut)
 
         # Advanced usage: List employees of a specific department
         # GET /departments/{id}/employees/
-        list_employees = ListModelView(
+        list_employees_view = views.ListModelView(
             detail=True,
             queryset_getter=lambda id: Employee.objects.filter(department_id=id),
             output_schema=EmployeeOut,
