@@ -36,7 +36,8 @@ class PathParameters:
         not_found: Union[dict, List[dict], None] = None,
     ) -> None:
         """
-        Initializes the PathParameters instance for setting up path parameters in tests.
+        Initializes the PathParameters instance, allowing for the specification of various
+        path parameter configurations.
 
         Args:
             ok (Union[dict, List[dict]]): Path parameters for successful resolution. Can be a single

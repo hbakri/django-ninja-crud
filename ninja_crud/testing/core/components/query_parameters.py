@@ -35,6 +35,16 @@ class QueryParameters:
         ok: Union[dict, List[dict]],
         bad_request: Union[dict, List[dict], None] = None,
     ) -> None:
+        """
+        Initializes the QueryParameters instance, allowing for the specification of various
+        query parameter configurations.
+
+        Args:
+            ok (Union[dict, List[dict]]): Query parameters for successful resolution. Can be a single
+                dictionary representing one test case or a list of dictionaries for multiple test cases.
+            bad_request (Union[dict, List[dict], None], optional): Query parameters expected to lead to a
+                'bad request' outcome. Accepts either a single dictionary or a list of dictionaries. Defaults to None.
+        """
         self.ok: List[dict] = utils.ensure_list_of_dicts(ok)
         self.bad_request: Optional[List[dict]] = (
             utils.ensure_list_of_dicts(bad_request) if bad_request is not None else None
