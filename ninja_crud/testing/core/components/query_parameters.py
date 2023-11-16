@@ -43,7 +43,8 @@ class QueryParameters:
             ok (Union[dict, List[dict]]): Query parameters for successful resolution. Can be a single
                 dictionary representing one test case or a list of dictionaries for multiple test cases.
             bad_request (Union[dict, List[dict], None], optional): Query parameters expected to lead to a
-                'bad request' outcome. Accepts either a single dictionary or a list of dictionaries. Defaults to None.
+                'bad request' outcome. Accepts either a single dictionary or a list of dictionaries.
+                Defaults to `None`.
         """
         self.ok: List[dict] = utils.ensure_list_of_dicts(ok)
         self.bad_request: Optional[List[dict]] = (

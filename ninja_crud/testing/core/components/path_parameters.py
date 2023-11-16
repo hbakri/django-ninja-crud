@@ -43,7 +43,7 @@ class PathParameters:
             ok (Union[dict, List[dict]]): Path parameters for successful resolution. Can be a single
                 dictionary representing one test case or a list of dictionaries for multiple test cases.
             not_found (Union[dict, List[dict], None], optional): Path parameters expected to lead to a
-                'not found' outcome. Accepts either a single dictionary or a list of dictionaries. Defaults to None.
+                'not found' outcome. Accepts either a single dictionary or a list of dictionaries. Defaults to `None`.
         """
         self.ok: List[dict] = utils.ensure_list_of_dicts(ok)
         self.not_found: Optional[List[dict]] = (

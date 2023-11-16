@@ -44,9 +44,10 @@ class Payloads:
             ok (Union[dict, List[dict]]): Payloads for successful requests. Can be a single dictionary
                 for one test case, or a list of dictionaries for multiple cases.
             bad_request (Union[dict, List[dict], None], optional): Payloads expected to yield a 'bad request'
-                response. Accepts a single dictionary or a list of dictionaries. Defaults to None.
+                response. Accepts a single dictionary or a list of dictionaries. Defaults to `None`.
             conflict (Union[dict, List[dict], None], optional): Payloads expected to yield a 'conflict'
-                response. Like `ok` and `bad_request`, it accepts both a single dictionary or a list. Defaults to None.
+                response. Like `ok` and `bad_request`, it accepts both a single dictionary or a list.
+                Defaults to `None`.
         """
         self.ok: List[dict] = utils.ensure_list_of_dicts(ok)
         self.bad_request: Optional[List[dict]] = (

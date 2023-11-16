@@ -45,9 +45,9 @@ class Headers:
             ok (Union[dict, List[dict]]): Headers for successful requests. Can be a single dictionary
                 for one test case, or a list of dictionaries for multiple cases.
             forbidden (Union[dict, List[dict], None], optional): Headers expected to yield a 'forbidden'
-                response. Accepts a single dictionary or a list of dictionaries. Defaults to None.
+                response. Accepts a single dictionary or a list of dictionaries. Defaults to `None`.
             unauthorized (Union[dict, List[dict], None], optional): Headers expected to yield an 'unauthorized'
-                response. Like `ok` and `forbidden`, it accepts both a single dictionary or a list. Defaults to None.
+                response. Like `ok` and `forbidden`, it accepts both a single dictionary or a list. Defaults to `None`.
         """
         self.ok: List[dict] = utils.ensure_list_of_dicts(ok)
         self.forbidden: Optional[List[dict]] = (
