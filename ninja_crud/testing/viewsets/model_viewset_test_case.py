@@ -23,7 +23,7 @@ class ModelViewSetTestCase(django.test.TestCase):
         model_viewset_class (Type[ModelViewSet]): The ModelViewSet subclass to test.
         base_path (str): The base path for the model views.
 
-    Example Usage:
+    Example:
     1. Define your `ModelViewSet` and register its routes:
     ```python
     # examples/views/department_views.py

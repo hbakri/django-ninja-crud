@@ -23,7 +23,7 @@ class ModelViewSet:
         default_output_schema (Optional[Type[Schema]], optional): The default schema to use for
             serializing the response payload. Defaults to None.
 
-    Example Usage:
+    Example:
     1. Define your `ModelViewSet` and register its routes:
     ```python
     # examples/views/department_views.py
