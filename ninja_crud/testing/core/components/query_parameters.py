@@ -28,6 +28,7 @@ class QueryParameters:
         ok=[{"page": 1, "limit": 10}, {"page": 2, "limit": 10}],
         bad_request=[{"page": 1, "limit": 0}]
     )
+    ```
     """
 
     def __init__(

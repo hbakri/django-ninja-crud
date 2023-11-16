@@ -29,6 +29,7 @@ class Payloads:
         bad_request=[{"name": "bad_request"}],
         conflict=[{"name": "conflict"}]
     )
+    ```
     """
 
     def __init__(
