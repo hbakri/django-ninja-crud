@@ -89,7 +89,7 @@ DepartmentViewSet.register_routes(router)
 
 
 # The router can then be used as normal
-@router.get("/{name}", response=DepartmentOut)
+@router.get("/name/{name}", response=DepartmentOut)
 def get_department_by_name(request: HttpRequest, name: str):
     return Department.objects.get(name=name)
 ```
