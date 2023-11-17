@@ -45,12 +45,14 @@ class ModelViewSet:
         update_view = views.UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
         delete_view = views.DeleteModelView()
 
+    # The register_routes method must be called to register the routes
     DepartmentViewSet.register_routes(router)
 
-    # The router can then be used as normal
-    @router.get("/title/{title}", response=DepartmentOut)
-    def retrieve_department_by_title(request: HttpRequest, title: str):
-        return Department.objects.get(title=title)
+    # Beyond the CRUD operations managed by the viewset,
+    # the router can be used in the standard Django Ninja way
+    @router.get("/statistics/", response=dict)
+    def retrieve_department_statistics(request: HttpRequest):
+        return {"total": Department.objects.count()}
     ```
 
     2. Include your router in your Ninja API configuration:

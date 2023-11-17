@@ -53,14 +53,15 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     delete_view = views.DeleteModelView()
 
 
-# The register_routes method must be called to register the routes with the router
+# The register_routes method must be called to register the routes
 DepartmentViewSet.register_routes(router)
 
 
-# The router can then be used as normal
-@router.get("/statistics/", response=...)
+# Beyond the CRUD operations managed by the viewset,
+# the router can be used in the standard Django Ninja way
+@router.get("/statistics/", response=dict)
 def retrieve_department_statistics(request: HttpRequest):
-    ...
+    return {"total": Department.objects.count()}
 ```
 
 # 🥷 Testing
