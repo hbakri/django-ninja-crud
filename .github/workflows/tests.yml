@@ -13,7 +13,7 @@ jobs:
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
         django-version: ['3.2.*', '4.1.*', '4.2.*', '5.0b1']
-        django-ninja-version: ['0.21.*', '0.22.*', '1.0rc0']
+        django-ninja-version: ['0.21.*', '0.22.*', '1.0.*']
         exclude:
           - python-version: '3.11'
             django-version: '3.2.*'
