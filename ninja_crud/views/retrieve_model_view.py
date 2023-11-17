@@ -24,16 +24,17 @@ class RetrieveModelView(AbstractModelView):
 
     Example:
     ```python
-    from ninja_crud.views import ModelViewSet, RetrieveModelView
+    from ninja_crud import views, viewsets
+
     from examples.models import Department
     from examples.schemas import DepartmentOut
 
-    class DepartmentViewSet(ModelViewSet):
+    class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
         # Usage: Retrieve a department by id
         # GET /departments/{id}/
-        retrieve = RetrieveModelView(output_schema=DepartmentOut)
+        retrieve_department_view = views.RetrieveModelView(output_schema=DepartmentOut)
     ```
     """
 

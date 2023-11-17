@@ -22,17 +22,17 @@ class BaseModelViewSet(ModelViewSet):
     for serialization and deserialization of data.
 
     Attributes:
-        - model (Type[Model]): The Django model class for CRUD operations.
-        - default_input_schema (Type[Schema]): The default schema to use for
+        model (Type[Model]): The Django model class for CRUD operations.
+        default_input_schema (Type[Schema]): The default schema to use for
             deserializing the request payload.
-        - default_output_schema (Type[Schema]): The default schema to use for
+        default_output_schema (Type[Schema]): The default schema to use for
             serializing the response payload.
-        - list_view (ListModelView): The view to use for listing model instances.
-        - create_view (CreateModelView): The view to use for creating model instances.
-        - retrieve_view (RetrieveModelView): The view to use for retrieving model
+        list_view (ListModelView): The view to use for listing model instances.
+        create_view (CreateModelView): The view to use for creating model instances.
+        retrieve_view (RetrieveModelView): The view to use for retrieving model
             instances.
-        - update_view (UpdateModelView): The view to use for updating model instances.
-        - delete_view (DeleteModelView): The view to use for deleting model instances.
+        update_view (UpdateModelView): The view to use for updating model instances.
+        delete_view (DeleteModelView): The view to use for deleting model instances.
 
     Example:
     ```python
@@ -55,7 +55,7 @@ class BaseModelViewSet(ModelViewSet):
     It is the exact equivalent and shorthand for the following:
     ```python
     from ninja import Router
-    from ninja_crud import viewsets, views
+    from ninja_crud import views, viewsets
 
     from examples.models import Department
     from examples.schemas import DepartmentIn, DepartmentOut
@@ -91,6 +91,12 @@ class BaseModelViewSet(ModelViewSet):
     delete_view = DeleteModelView()
 
     def __init_subclass__(cls, **kwargs):
+        """
+        Special method in Python that is automatically called when a class is subclassed.
+
+        For `BaseModelViewSet` subclasses, this method validates the class attributes and binds
+        the views to the subclass. It should not be called directly.
+        """
         super().__init_subclass__(**kwargs)
         cls._validate_input_schema_class(optional=False)
         cls._validate_output_schema_class(optional=False)

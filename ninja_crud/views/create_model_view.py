@@ -29,23 +29,24 @@ class CreateModelView(AbstractModelView):
 
     Example:
     ```python
-    from ninja_crud.views import ModelViewSet, CreateModelView
+    from ninja_crud import views, viewsets
+
     from examples.models import Department, Employee
     from examples.schemas import DepartmentIn, DepartmentOut, EmployeeIn, EmployeeOut
 
-    class DepartmentViewSet(ModelViewSet):
+    class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
         # Basic usage: Create a department
         # POST /departments/
-        create = CreateModelView(
+        create_department_view = views.CreateModelView(
             input_schema=DepartmentIn,
             output_schema=DepartmentOut
         )
 
         # Advanced usage: Create an employee for a specific department
         # POST /departments/{id}/employees/
-        create_employee = CreateModelView(
+        create_employee_view = views.CreateModelView(
             detail=True,
             model_factory=lambda id: Employee(department_id=id),
             input_schema=EmployeeIn,

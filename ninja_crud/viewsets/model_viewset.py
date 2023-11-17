@@ -17,13 +17,13 @@ class ModelViewSet:
     define the CRUD behavior.
 
     Attributes:
-        - model (Type[Model]): The Django model class for CRUD operations.
-        - default_input_schema (Optional[Type[Schema]], optional): The default schema to use for
-            deserializing the request payload. Defaults to `None`.
-        - default_output_schema (Optional[Type[Schema]], optional): The default schema to use for
-            serializing the response payload. Defaults to `None`.
+        model (Type[Model]): The Django model class for CRUD operations.
+        default_input_schema (Optional[Type[Schema]], optional): The default schema to use for
+            deserializing the request payload. Defaults to None.
+        default_output_schema (Optional[Type[Schema]], optional): The default schema to use for
+            serializing the response payload. Defaults to None.
 
-    Example Usage:
+    Example:
     1. Define your `ModelViewSet` and register its routes:
     ```python
     # examples/views/department_views.py
@@ -39,19 +39,20 @@ class ModelViewSet:
     class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
-        list = views.ListModelView(output_schema=DepartmentOut)
-        create = views.CreateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
-        retrieve = views.RetrieveModelView(output_schema=DepartmentOut)
-        update = views.UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
-        delete = views.DeleteModelView()
+        list_view = views.ListModelView(output_schema=DepartmentOut)
+        create_view = views.CreateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+        retrieve_view = views.RetrieveModelView(output_schema=DepartmentOut)
+        update_view = views.UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+        delete_view = views.DeleteModelView()
 
-    # The register_routes method must be called to register the routes with the router
+    # The register_routes method must be called to register the routes
     DepartmentViewSet.register_routes(router)
 
-    # The router can then be used as normal
-    @router.get("/{name}", response=DepartmentOut)
-    def get_department_by_name(request: HttpRequest, name: str):
-        return Department.objects.get(name=name)
+    # Beyond the CRUD operations managed by the viewset,
+    # the router can be used in the standard Django Ninja way
+    @router.get("/statistics/", response=dict)
+    def retrieve_department_statistics(request: HttpRequest):
+        return {"total": Department.objects.count()}
     ```
 
     2. Include your router in your Ninja API configuration:
@@ -63,6 +64,10 @@ class ModelViewSet:
     api = NinjaAPI(...)
     api.add_router("departments", department_router)
     ```
+
+    Note:
+        The `register_routes` method must be called to register the CRUD endpoints
+        with a Ninja router. This should be done after defining the viewset.
     """
 
     model: Type[Model]
@@ -95,7 +100,7 @@ class ModelViewSet:
 
         Note:
             This method is called automatically during the subclass initialization of
-            `TestModelViewSet` and should not be called directly.
+            `ModelViewSet`. It should not be called directly.
         """
         for attr_name, attr_value in inspect.getmembers(cls):
             if isinstance(attr_value, AbstractModelView):

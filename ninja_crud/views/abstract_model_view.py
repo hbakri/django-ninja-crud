@@ -18,7 +18,7 @@ class AbstractModelView(ABC):
     """
     An abstract base class for all model views.
 
-    Subclasses must implement the register_route method.
+    Subclasses must implement the `register_route` method.
     """
 
     def __init__(

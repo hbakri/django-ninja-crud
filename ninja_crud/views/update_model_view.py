@@ -22,16 +22,17 @@ class UpdateModelView(AbstractModelView):
 
     Example:
     ```python
-    from ninja_crud.views import ModelViewSet, UpdateModelView
+    from ninja_crud import views, viewsets
+
     from examples.models import Department
     from examples.schemas import DepartmentIn, DepartmentOut
 
-    class DepartmentViewSet(ModelViewSet):
+    class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
         # Usage: Update a department by id
         # PUT /departments/{id}/
-        update = UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+        update_department_view = views.UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
     ```
     """
 
@@ -54,13 +55,15 @@ class UpdateModelView(AbstractModelView):
                 Defaults to None. If not provided, the `default_input_schema` of the `ModelViewSet` will be used.
             output_schema (Optional[Type[Schema]], optional): The schema used to serialize the updated instance.
                 Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
-            pre_save (Optional[UpdateSaveHook], optional): A function that is called before saving the instance. Defaults to None.
+            pre_save (Optional[UpdateSaveHook], optional): A function that is called before saving the instance.
+                Defaults to None.
 
                 The function should have the signature:
                 - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
 
                 If not provided, the function will be a no-op.
-            post_save (Optional[UpdateSaveHook], optional): A function that is called after saving the instance. Defaults to None.
+            post_save (Optional[UpdateSaveHook], optional): A function that is called after saving the instance.
+                Defaults to None.
 
                 The function should have the signature:
                 - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
