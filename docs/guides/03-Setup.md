@@ -1,3 +1,9 @@
+---
+title: Setup
+excerpt: How to set up Django Ninja CRUD
+category: 655765078baf1c0308327480
+---
+
 To set up Django Ninja CRUD in your project, you will need to make some additions to your `api.py` file. Below is a complete example of what your `api.py` file might look like after adding the package.
 
 ```python

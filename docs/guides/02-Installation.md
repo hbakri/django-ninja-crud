@@ -1,3 +1,9 @@
+---
+title: Installation
+excerpt: How to install Django Ninja CRUD
+category: 655765078baf1c0308327480
+---
+
 # 👀 Prerequisites
 
 Before installing the `django-ninja-crud` package, please ensure you have the following dependencies installed:
