@@ -85,36 +85,36 @@ docs:
     path: "docs/reference/viewsets/BaseModelViewSet.md"
 
   # -------------------- Testing ----------------------
-  # --------------------- Core ------------------------
-  - title: "Headers"
-    excerpt: "Headers for testing"
-    categorySlug: "testing"
-    hidden: false
-    order: 0
-    path: "docs/reference/testing/core/components/Headers.md"
+  # ------------------- Components --------------------
   - title: "PathParameters"
     excerpt: "PathParameters for testing"
-    categorySlug: "testing"
+    categorySlug: "testing-components"
     hidden: false
-    order: 1
+    order: 0
     path: "docs/reference/testing/core/components/PathParameters.md"
-  - title: "Payloads"
-    excerpt: "Payloads for testing"
-    categorySlug: "testing"
-    hidden: false
-    order: 2
-    path: "docs/reference/testing/core/components/Payloads.md"
   - title: "QueryParameters"
     excerpt: "QueryParameters for testing"
-    categorySlug: "testing"
+    categorySlug: "testing-components"
+    hidden: false
+    order: 1
+    path: "docs/reference/testing/core/components/QueryParameters.md"
+  - title: "Headers"
+    excerpt: "Headers for testing"
+    categorySlug: "testing-components"
+    hidden: false
+    order: 2
+    path: "docs/reference/testing/core/components/Headers.md"
+  - title: "Payloads"
+    excerpt: "Payloads for testing"
+    categorySlug: "testing-components"
     hidden: false
     order: 3
-    path: "docs/reference/testing/core/components/QueryParameters.md"
+    path: "docs/reference/testing/core/components/Payloads.md"
 
   # -------------------- Viewsets ---------------------
   - title: "ModelViewSetTestCase"
     excerpt: "ModelViewSetTestCase for testing"
-    categorySlug: "testing"
+    categorySlug: "testing-viewsets"
     hidden: false
-    order: 4
+    order: 0
     path: "docs/reference/testing/viewsets/ModelViewSetTestCase.md"
