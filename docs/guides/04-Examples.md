@@ -1,9 +1,3 @@
----
-title: Examples
-excerpt: Quick examples of how to use Django Ninja CRUD
-category: 655765078baf1c0308327480
----
-
 In this section, we'll walk through some quick examples of how to use Django Ninja CRUD. The goal is to illustrate how simple it is to define data operations and tests with this tool.
 
 # 👨‍🎨 Usage

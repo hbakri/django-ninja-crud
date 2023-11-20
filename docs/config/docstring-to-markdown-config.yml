@@ -1,0 +1,38 @@
+modules:
+  # --------------------- Views -----------------------
+  - input_path: "views/abstract_model_view"
+    output_path: "views/AbstractModelView.md"
+  - input_path: "views/list_model_view"
+    output_path: "views/ListModelView.md"
+  - input_path: "views/create_model_view"
+    output_path: "views/CreateModelView.md"
+  - input_path: "views/retrieve_model_view"
+    output_path: "views/RetrieveModelView.md"
+  - input_path: "views/update_model_view"
+    output_path: "views/UpdateModelView.md"
+  - input_path: "views/delete_model_view"
+    output_path: "views/DeleteModelView.md"
+  - input_path: "views/helpers/types"
+    output_path: "views/helpers/Types.md"
+
+  # -------------------- Viewsets ---------------------
+  - input_path: "viewsets/model_viewset"
+    output_path: "viewsets/ModelViewSet.md"
+  - input_path: "viewsets/base_model_viewset"
+    output_path: "viewsets/BaseModelViewSet.md"
+
+  # -------------------- Testing ----------------------
+  - input_path: "testing/core/components/headers"
+    output_path: "testing/core/components/Headers.md"
+  - input_path: "testing/core/components/path_parameters"
+    output_path: "testing/core/components/PathParameters.md"
+  - input_path: "testing/core/components/payloads"
+    output_path: "testing/core/components/Payloads.md"
+  - input_path: "testing/core/components/query_parameters"
+    output_path: "testing/core/components/QueryParameters.md"
+  - input_path: "testing/viewsets/model_viewset_test_case"
+    output_path: "testing/viewsets/ModelViewSetTestCase.md"
+
+settings:
+  project_root: ninja_crud
+  markdown_root: docs/reference

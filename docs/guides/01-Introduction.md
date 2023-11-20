@@ -1,9 +1,3 @@
----
-title: Introduction
-excerpt: Overview of Django Ninja CRUD
-category: 655765078baf1c0308327480
----
-
 Django Ninja CRUD is an opinionated and powerful framework that accelerates the development of **CRUD** ([**C**reate, **R**ead, **U**pdate, **D**elete](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete)) operations with [Django Ninja](https://github.com/vitalik/django-ninja), promoting best practices for efficient, robust endpoint creation.
 Equally significant is its integrated testing suite: a robust, user-friendly toolset ensuring that your endpoints are not only swiftly constructed but also meticulously tested and validated, reflecting a commitment to quality and reliability in your development workflow.
 

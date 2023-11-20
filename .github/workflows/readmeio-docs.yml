@@ -1,4 +1,4 @@
-name: rdme-docs
+name: readmeio-docs
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
         required: true
 
 jobs:
-  build-and-publish-docs:
+  build-and-publish-readmeio-docs:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,9 +28,13 @@ jobs:
 
     - name: Generate documentation
       run: |
-          poetry run python docs/generate_docs.py
+        poetry run python docs/scripts/convert_docstrings_to_markdown.py
+
+    - name: Apply readme.io metadata to markdown files
+      run: |
+        poetry run python docs/scripts/apply_metadata_to_markdown.py
 
     - name: Publish documentation to readme.io
       uses: readmeio/rdme@v8
       with:
-        rdme: docs ./docs/guides --key=${{ secrets.README_TOKEN }} --version=${{ inputs.version }}
+        rdme: docs ./docs --key=${{ secrets.README_TOKEN }} --version=${{ inputs.version }}

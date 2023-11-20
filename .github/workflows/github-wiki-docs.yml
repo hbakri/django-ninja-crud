@@ -1,4 +1,4 @@
-name: documentation
+name: github-wiki-docs
 
 on:
   workflow_dispatch:
@@ -6,10 +6,9 @@ on:
       version:
         description: 'Version to generate documentation for'
         required: true
-        default: 'latest'
 
 jobs:
-  build-and-publish-docs:
+  build-and-publish-github-wiki-docs:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,7 +28,7 @@ jobs:
 
     - name: Generate documentation
       run: |
-          poetry run python docs/generate_docs.py
+        poetry run python docs/scripts/convert_docstrings_to_markdown.py
 
     - name: Clone wiki repository
       env:
