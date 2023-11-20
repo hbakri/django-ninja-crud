@@ -1,0 +1,40 @@
+name: readmeio-docs
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to generate documentation for'
+        required: true
+
+jobs:
+  build-and-publish-readmeio-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install poetry
+        poetry install --no-root
+
+    - name: Generate documentation
+      run: |
+        poetry run python docs/scripts/convert_docstrings_to_markdown.py
+
+    - name: Apply readme.io metadata to markdown files
+      run: |
+        poetry run python docs/scripts/apply_metadata_to_markdown.py
+
+    - name: Publish documentation to readme.io
+      uses: readmeio/rdme@v8
+      with:
+        rdme: docs ./docs --key=${{ secrets.README_TOKEN }} --version=${{ inputs.version }}
