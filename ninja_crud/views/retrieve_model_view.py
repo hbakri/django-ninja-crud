@@ -76,16 +76,15 @@ class RetrieveModelView(AbstractModelView):
         self.queryset_getter = queryset_getter
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
-        @router.api_operation(
-            **self._sanitize_and_merge_router_kwargs(
-                default_router_kwargs=self._get_default_router_kwargs(model_class),
-                custom_router_kwargs=self.router_kwargs,
-            )
-        )
-        @utils.merge_decorators(self.decorators)
+        @self.configure_route(router=router, model_class=model_class)
         def retrieve_model(request: HttpRequest, id: utils.get_id_type(model_class)):
-            queryset = self._get_queryset(model_class, id)
-            return HTTPStatus.OK, queryset.get(pk=id)
+            return HTTPStatus.OK, self.retrieve_model(
+                request=request, id=id, model_class=model_class
+            )
+
+    def retrieve_model(self, request: HttpRequest, id: Any, model_class: Type[Model]):
+        queryset = self._get_queryset(model_class=model_class, id=id)
+        return queryset.get(pk=id)
 
     def _get_queryset(self, model_class: Type[Model], id: Any) -> QuerySet[Model]:
         if self.queryset_getter:
@@ -97,21 +96,13 @@ class RetrieveModelView(AbstractModelView):
     def _get_default_path() -> str:
         return "/{id}"
 
-    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
-        return {
-            "methods": [self.method.value],
-            "path": self.path,
-            "response": self.output_schema,
-            "operation_id": self._get_operation_id(model_class),
-            "summary": self._get_summary(model_class),
-        }
+    def get_response(self) -> dict:
+        return {HTTPStatus.OK: self.output_schema}
 
-    @staticmethod
-    def _get_operation_id(model_class: Type[Model]) -> str:
+    def get_operation_id(self, model_class: Type[Model]) -> str:
         return f"retrieve_{utils.to_snake_case(model_class.__name__)}"
 
-    @staticmethod
-    def _get_summary(model_class: Type[Model]) -> str:
+    def get_summary(self, model_class: Type[Model]) -> str:
         return f"Retrieve {model_class.__name__}"
 
     def bind_to_viewset(

@@ -1,3 +1,4 @@
+import functools
 import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Callable, List, Optional, Type
@@ -6,6 +7,7 @@ from django.db.models import Model
 from ninja import Router
 
 from ninja_crud.views.enums import HTTPMethod
+from ninja_crud.views.helpers import utils
 from ninja_crud.views.validators.path_validator import PathValidator
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -18,7 +20,7 @@ class AbstractModelView(ABC):
     """
     An abstract base class for all model views.
 
-    Subclasses must implement the `register_route` method.
+    Subclasses must implement the `register_route`, `get_response`, `get_operation_id`, and `get_summary` methods.
     """
 
     def __init__(
@@ -56,7 +58,7 @@ class AbstractModelView(ABC):
         self, router: Router, model_class: Type[Model]
     ) -> None:  # pragma: no cover
         """
-        Abstract method to register the view's route with the given router and model class.
+        Registers the route with the given router.
 
         Args:
             router (Router): The router to register the route with.
@@ -71,11 +73,43 @@ class AbstractModelView(ABC):
         """
         pass
 
+    def configure_route(self, router: Router, model_class: Type[Model]):
+        """
+        Configures the route with the given router.
+
+        Args:
+            router (Router): The router to register the route with.
+            model_class (Type[Model]): The Django model class for which the route should be created.
+
+        Returns:
+            Callable: A decorator that can be used to decorate the view function.
+
+        Note:
+            This method should be called by the `register_route` method of the `AbstractModelView` subclass.
+            It should not be called directly.
+        """
+
+        def decorator(route_func):
+            @router.api_operation(
+                **self._sanitize_and_merge_router_kwargs(
+                    default_router_kwargs=self._get_default_router_kwargs(model_class),
+                    custom_router_kwargs=self.router_kwargs,
+                )
+            )
+            @utils.merge_decorators(self.decorators)
+            @functools.wraps(route_func)
+            def wrapped_func(*args, **kwargs):
+                return route_func(*args, **kwargs)
+
+            return wrapped_func
+
+        return decorator
+
     @staticmethod
     def _sanitize_and_merge_router_kwargs(
         default_router_kwargs: dict, custom_router_kwargs: dict
     ) -> dict:
-        locked_keys = ["path", "response"]
+        locked_keys = ["methods", "path", "response"]
         router_kwargs = custom_router_kwargs.copy()
         for locked_key in locked_keys:
             if locked_key in router_kwargs:
@@ -83,6 +117,60 @@ class AbstractModelView(ABC):
                 router_kwargs.pop(locked_key)
 
         return {**default_router_kwargs, **router_kwargs}
+
+    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
+        return {
+            "methods": [self.method.value],
+            "path": self.path,
+            "response": self.get_response(),
+            "operation_id": self.get_operation_id(model_class),
+            "summary": self.get_summary(model_class),
+        }
+
+    @abstractmethod
+    def get_response(self) -> dict:  # pragma: no cover
+        """
+        Returns the response schema for the view.
+
+        Returns:
+            dict: The response schema for the view.
+
+        Raises:
+            NotImplementedError: This method must be implemented by a subclass.
+        """
+        pass
+
+    @abstractmethod
+    def get_operation_id(self, model_class: Type[Model]) -> str:  # pragma: no cover
+        """
+        Returns the operation ID for the view.
+
+        Args:
+            model_class (Type[Model]): The Django model class for which the route should be created.
+
+        Returns:
+            str: The operation ID for the view.
+
+        Raises:
+            NotImplementedError: This method must be implemented by a subclass.
+        """
+        pass
+
+    @abstractmethod
+    def get_summary(self, model_class: Type[Model]) -> str:  # pragma: no cover
+        """
+        Returns the summary for the view.
+
+        Args:
+            model_class (Type[Model]): The Django model class for which the route should be created.
+
+        Returns:
+            str: The summary for the view.
+
+        Raises:
+            NotImplementedError: This method must be implemented by a subclass.
+        """
+        pass
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str

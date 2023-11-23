@@ -1,4 +1,3 @@
-import functools
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, Union
 
@@ -132,7 +131,7 @@ class ListModelView(AbstractModelView):
     def _register_detail_route(self, router: Router, model_class: Type[Model]) -> None:
         filter_schema = self.filter_schema
 
-        @self._configure_route(router, model_class)
+        @self.configure_route(router=router, model_class=model_class)
         def list_models(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
@@ -143,37 +142,32 @@ class ListModelView(AbstractModelView):
                     f"{model_class.__name__} with pk '{id}' does not exist."
                 )
 
-            queryset = self._get_queryset(model_class, id)
-            return self._filter_queryset(queryset=queryset, filters=filters)
+            return self.list_models(
+                request=request, id=id, filters=filters, model_class=model_class
+            )
 
     def _register_collection_route(
         self, router: Router, model_class: Type[Model]
     ) -> None:
         filter_schema = self.filter_schema
 
-        @self._configure_route(router, model_class)
+        @self.configure_route(router=router, model_class=model_class)
         def list_models(
             request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
         ):
-            queryset = self._get_queryset(model_class)
-            return self._filter_queryset(queryset=queryset, filters=filters)
-
-    def _configure_route(self, router: Router, model_class: Type[Model]):
-        def decorator(route_func):
-            @router.api_operation(
-                **self._sanitize_and_merge_router_kwargs(
-                    default_router_kwargs=self._get_default_router_kwargs(model_class),
-                    custom_router_kwargs=self.router_kwargs,
-                )
+            return self.list_models(
+                request=request, id=None, filters=filters, model_class=model_class
             )
-            @utils.merge_decorators(self.decorators)
-            @functools.wraps(route_func)
-            def wrapped_func(*args, **kwargs):
-                return route_func(*args, **kwargs)
 
-            return wrapped_func
-
-        return decorator
+    def list_models(
+        self,
+        request: HttpRequest,
+        id: Optional[Any],
+        filters: FilterSchema,
+        model_class: Type[Model],
+    ):
+        queryset = self._get_queryset(model_class=model_class, id=id)
+        return self._filter_queryset(queryset=queryset, filters=filters)
 
     def _get_queryset(
         self, model_class: Type[Model], id: Optional[Any] = None
@@ -201,16 +195,10 @@ class ListModelView(AbstractModelView):
         else:
             return "/"
 
-    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
-        return {
-            "methods": [self.method.value],
-            "path": self.path,
-            "response": {HTTPStatus.OK: List[self.output_schema]},
-            "operation_id": self._get_operation_id(model_class),
-            "summary": self._get_summary(model_class),
-        }
+    def get_response(self) -> dict:
+        return {HTTPStatus.OK: List[self.output_schema]}
 
-    def _get_operation_id(self, model_class: Type[Model]) -> str:
+    def get_operation_id(self, model_class: Type[Model]) -> str:
         model_name = utils.to_snake_case(model_class.__name__)
         if self.detail:
             related_model_name = utils.to_snake_case(self._related_model_class.__name__)
@@ -218,7 +206,7 @@ class ListModelView(AbstractModelView):
         else:
             return f"list_{model_name}s"
 
-    def _get_summary(self, model_class: Type[Model]) -> str:
+    def get_summary(self, model_class: Type[Model]) -> str:
         if self.detail:
             verbose_model_name = model_class._meta.verbose_name
             verbose_related_model_name_plural = (
