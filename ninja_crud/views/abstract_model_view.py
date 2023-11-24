@@ -75,18 +75,33 @@ class AbstractModelView(ABC):
 
     def configure_route(self, router: Router, model_class: Type[Model]):
         """
-        Configures the route with the given router.
+        Configures the route for the given model class with the specified router.
+
+        This method is a key part of the route setup process. It returns a decorator which, when applied to a view
+        function in a subclass (like `RetrieveModelView`), automatically handles the necessary configuration for
+        routing, including applying any specified decorators and merging router keyword arguments.
+
+        The returned decorator abstracts the intricacies of route configuration, allowing subclasses to focus on the
+        specific logic of the view (e.g., retrieval, creation, etc.).
 
         Args:
-            router (Router): The router to register the route with.
-            model_class (Type[Model]): The Django model class for which the route should be created.
+            router (Router): The Django Ninja router to register the route with.
+            model_class (Type[Model]): The Django model class associated with this route.
 
         Returns:
-            Callable: A decorator that can be used to decorate the view function.
+            Callable: A decorator for the route function in the subclass, encapsulating the route configuration logic.
 
-        Note:
-            This method should be called by the `register_route` method of the `AbstractModelView` subclass.
-            It should not be called directly.
+        Example:
+            In a subclass like `RetrieveModelView`:
+            ```python
+            def register_route(self, router: Router, model_class: Type[Model]) -> None:
+                @self.configure_route(router=router, model_class=model_class)
+                def retrieve_model(request: HttpRequest, id: Any):
+                    # ... view-specific logic ...
+            ```
+
+        Note: This method should not be called directly by end users. It is used internally in the `register_route`
+            method of subclasses.
         """
 
         def decorator(route_func):
