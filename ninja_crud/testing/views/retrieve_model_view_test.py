@@ -8,7 +8,7 @@ from django.test import tag
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters
 from ninja_crud.testing.views import AbstractModelViewTest
-from ninja_crud.testing.views.helpers import TestAssertionHelper
+from ninja_crud.testing.views.helpers.test_assertion_helper import default_serializer
 from ninja_crud.views.retrieve_model_view import RetrieveModelView
 
 
@@ -49,17 +49,16 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         headers: dict,
         payload: dict,
     ):
-        content = json.loads(response.content)
-
-        queryset = self.model_view._get_queryset(
-            model_class=self.model_viewset_test_case.model_viewset_class.model,
+        model = self.model_view.retrieve_model(
             id=path_parameters["id"],
+            model_class=self.model_viewset_test_case.model_viewset_class.model,
         )
-        TestAssertionHelper.assert_content_equals_schema(
-            test_case=self.model_viewset_test_case,
-            content=content,
-            queryset=queryset,
-            schema_class=self.model_view.output_schema,
+        schema = self.model_view.output_schema.from_orm(model)
+
+        content = json.loads(response.content)
+        self.model_viewset_test_case.assertDictEqual(
+            content,
+            json.loads(json.dumps(schema.dict(), default=default_serializer)),
         )
 
     def on_failed_request(
