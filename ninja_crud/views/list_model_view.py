@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, Union
 
-from django.db.models import Model, QuerySet
+from django.db.models import Model
 from django.http import HttpRequest
 from ninja import FilterSchema, Query, Router, Schema
 from ninja.pagination import LimitOffsetPagination, PaginationBase, paginate
@@ -142,9 +142,7 @@ class ListModelView(AbstractModelView):
                     f"{model_class.__name__} with pk '{id}' does not exist."
                 )
 
-            return self.list_models(
-                request=request, id=id, filters=filters, model_class=model_class
-            )
+            return self.list_models(id=id, filters=filters, model_class=model_class)
 
     def _register_collection_route(
         self, router: Router, model_class: Type[Model]
@@ -155,37 +153,25 @@ class ListModelView(AbstractModelView):
         def list_models(
             request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
         ):
-            return self.list_models(
-                request=request, id=None, filters=filters, model_class=model_class
-            )
+            return self.list_models(id=None, filters=filters, model_class=model_class)
 
     def list_models(
         self,
-        request: HttpRequest,
         id: Optional[Any],
         filters: FilterSchema,
         model_class: Type[Model],
     ):
-        queryset = self._get_queryset(model_class=model_class, id=id)
-        return self._filter_queryset(queryset=queryset, filters=filters)
-
-    def _get_queryset(
-        self, model_class: Type[Model], id: Optional[Any] = None
-    ) -> QuerySet[Model]:
         if self.queryset_getter:
             args = [id] if self.detail else []
-            return self.queryset_getter(*args)
+            queryset = self.queryset_getter(*args)
         else:
-            return model_class.objects.get_queryset()
+            queryset = model_class.objects.get_queryset()
 
-    @staticmethod
-    def _filter_queryset(queryset: QuerySet[Model], filters: FilterSchema):
-        filters_dict = filters.dict()
-        if "order_by" in filters_dict and filters_dict["order_by"] is not None:
-            queryset = queryset.order_by(*filters_dict.pop("order_by"))
+        order_by_filters = filters.dict().pop("order_by", None)
+        if order_by_filters is not None:
+            queryset = queryset.order_by(*order_by_filters)
 
-        queryset = filters.filter(queryset)
-        return queryset
+        return filters.filter(queryset)
 
     @staticmethod
     def _get_default_path(detail: bool, model_class: Type[Model]) -> str:
