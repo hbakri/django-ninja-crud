@@ -3,82 +3,118 @@ docs:
   - title: "Introduction"
     excerpt: "Overview of Django Ninja CRUD"
     categorySlug: "documentation"
+    hidden: false
+    order: 0
     path: "docs/guides/01-Introduction.md"
   - title: "Installation"
     excerpt: "How to install Django Ninja CRUD"
     categorySlug: "documentation"
+    hidden: false
+    order: 1
     path: "docs/guides/02-Installation.md"
   - title: "Setup"
     excerpt: "How to setup Django Ninja CRUD"
     categorySlug: "documentation"
+    hidden: false
+    order: 2
     path: "docs/guides/03-Setup.md"
   - title: "Examples"
     excerpt: "Quick examples of how to use Django Ninja CRUD"
     categorySlug: "documentation"
+    hidden: false
+    order: 3
     path: "docs/guides/04-Examples.md"
 
   # ------------------- Reference ---------------------
   # --------------------- Views -----------------------
   - title: "AbstractModelView"
-    excerpt: "Abstract class for CRUD views"
-    categorySlug: "reference"
+    excerpt: "Abstract view for CRUD views"
+    categorySlug: "views"
+    hidden: false
+    order: 0
     path: "docs/reference/views/AbstractModelView.md"
   - title: "ListModelView"
     excerpt: "List view for CRUD views"
-    categorySlug: "reference"
+    categorySlug: "views"
+    hidden: false
+    order: 1
     path: "docs/reference/views/ListModelView.md"
   - title: "CreateModelView"
     excerpt: "Create view for CRUD views"
-    categorySlug: "reference"
+    categorySlug: "views"
+    hidden: false
+    order: 2
     path: "docs/reference/views/CreateModelView.md"
   - title: "RetrieveModelView"
     excerpt: "Retrieve view for CRUD views"
-    categorySlug: "reference"
+    categorySlug: "views"
+    hidden: false
+    order: 3
     path: "docs/reference/views/RetrieveModelView.md"
   - title: "UpdateModelView"
     excerpt: "Update view for CRUD views"
-    categorySlug: "reference"
+    categorySlug: "views"
+    hidden: false
+    order: 4
     path: "docs/reference/views/UpdateModelView.md"
   - title: "DeleteModelView"
     excerpt: "Delete view for CRUD views"
-    categorySlug: "reference"
+    categorySlug: "views"
+    hidden: false
+    order: 5
     path: "docs/reference/views/DeleteModelView.md"
   - title: "Types"
     excerpt: "Types for CRUD views"
-    categorySlug: "reference"
+    categorySlug: "views"
+    hidden: false
+    order: 6
     path: "docs/reference/views/helpers/Types.md"
 
   # -------------------- Viewsets ---------------------
   - title: "ModelViewSet"
     excerpt: "ModelViewSet for CRUD viewsets"
-    categorySlug: "reference"
+    categorySlug: "viewsets"
+    hidden: false
+    order: 0
     path: "docs/reference/viewsets/ModelViewSet.md"
   - title: "BaseModelViewSet"
     excerpt: "BaseModelViewSet for CRUD viewsets"
-    categorySlug: "reference"
+    categorySlug: "viewsets"
+    hidden: false
+    order: 1
     path: "docs/reference/viewsets/BaseModelViewSet.md"
 
   # -------------------- Testing ----------------------
-  # --------------------- Core ------------------------
-  - title: "Headers"
-    excerpt: "Headers for testing"
-    categorySlug: "reference"
-    path: "docs/reference/testing/core/components/Headers.md"
+  # ------------------- Components --------------------
   - title: "PathParameters"
     excerpt: "PathParameters for testing"
-    categorySlug: "reference"
+    categorySlug: "testing-components"
+    hidden: false
+    order: 0
     path: "docs/reference/testing/core/components/PathParameters.md"
-  - title: "Payloads"
-    excerpt: "Payloads for testing"
-    categorySlug: "reference"
-    path: "docs/reference/testing/core/components/Payloads.md"
   - title: "QueryParameters"
     excerpt: "QueryParameters for testing"
-    categorySlug: "reference"
+    categorySlug: "testing-components"
+    hidden: false
+    order: 1
     path: "docs/reference/testing/core/components/QueryParameters.md"
+  - title: "Headers"
+    excerpt: "Headers for testing"
+    categorySlug: "testing-components"
+    hidden: false
+    order: 2
+    path: "docs/reference/testing/core/components/Headers.md"
+  - title: "Payloads"
+    excerpt: "Payloads for testing"
+    categorySlug: "testing-components"
+    hidden: false
+    order: 3
+    path: "docs/reference/testing/core/components/Payloads.md"
 
   # -------------------- Viewsets ---------------------
   - title: "ModelViewSetTestCase"
     excerpt: "ModelViewSetTestCase for testing"
-    categorySlug: "reference"
+    categorySlug: "testing-viewsets"
+    hidden: false
+    order: 0
     path: "docs/reference/testing/viewsets/ModelViewSetTestCase.md"
