@@ -40,6 +40,9 @@ class AbstractModelView(ABC):
             detail (bool): Whether the view is for a detail or collection route.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
+
+                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
+                arguments are provided, a warning will be logged and the override will be ignored.
         """
         if not isinstance(method, HTTPMethod):
             raise TypeError(
@@ -92,15 +95,16 @@ class AbstractModelView(ABC):
             Callable: A decorator for the route function in the subclass, encapsulating the route configuration logic.
 
         Example:
-            In a subclass like `RetrieveModelView`:
-            ```python
-            def register_route(self, router: Router, model_class: Type[Model]) -> None:
-                @self.configure_route(router=router, model_class=model_class)
-                def retrieve_model(request: HttpRequest, id: Any):
-                    # ... view-specific logic ...
-            ```
+        In a subclass like `RetrieveModelView`:
+        ```python
+        def register_route(self, router: Router, model_class: Type[Model]) -> None:
+            @self.configure_route(router=router, model_class=model_class)
+            def retrieve_model(request: HttpRequest, id: Any):
+                # ... view-specific logic ...
+        ```
 
-        Note: This method should not be called directly by end users. It is used internally in the `register_route`
+        Note:
+            This method should not be called directly by end users. It is used internally in the `register_route`
             method of subclasses.
         """
 
@@ -145,10 +149,14 @@ class AbstractModelView(ABC):
     @abstractmethod
     def get_response(self) -> dict:  # pragma: no cover
         """
-        Returns the response schema for the view.
+        Provides a mapping of HTTP status codes to response schemas for the view.
+
+        This response schema is used in API documentation to describe the response body for this view.
+        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
+        will be ignored.
 
         Returns:
-            dict: The response schema for the view.
+            dict: A mapping of HTTP status codes to response schemas for the view.
 
         Raises:
             NotImplementedError: This method must be implemented by a subclass.
@@ -158,7 +166,10 @@ class AbstractModelView(ABC):
     @abstractmethod
     def get_operation_id(self, model_class: Type[Model]) -> str:  # pragma: no cover
         """
-        Returns the operation ID for the view.
+        Provides an operation ID for the view.
+
+        This operation ID is used in API documentation to uniquely identify this view.
+        It can be overriden using the `router_kwargs`.
 
         Args:
             model_class (Type[Model]): The Django model class for which the route should be created.
@@ -174,7 +185,10 @@ class AbstractModelView(ABC):
     @abstractmethod
     def get_summary(self, model_class: Type[Model]) -> str:  # pragma: no cover
         """
-        Returns the summary for the view.
+        Provides a summary description for the view.
+
+        This summary is used in API documentation to give a brief description of what this view does.
+        It can be overriden using the `router_kwargs`.
 
         Args:
             model_class (Type[Model]): The Django model class for which the route should be created.

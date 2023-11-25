@@ -111,6 +111,9 @@ class CreateModelView(AbstractModelView):
                 sub-resources of a main resource.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
+
+                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
+                arguments are provided, a warning will be logged and the override will be ignored.
         """
         if detail and model_factory is None:
             raise ValueError(
@@ -213,9 +216,38 @@ class CreateModelView(AbstractModelView):
             return "/"
 
     def get_response(self) -> dict:
+        """
+        Provides a mapping of HTTP status codes to response schemas for the create view.
+
+        This response schema is used in API documentation to describe the response body for this view.
+        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
+        will be ignored.
+
+        Returns:
+            dict: A mapping of HTTP status codes to response schemas for the create view.
+                Defaults to {201: self.output_schema}. For example, for a model "Department", the response
+                schema would be {201: DepartmentOut}.
+        """
         return {HTTPStatus.CREATED: self.output_schema}
 
     def get_operation_id(self, model_class: Type[Model]) -> str:
+        """
+        Provides an operation ID for the create view.
+
+        This operation ID is used in API documentation to uniquely identify this view.
+        It can be overriden using the `router_kwargs`.
+
+        Args:
+            model_class (Type[Model]): The Django model class associated with this view.
+
+        Returns:
+            str: The operation ID for the create view. Defaults to:
+                - For `detail=False`: "create_{model_name_to_snake_case}". For example, for a model "Department",
+                    the operation ID would be "create_department".
+                - For `detail=True`: "create_{model_name_to_snake_case}_{related_model_name_to_snake_case}". For
+                    example, for a model "Department" and a related model "Item", the operation ID would be
+                    "create_department_item".
+        """
         model_name = utils.to_snake_case(model_class.__name__)
         if self.detail:
             related_model_name = utils.to_snake_case(self._related_model_class.__name__)
@@ -224,11 +256,30 @@ class CreateModelView(AbstractModelView):
             return f"create_{model_name}"
 
     def get_summary(self, model_class: Type[Model]) -> str:
+        """
+        Provides a summary description for the create view.
+
+        This summary is used in API documentation to give a brief description of what this view does.
+        It can be overriden using the `router_kwargs`.
+
+        Args:
+            model_class (Type[Model]): The Django model class associated with this view.
+
+        Returns:
+            str: The summary description for the create view. Defaults to:
+                - For `detail=False`: "Create {model_name}". For example, for a model "Department", the summary
+                    would be "Create Department".
+                - For `detail=True`: "Create {related_model_name} related to a {model_name}". For example, for a
+                    model "Department" and a related model "Item", the summary would be "Create Item related to a
+                    Department".
+        """
         verbose_model_name = model_class._meta.verbose_name
         if self.detail:
             verbose_model_name = model_class._meta.verbose_name
             verbose_related_model_name = self._related_model_class._meta.verbose_name
-            return f"Create {verbose_related_model_name} for {verbose_model_name}"
+            return (
+                f"Create {verbose_related_model_name} related to a {verbose_model_name}"
+            )
         else:
             return f"Create {verbose_model_name}"
 

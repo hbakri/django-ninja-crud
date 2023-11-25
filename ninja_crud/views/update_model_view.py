@@ -73,6 +73,9 @@ class UpdateModelView(AbstractModelView):
             path (Optional[str], optional): The path to use for the view. Defaults to "/{id}".
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
+
+                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
+                arguments are provided, a warning will be logged and the override will be ignored.
         """
         if path is None:
             path = self._get_default_path()
@@ -133,12 +136,50 @@ class UpdateModelView(AbstractModelView):
         return "/{id}"
 
     def get_response(self) -> dict:
+        """
+        Provides a mapping of HTTP status codes to response schemas for the update view.
+
+        This response schema is used in API documentation to describe the response body for this view.
+        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
+        will be ignored.
+
+        Returns:
+            dict: A mapping of HTTP status codes to response schemas for the update view.
+                Defaults to {200: self.output_schema}. For example, for a model "Department", the response
+                schema would be {200: DepartmentOut}.
+        """
         return {HTTPStatus.OK: self.output_schema}
 
     def get_operation_id(self, model_class: Type[Model]) -> str:
+        """
+        Provides an operation ID for the update view.
+
+        This operation ID is used in API documentation to uniquely identify this view.
+        It can be overriden using the `router_kwargs`.
+
+        Args:
+            model_class (Type[Model]): The Django model class associated with this view.
+
+        Returns:
+            str: The operation ID for the update view. Defaults to "update_{model_name_to_snake_case}". For
+                example, for a model "Department", the operation ID would be "update_department".
+        """
         return f"update_{utils.to_snake_case(model_class.__name__)}"
 
     def get_summary(self, model_class: Type[Model]) -> str:
+        """
+        Provides a summary description for the update view.
+
+        This summary is used in API documentation to give a brief description of what this view does.
+        It can be overriden using the `router_kwargs`.
+
+        Args:
+            model_class (Type[Model]): The Django model class associated with this view.
+
+        Returns:
+            str: The summary description for the update view. Defaults to "Update {model_name}". For
+                example, for a model "Department", the summary would be "Update Department".
+        """
         return f"Update {model_class.__name__}"
 
     def bind_to_viewset(
