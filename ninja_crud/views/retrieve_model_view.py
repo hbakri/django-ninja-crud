@@ -80,9 +80,11 @@ class RetrieveModelView(AbstractModelView):
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
         @self.configure_route(router=router, model_class=model_class)
         def retrieve_model(request: HttpRequest, id: utils.get_id_type(model_class)):
-            return HTTPStatus.OK, self.retrieve_model(id=id, model_class=model_class)
+            return HTTPStatus.OK, self.retrieve_model(
+                request=request, id=id, model_class=model_class
+            )
 
-    def retrieve_model(self, id: Any, model_class: Type[Model]):
+    def retrieve_model(self, request: HttpRequest, id: Any, model_class: Type[Model]):
         if self.queryset_getter:
             queryset = self.queryset_getter(id)
         else:

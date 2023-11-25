@@ -2,7 +2,7 @@ import json
 from http import HTTPStatus
 from typing import Optional
 
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.test import tag
 from ninja import FilterSchema
 
@@ -65,6 +65,7 @@ class ListModelViewTest(AbstractModelViewTest):
             filters = FilterSchema()
 
         queryset = self.model_view.list_models(
+            request=HttpRequest(),
             id=path_parameters["id"] if self.model_view.detail else None,
             filters=filters,
             model_class=self.model_viewset_test_case.model_viewset_class.model,

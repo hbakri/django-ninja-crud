@@ -144,7 +144,9 @@ class ListModelView(AbstractModelView):
                     f"{model_class.__name__} with pk '{id}' does not exist."
                 )
 
-            return self.list_models(id=id, filters=filters, model_class=model_class)
+            return self.list_models(
+                request=request, id=id, filters=filters, model_class=model_class
+            )
 
     def _register_collection_route(
         self, router: Router, model_class: Type[Model]
@@ -155,10 +157,13 @@ class ListModelView(AbstractModelView):
         def list_models(
             request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
         ):
-            return self.list_models(id=None, filters=filters, model_class=model_class)
+            return self.list_models(
+                request=request, id=None, filters=filters, model_class=model_class
+            )
 
     def list_models(
         self,
+        request: HttpRequest,
         id: Optional[Any],
         filters: FilterSchema,
         model_class: Type[Model],

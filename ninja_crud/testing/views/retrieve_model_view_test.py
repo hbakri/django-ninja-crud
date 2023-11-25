@@ -2,7 +2,7 @@ import json
 from http import HTTPStatus
 from typing import Optional
 
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.test import tag
 
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
@@ -50,6 +50,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         payload: dict,
     ):
         model = self.model_view.retrieve_model(
+            request=HttpRequest(),
             id=path_parameters["id"],
             model_class=self.model_viewset_test_case.model_viewset_class.model,
         )
