@@ -35,7 +35,8 @@ class DeleteModelViewTest(AbstractModelViewTest):
         base_path = self.model_viewset_test_case.base_path.strip("/")
         endpoint_path = self.model_view.path.lstrip("/")
         path = f"/{base_path}/{endpoint_path}"
-        return self.model_viewset_test_case.client_class().delete(
+        return self.model_viewset_test_case.client_class().generic(
+            method=self.model_view.method.value,
             path=path.format(**path_parameters),
             content_type="application/json",
             **headers,

@@ -4,6 +4,7 @@ from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.test import tag
+from django.utils.http import urlencode
 from ninja import FilterSchema
 
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
@@ -40,9 +41,10 @@ class ListModelViewTest(AbstractModelViewTest):
         base_path = self.model_viewset_test_case.base_path.strip("/")
         endpoint_path = self.model_view.path.lstrip("/")
         path = f"/{base_path}/{endpoint_path}"
-        return self.model_viewset_test_case.client_class().get(
+        return self.model_viewset_test_case.client_class().generic(
+            method=self.model_view.method.value,
             path=path.format(**path_parameters),
-            data=query_parameters,
+            QUERY_STRING=urlencode(query_parameters, doseq=True),
             content_type="application/json",
             **headers,
         )
