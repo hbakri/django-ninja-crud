@@ -73,7 +73,6 @@ class UpdateModelView(AbstractModelView):
             path (Optional[str], optional): The path to use for the view. Defaults to "/{id}".
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
-
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
                 arguments are provided, a warning will be logged and the override will be ignored.
         """
