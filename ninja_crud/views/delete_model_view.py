@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Callable, List, Optional, Type
+from typing import Any, Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -58,6 +58,8 @@ class DeleteModelView(AbstractModelView):
             path (Optional[str], optional): The path to use for the view. Defaults to "/{id}".
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
+                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
+                arguments are provided, a warning will be logged and the override will be ignored.
         """
         if path is None:
             path = self._get_default_path()
@@ -72,43 +74,73 @@ class DeleteModelView(AbstractModelView):
         self.post_delete = post_delete
 
     def register_route(self, router: Router, model_class: Type[Model]) -> None:
-        @router.api_operation(
-            **self._sanitize_and_merge_router_kwargs(
-                default_router_kwargs=self._get_default_router_kwargs(model_class),
-                custom_router_kwargs=self.router_kwargs,
-            )
-        )
-        @utils.merge_decorators(self.decorators)
+        @self.configure_route(router=router, model_class=model_class)
         def delete_model(request: HttpRequest, id: utils.get_id_type(model_class)):
-            instance = model_class.objects.get(pk=id)
+            return HTTPStatus.NO_CONTENT, self.delete_model(
+                request=request, id=id, model_class=model_class
+            )
 
-            if self.pre_delete is not None:
-                self.pre_delete(request, instance)
+    def delete_model(
+        self, request: HttpRequest, id: Any, model_class: Type[Model]
+    ) -> None:
+        instance = model_class.objects.get(pk=id)
 
-            instance.delete()
+        if self.pre_delete is not None:
+            self.pre_delete(request, instance)
 
-            if self.post_delete is not None:
-                self.post_delete(request, id, instance)
+        instance.delete()
 
-            return HTTPStatus.NO_CONTENT, None
+        if self.post_delete is not None:
+            self.post_delete(request, id, instance)
+
+        return None
 
     @staticmethod
     def _get_default_path() -> str:
         return "/{id}"
 
-    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
-        return {
-            "methods": [self.method.value],
-            "path": self.path,
-            "response": {HTTPStatus.NO_CONTENT: None},
-            "operation_id": self._get_operation_id(model_class),
-            "summary": self._get_summary(model_class),
-        }
+    def get_response(self) -> dict:
+        """
+        Provides a mapping of HTTP status codes to response schemas for the delete view.
 
-    @staticmethod
-    def _get_operation_id(model_class: Type[Model]) -> str:
+        This response schema is used in API documentation to describe the response body for this view.
+        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
+        will be ignored.
+
+        Returns:
+            dict: A mapping of HTTP status codes to response schemas for the delete view.
+                Defaults to {204: None}.
+        """
+        return {HTTPStatus.NO_CONTENT: None}
+
+    def get_operation_id(self, model_class: Type[Model]) -> str:
+        """
+        Provides an operation ID for the delete view.
+
+        This operation ID is used in API documentation to uniquely identify this view.
+        It can be overriden using the `router_kwargs`.
+
+        Args:
+            model_class (Type[Model]): The Django model class associated with this view.
+
+        Returns:
+            str: The operation ID for the delete view. Defaults to "delete_{model_name_to_snake_case}". For
+                example, for a model "Department", the operation ID would be "delete_department".
+        """
         return f"delete_{utils.to_snake_case(model_class.__name__)}"
 
-    @staticmethod
-    def _get_summary(model_class: Type[Model]) -> str:
+    def get_summary(self, model_class: Type[Model]) -> str:
+        """
+        Provides a summary description for the delete view.
+
+        This summary is used in API documentation to give a brief description of what this view does.
+        It can be overriden using the `router_kwargs`.
+
+        Args:
+            model_class (Type[Model]): The Django model class associated with this view.
+
+        Returns:
+            str: The summary description for the delete view. Defaults to "Delete {model_name}". For
+                example, for a model "Department", the summary would be "Delete Department".
+        """
         return f"Delete {model_class.__name__}"

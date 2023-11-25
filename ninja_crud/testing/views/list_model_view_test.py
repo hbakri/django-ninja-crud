@@ -2,8 +2,9 @@ import json
 from http import HTTPStatus
 from typing import Optional
 
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.test import tag
+from ninja import FilterSchema
 
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters, QueryParameters
@@ -56,16 +57,19 @@ class ListModelViewTest(AbstractModelViewTest):
     ):
         content = json.loads(response.content)
 
-        queryset = self.model_view._get_queryset(
-            self.model_viewset_test_case.model_viewset_class.model,
-            path_parameters["id"] if "id" in path_parameters else None,
-        )
-
         limit = query_parameters.pop("limit", 100)
         offset = query_parameters.pop("offset", 0)
         if self.model_view.filter_schema is not None:
             filters = self.model_view.filter_schema(**query_parameters)
-            queryset = self.model_view._filter_queryset(queryset, filters)
+        else:
+            filters = FilterSchema()
+
+        queryset = self.model_view.list_models(
+            request=HttpRequest(),
+            id=path_parameters["id"] if self.model_view.detail else None,
+            filters=filters,
+            model_class=self.model_viewset_test_case.model_viewset_class.model,
+        )
 
         TestAssertionHelper.assert_content_equals_schema_list(
             test_case=self.model_viewset_test_case,

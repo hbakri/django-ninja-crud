@@ -1,4 +1,3 @@
-import functools
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, Union
 
@@ -112,6 +111,8 @@ class CreateModelView(AbstractModelView):
                 sub-resources of a main resource.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
+                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
+                arguments are provided, a warning will be logged and the override will be ignored.
         """
         if detail and model_factory is None:
             raise ValueError(
@@ -150,7 +151,7 @@ class CreateModelView(AbstractModelView):
     def _register_detail_route(self, router: Router, model_class: Type[Model]) -> None:
         input_schema = self.input_schema
 
-        @self._configure_route(router, model_class)
+        @self.configure_route(router=router, model_class=model_class)
         def create_model(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
@@ -161,69 +162,49 @@ class CreateModelView(AbstractModelView):
                     f"{model_class.__name__} with pk '{id}' does not exist."
                 )
 
-            instance = self._create_model(model_class, id)
-            instance = self._save_model(instance, payload, request, id)
-            return HTTPStatus.CREATED, instance
+            return HTTPStatus.CREATED, self.create_model(
+                request=request, id=id, payload=payload, model_class=model_class
+            )
 
     def _register_collection_route(
         self, router: Router, model_class: Type[Model]
     ) -> None:
         input_schema = self.input_schema
 
-        @self._configure_route(router, model_class)
+        @self.configure_route(router=router, model_class=model_class)
         def create_model(request: HttpRequest, payload: input_schema):
-            instance = self._create_model(model_class)
-            instance = self._save_model(instance, payload, request)
-            return HTTPStatus.CREATED, instance
+            return HTTPStatus.CREATED, self.create_model(
+                request=request, id=None, payload=payload, model_class=model_class
+            )
 
-    def _create_model(
-        self, model_class: Type[Model], id: Optional[Any] = None
+    def create_model(
+        self,
+        request: HttpRequest,
+        id: Optional[Any],
+        payload: Schema,
+        model_class: Type[Model],
     ) -> Model:
         if self.model_factory:
             args = [id] if self.detail else []
-            return self.model_factory(*args)
+            instance = self.model_factory(*args)
         else:
-            return model_class()
+            instance = model_class()
 
-    def _save_model(
-        self,
-        instance: Model,
-        payload: Schema,
-        request: HttpRequest,
-        id: Optional[Any] = None,
-    ) -> Model:
         for field, value in payload.dict(exclude_unset=True).items():
             setattr(instance, field, value)
 
         if self.pre_save:
-            args = (request, instance) if not id else (request, id, instance)
+            args = (request, id, instance) if self.detail else (request, instance)
             self.pre_save(*args)
 
         instance.full_clean()
         instance.save()
 
         if self.post_save:
-            args = (request, instance) if not id else (request, id, instance)
+            args = (request, id, instance) if self.detail else (request, instance)
             self.post_save(*args)
 
         return instance
-
-    def _configure_route(self, router: Router, model_class: Type[Model]):
-        def decorator(route_func):
-            @router.api_operation(
-                **self._sanitize_and_merge_router_kwargs(
-                    default_router_kwargs=self._get_default_router_kwargs(model_class),
-                    custom_router_kwargs=self.router_kwargs,
-                )
-            )
-            @utils.merge_decorators(self.decorators)
-            @functools.wraps(route_func)
-            def wrapped_func(*args, **kwargs):
-                return route_func(*args, **kwargs)
-
-            return wrapped_func
-
-        return decorator
 
     @staticmethod
     def _get_default_path(detail: bool, model_class: Type[Model]) -> str:
@@ -233,16 +214,39 @@ class CreateModelView(AbstractModelView):
         else:
             return "/"
 
-    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
-        return {
-            "methods": [self.method.value],
-            "path": self.path,
-            "response": {HTTPStatus.CREATED: self.output_schema},
-            "operation_id": self._get_operation_id(model_class),
-            "summary": self._get_summary(model_class),
-        }
+    def get_response(self) -> dict:
+        """
+        Provides a mapping of HTTP status codes to response schemas for the create view.
 
-    def _get_operation_id(self, model_class: Type[Model]) -> str:
+        This response schema is used in API documentation to describe the response body for this view.
+        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
+        will be ignored.
+
+        Returns:
+            dict: A mapping of HTTP status codes to response schemas for the create view.
+                Defaults to {201: self.output_schema}. For example, for a model "Department", the response
+                schema would be {201: DepartmentOut}.
+        """
+        return {HTTPStatus.CREATED: self.output_schema}
+
+    def get_operation_id(self, model_class: Type[Model]) -> str:
+        """
+        Provides an operation ID for the create view.
+
+        This operation ID is used in API documentation to uniquely identify this view.
+        It can be overriden using the `router_kwargs`.
+
+        Args:
+            model_class (Type[Model]): The Django model class associated with this view.
+
+        Returns:
+            str: The operation ID for the create view. Defaults to:
+                - For `detail=False`: "create_{model_name_to_snake_case}". For example, for a model "Department",
+                    the operation ID would be "create_department".
+                - For `detail=True`: "create_{model_name_to_snake_case}_{related_model_name_to_snake_case}". For
+                    example, for a model "Department" and a related model "Item", the operation ID would be
+                    "create_department_item".
+        """
         model_name = utils.to_snake_case(model_class.__name__)
         if self.detail:
             related_model_name = utils.to_snake_case(self._related_model_class.__name__)
@@ -250,12 +254,31 @@ class CreateModelView(AbstractModelView):
         else:
             return f"create_{model_name}"
 
-    def _get_summary(self, model_class: Type[Model]) -> str:
+    def get_summary(self, model_class: Type[Model]) -> str:
+        """
+        Provides a summary description for the create view.
+
+        This summary is used in API documentation to give a brief description of what this view does.
+        It can be overriden using the `router_kwargs`.
+
+        Args:
+            model_class (Type[Model]): The Django model class associated with this view.
+
+        Returns:
+            str: The summary description for the create view. Defaults to:
+                - For `detail=False`: "Create {model_name}". For example, for a model "Department", the summary
+                    would be "Create Department".
+                - For `detail=True`: "Create {related_model_name} related to a {model_name}". For example, for a
+                    model "Department" and a related model "Item", the summary would be "Create Item related to a
+                    Department".
+        """
         verbose_model_name = model_class._meta.verbose_name
         if self.detail:
             verbose_model_name = model_class._meta.verbose_name
             verbose_related_model_name = self._related_model_class._meta.verbose_name
-            return f"Create {verbose_related_model_name} for {verbose_model_name}"
+            return (
+                f"Create {verbose_related_model_name} related to a {verbose_model_name}"
+            )
         else:
             return f"Create {verbose_model_name}"
 

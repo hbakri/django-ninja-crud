@@ -1,8 +1,7 @@
-import functools
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, Union
 
-from django.db.models import Model, QuerySet
+from django.db.models import Model
 from django.http import HttpRequest
 from ninja import FilterSchema, Query, Router, Schema
 from ninja.pagination import LimitOffsetPagination, PaginationBase, paginate
@@ -92,6 +91,8 @@ class ListModelView(AbstractModelView):
                 "/{id}/item_details/".
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
+                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
+                arguments are provided, a warning will be logged and the override will be ignored.
         """
         if detail and queryset_getter is None:
             raise ValueError(
@@ -132,7 +133,7 @@ class ListModelView(AbstractModelView):
     def _register_detail_route(self, router: Router, model_class: Type[Model]) -> None:
         filter_schema = self.filter_schema
 
-        @self._configure_route(router, model_class)
+        @self.configure_route(router=router, model_class=model_class)
         def list_models(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
@@ -143,55 +144,41 @@ class ListModelView(AbstractModelView):
                     f"{model_class.__name__} with pk '{id}' does not exist."
                 )
 
-            queryset = self._get_queryset(model_class, id)
-            return self._filter_queryset(queryset=queryset, filters=filters)
+            return self.list_models(
+                request=request, id=id, filters=filters, model_class=model_class
+            )
 
     def _register_collection_route(
         self, router: Router, model_class: Type[Model]
     ) -> None:
         filter_schema = self.filter_schema
 
-        @self._configure_route(router, model_class)
+        @self.configure_route(router=router, model_class=model_class)
         def list_models(
             request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
         ):
-            queryset = self._get_queryset(model_class)
-            return self._filter_queryset(queryset=queryset, filters=filters)
-
-    def _configure_route(self, router: Router, model_class: Type[Model]):
-        def decorator(route_func):
-            @router.api_operation(
-                **self._sanitize_and_merge_router_kwargs(
-                    default_router_kwargs=self._get_default_router_kwargs(model_class),
-                    custom_router_kwargs=self.router_kwargs,
-                )
+            return self.list_models(
+                request=request, id=None, filters=filters, model_class=model_class
             )
-            @utils.merge_decorators(self.decorators)
-            @functools.wraps(route_func)
-            def wrapped_func(*args, **kwargs):
-                return route_func(*args, **kwargs)
 
-            return wrapped_func
-
-        return decorator
-
-    def _get_queryset(
-        self, model_class: Type[Model], id: Optional[Any] = None
-    ) -> QuerySet[Model]:
+    def list_models(
+        self,
+        request: HttpRequest,
+        id: Optional[Any],
+        filters: FilterSchema,
+        model_class: Type[Model],
+    ):
         if self.queryset_getter:
             args = [id] if self.detail else []
-            return self.queryset_getter(*args)
+            queryset = self.queryset_getter(*args)
         else:
-            return model_class.objects.get_queryset()
+            queryset = model_class.objects.get_queryset()
 
-    @staticmethod
-    def _filter_queryset(queryset: QuerySet[Model], filters: FilterSchema):
-        filters_dict = filters.dict()
-        if "order_by" in filters_dict and filters_dict["order_by"] is not None:
-            queryset = queryset.order_by(*filters_dict.pop("order_by"))
+        order_by_filters = filters.dict().pop("order_by", None)
+        if order_by_filters is not None:
+            queryset = queryset.order_by(*order_by_filters)
 
-        queryset = filters.filter(queryset)
-        return queryset
+        return filters.filter(queryset)
 
     @staticmethod
     def _get_default_path(detail: bool, model_class: Type[Model]) -> str:
@@ -201,16 +188,39 @@ class ListModelView(AbstractModelView):
         else:
             return "/"
 
-    def _get_default_router_kwargs(self, model_class: Type[Model]) -> dict:
-        return {
-            "methods": [self.method.value],
-            "path": self.path,
-            "response": {HTTPStatus.OK: List[self.output_schema]},
-            "operation_id": self._get_operation_id(model_class),
-            "summary": self._get_summary(model_class),
-        }
+    def get_response(self) -> dict:
+        """
+        Provides a mapping of HTTP status codes to response schemas for the list view.
 
-    def _get_operation_id(self, model_class: Type[Model]) -> str:
+        This response schema is used in API documentation to describe the response body for this view.
+        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
+        will be ignored.
+
+        Returns:
+            dict: A mapping of HTTP status codes to response schemas for the list view.
+                Defaults to {200: List[self.output_schema]}. For example, for a model "Department", the response
+                schema would be {200: List[DepartmentOut]}.
+        """
+        return {HTTPStatus.OK: List[self.output_schema]}
+
+    def get_operation_id(self, model_class: Type[Model]) -> str:
+        """
+        Provides an operation ID for the list view.
+
+        This operation ID is used in API documentation to uniquely identify this view.
+        It can be overriden using the `router_kwargs`.
+
+        Args:
+            model_class (Type[Model]): The Django model class associated with this view.
+
+        Returns:
+            str: The operation ID for the list view. Defaults to:
+                - For `detail=False`: "list_{model_name_to_snake_case}s". For example, for a model "Department",
+                    the operation ID would be "list_departments".
+                - For `detail=True`: "list_{model_name_to_snake_case}_{related_model_name_to_snake_case}s". For
+                    example, for a model "Department" with a related model "Item", the operation ID would be
+                    "list_department_items".
+        """
         model_name = utils.to_snake_case(model_class.__name__)
         if self.detail:
             related_model_name = utils.to_snake_case(self._related_model_class.__name__)
@@ -218,7 +228,24 @@ class ListModelView(AbstractModelView):
         else:
             return f"list_{model_name}s"
 
-    def _get_summary(self, model_class: Type[Model]) -> str:
+    def get_summary(self, model_class: Type[Model]) -> str:
+        """
+        Provides a summary description for the list view.
+
+        This summary is used in API documentation to give a brief description of what this view does.
+        It can be overriden using the `router_kwargs`.
+
+        Args:
+            model_class (Type[Model]): The Django model class associated with this view.
+
+        Returns:
+            str: The summary description for the list view. Defaults to:
+                - For `detail=False`: "List {model_name_plural}". For example, for a model "Department",
+                    the summary would be "List Departments".
+                - For `detail=True`: "List {related_model_name_plural} related to a {model_name}". For example,
+                    for a model "Department" with a related model "Item", the summary would be
+                    "List Items related to a Department".
+        """
         if self.detail:
             verbose_model_name = model_class._meta.verbose_name
             verbose_related_model_name_plural = (
