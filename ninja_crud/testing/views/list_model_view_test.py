@@ -37,9 +37,9 @@ class ListModelViewTest(AbstractModelViewTest):
         headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.model_viewset_test_case.base_path + self.model_view.path
-        # TODO: make it work with generic, and then move it to ViewTestManager
-        # or to AbstractModelViewTest :woman_shrugging:
+        base_path = self.model_viewset_test_case.base_path.strip("/")
+        endpoint_path = self.model_view.path.lstrip("/")
+        path = f"/{base_path}/{endpoint_path}"
         return self.model_viewset_test_case.client_class().get(
             path=path.format(**path_parameters),
             data=query_parameters,

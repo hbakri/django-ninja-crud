@@ -32,7 +32,9 @@ class DeleteModelViewTest(AbstractModelViewTest):
         headers: dict,
         payload: dict,
     ) -> HttpResponse:
-        path = "/" + self.model_viewset_test_case.base_path + self.model_view.path
+        base_path = self.model_viewset_test_case.base_path.strip("/")
+        endpoint_path = self.model_view.path.lstrip("/")
+        path = f"/{base_path}/{endpoint_path}"
         return self.model_viewset_test_case.client_class().delete(
             path=path.format(**path_parameters),
             content_type="application/json",
