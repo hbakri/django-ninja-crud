@@ -18,7 +18,7 @@ class TestViewTestManager(django.test.TestCase):
     def test_get_path_parameters_constant(self):
         path_parameters = PathParameters(ok={"id": 1})
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             path_parameters=path_parameters,
         )
         self.assertPathParametersEqual(
@@ -30,7 +30,7 @@ class TestViewTestManager(django.test.TestCase):
             return PathParameters(ok={"id": 1})
 
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             path_parameters=get_path_parameters,
         )
         self.assertPathParametersEqual(
@@ -39,7 +39,7 @@ class TestViewTestManager(django.test.TestCase):
 
     def test_get_path_parameters_none(self):
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
         )
         self.assertPathParametersEqual(
             view_test_manager.get_path_parameters(self), PathParameters(ok={})
@@ -48,7 +48,7 @@ class TestViewTestManager(django.test.TestCase):
     def test_get_path_parameters_property(self):
         path_parameters = property(lambda test_case: PathParameters(ok={"id": 1}))
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             path_parameters=path_parameters,
         )
         self.assertPathParametersEqual(
@@ -59,7 +59,7 @@ class TestViewTestManager(django.test.TestCase):
         path_parameters = "string"
         # noinspection PyTypeChecker
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             path_parameters=path_parameters,
         )
         with self.assertRaises(TypeError):
@@ -74,7 +74,7 @@ class TestViewTestManager(django.test.TestCase):
     def test_get_query_parameters_constant(self):
         query_parameters = QueryParameters(ok={"page": 1})
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             query_parameters=query_parameters,
         )
         self.assertQueryParametersEqual(
@@ -86,7 +86,7 @@ class TestViewTestManager(django.test.TestCase):
             return QueryParameters(ok={"page": 1})
 
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             query_parameters=get_query_parameters,
         )
         self.assertQueryParametersEqual(
@@ -95,7 +95,7 @@ class TestViewTestManager(django.test.TestCase):
 
     def test_get_query_parameters_none(self):
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
         )
         self.assertQueryParametersEqual(
             view_test_manager.get_query_parameters(self), QueryParameters(ok={})
@@ -104,7 +104,7 @@ class TestViewTestManager(django.test.TestCase):
     def test_get_query_parameters_property(self):
         query_parameters = property(lambda test_case: QueryParameters(ok={"page": 1}))
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             query_parameters=query_parameters,
         )
         self.assertQueryParametersEqual(
@@ -115,7 +115,7 @@ class TestViewTestManager(django.test.TestCase):
         query_parameters = "string"
         # noinspection PyTypeChecker
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             query_parameters=query_parameters,
         )
         with self.assertRaises(TypeError):
@@ -129,7 +129,7 @@ class TestViewTestManager(django.test.TestCase):
     def test_get_payloads_constant(self):
         payloads = Payloads(ok={"name": "item 1"})
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             payloads=payloads,
         )
         self.assertPayloadsEqual(view_test_manager.get_payloads(self), payloads)
@@ -139,7 +139,7 @@ class TestViewTestManager(django.test.TestCase):
             return Payloads(ok={"name": "item 1"})
 
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             payloads=get_payloads,
         )
         self.assertPayloadsEqual(
@@ -148,14 +148,14 @@ class TestViewTestManager(django.test.TestCase):
 
     def test_get_payloads_none(self):
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
         )
         self.assertPayloadsEqual(view_test_manager.get_payloads(self), Payloads(ok={}))
 
     def test_get_payloads_property(self):
         payloads = property(lambda test_case: Payloads(ok={"name": "item 1"}))
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             payloads=payloads,
         )
         self.assertPayloadsEqual(
@@ -166,7 +166,7 @@ class TestViewTestManager(django.test.TestCase):
         payloads = "string"
         # noinspection PyTypeChecker
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             payloads=payloads,
         )
         with self.assertRaises(TypeError):
@@ -180,7 +180,7 @@ class TestViewTestManager(django.test.TestCase):
     def test_get_headers_constant(self):
         headers = Headers(ok={"header": "value"})
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             headers=headers,
         )
         self.assertHeadersEqual(view_test_manager.get_headers(self), headers)
@@ -190,21 +190,21 @@ class TestViewTestManager(django.test.TestCase):
             return Headers(ok={"header": "value"})
 
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             headers=get_headers,
         )
         self.assertHeadersEqual(view_test_manager.get_headers(self), get_headers(self))
 
     def test_get_headers_none(self):
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
         )
         self.assertHeadersEqual(view_test_manager.get_headers(self), Headers(ok={}))
 
     def test_get_headers_property(self):
         headers = property(lambda test_case: Headers(ok={"header": "value"}))
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             headers=headers,
         )
         self.assertHeadersEqual(view_test_manager.get_headers(self), headers.fget(self))
@@ -213,7 +213,7 @@ class TestViewTestManager(django.test.TestCase):
         headers = "string"
         # noinspection PyTypeChecker
         view_test_manager = ViewTestManager(
-            perform_request=lambda *args, **kwargs: HttpResponse(),
+            handle_request=lambda *args, **kwargs: HttpResponse(),
             headers=headers,
         )
         with self.assertRaises(TypeError):

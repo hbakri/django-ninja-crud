@@ -23,28 +23,10 @@ class UpdateModelViewTest(AbstractModelViewTest):
     ) -> None:
         super().__init__(model_view_class=UpdateModelView)
         self.view_test_manager = ViewTestManager(
-            perform_request=self.perform_request,
+            handle_request=self.handle_request,
             path_parameters=path_parameters,
             headers=headers,
             payloads=payloads,
-        )
-
-    def perform_request(
-        self,
-        path_parameters: dict,
-        query_parameters: dict,
-        headers: dict,
-        payload: dict,
-    ) -> HttpResponse:
-        base_path = self.model_viewset_test_case.base_path.strip("/")
-        endpoint_path = self.model_view.path.lstrip("/")
-        path = f"/{base_path}/{endpoint_path}"
-        return self.model_viewset_test_case.client_class().generic(
-            method=self.model_view.method.value,
-            path=path.format(**path_parameters),
-            data=json.dumps(payload),
-            content_type="application/json",
-            **headers,
         )
 
     def on_successful_request(
@@ -63,16 +45,6 @@ class UpdateModelViewTest(AbstractModelViewTest):
             queryset=self.model_viewset_test_case.model_viewset_class.model.objects.get_queryset(),
             schema_class=self.model_view.output_schema,
         )
-
-    def on_failed_request(
-        self,
-        response: HttpResponse,
-        path_parameters: dict,
-        query_parameters: dict,
-        headers: dict,
-        payload: dict,
-    ):
-        pass
 
     @tag("update")
     def test_update_model_ok(self):

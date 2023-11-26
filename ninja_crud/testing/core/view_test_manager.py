@@ -20,13 +20,13 @@ CompletionCallback = Callable[[HttpResponse, dict, dict, dict, dict], None]
 class ViewTestManager:
     def __init__(
         self,
-        perform_request: Callable[[dict, dict, dict, dict], HttpResponse],
+        handle_request: Callable[[dict, dict, dict, dict], HttpResponse],
         path_parameters: Optional[ArgOrCallable[PathParameters, TestCaseType]] = None,
         query_parameters: Optional[ArgOrCallable[QueryParameters, TestCaseType]] = None,
         headers: Optional[ArgOrCallable[Headers, TestCaseType]] = None,
         payloads: Optional[ArgOrCallable[Payloads, TestCaseType]] = None,
     ) -> None:
-        self.perform_request = perform_request
+        self.handle_request = handle_request
         self.path_parameters = path_parameters or PathParameters(ok={})
         self.query_parameters = query_parameters or QueryParameters(ok={})
         self.headers = headers or Headers(ok={})
@@ -116,7 +116,7 @@ class ViewTestManager:
                             headers=headers,
                             payload=payload,
                         ):
-                            response = self.perform_request(
+                            response = self.handle_request(
                                 path_parameters, query_parameters, headers, payload
                             )
                             on_completion(
