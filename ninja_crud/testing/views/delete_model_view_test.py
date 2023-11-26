@@ -20,26 +20,9 @@ class DeleteModelViewTest(AbstractModelViewTest):
     ) -> None:
         super().__init__(model_view_class=DeleteModelView)
         self.view_test_manager = ViewTestManager(
-            perform_request=self.perform_request,
+            handle_request=self.handle_request,
             path_parameters=path_parameters,
             headers=headers,
-        )
-
-    def perform_request(
-        self,
-        path_parameters: dict,
-        query_parameters: dict,
-        headers: dict,
-        payload: dict,
-    ) -> HttpResponse:
-        base_path = self.model_viewset_test_case.base_path.strip("/")
-        endpoint_path = self.model_view.path.lstrip("/")
-        path = f"/{base_path}/{endpoint_path}"
-        return self.model_viewset_test_case.client_class().generic(
-            method=self.model_view.method.value,
-            path=path.format(**path_parameters),
-            content_type="application/json",
-            **headers,
         )
 
     def on_successful_request(
@@ -55,16 +38,6 @@ class DeleteModelViewTest(AbstractModelViewTest):
         model_class = self.model_viewset_test_case.model_viewset_class.model
         queryset = model_class.objects.filter(id=path_parameters["id"])
         self.model_viewset_test_case.assertEqual(queryset.count(), 0)
-
-    def on_failed_request(
-        self,
-        response: HttpResponse,
-        path_parameters: dict,
-        query_parameters: dict,
-        headers: dict,
-        payload: dict,
-    ):
-        pass
 
     @tag("delete")
     def test_delete_model_ok(self):

@@ -4,7 +4,6 @@ from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.test import tag
-from django.utils.http import urlencode
 from ninja import FilterSchema
 
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
@@ -25,28 +24,10 @@ class ListModelViewTest(AbstractModelViewTest):
     ) -> None:
         super().__init__(model_view_class=ListModelView)
         self.view_test_manager = ViewTestManager(
-            perform_request=self.perform_request,
+            handle_request=self.handle_request,
             path_parameters=path_parameters,
             query_parameters=query_parameters,
             headers=headers,
-        )
-
-    def perform_request(
-        self,
-        path_parameters: dict,
-        query_parameters: dict,
-        headers: dict,
-        payload: dict,
-    ) -> HttpResponse:
-        base_path = self.model_viewset_test_case.base_path.strip("/")
-        endpoint_path = self.model_view.path.lstrip("/")
-        path = f"/{base_path}/{endpoint_path}"
-        return self.model_viewset_test_case.client_class().generic(
-            method=self.model_view.method.value,
-            path=path.format(**path_parameters),
-            QUERY_STRING=urlencode(query_parameters, doseq=True),
-            content_type="application/json",
-            **headers,
         )
 
     def on_successful_request(
@@ -82,16 +63,6 @@ class ListModelViewTest(AbstractModelViewTest):
             offset=offset,
             pagination_class=self.model_view.pagination_class,
         )
-
-    def on_failed_request(
-        self,
-        response: HttpResponse,
-        path_parameters: dict,
-        query_parameters: dict,
-        headers: dict,
-        payload: dict,
-    ):
-        pass
 
     @tag("list")
     def test_list_model_ok(self):
