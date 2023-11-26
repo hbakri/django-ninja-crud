@@ -8,7 +8,6 @@ from django.test import tag
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters, Payloads
 from ninja_crud.testing.views import AbstractModelViewTest
-from ninja_crud.testing.views.helpers import TestAssertionHelper
 from ninja_crud.views.create_model_view import CreateModelView
 
 
@@ -37,18 +36,18 @@ class CreateModelViewTest(AbstractModelViewTest):
         headers: dict,
         payload: dict,
     ):
-        content = json.loads(response.content)
-
         if self.model_view.detail:
             model_class = self.model_view._related_model_class
         else:
             model_class = self.model_viewset_test_case.model_viewset_class.model
-        TestAssertionHelper.assert_content_equals_schema(
-            test_case=self.model_viewset_test_case,
-            content=content,
-            queryset=model_class.objects.get_queryset(),
-            schema_class=self.model_view.output_schema,
-        )
+
+        content = json.loads(response.content)
+        self.model_viewset_test_case.assertIsInstance(content, dict)
+        self.model_viewset_test_case.assertIn("id", content)
+
+        model = model_class.objects.get(id=content["id"])
+        schema = self.model_view.output_schema.from_orm(model)
+        self.model_viewset_test_case.assertDictEqual(content, json.loads(schema.json()))
 
     @tag("create")
     def test_create_model_ok(self):

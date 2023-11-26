@@ -8,7 +8,6 @@ from django.test import tag
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters, Payloads
 from ninja_crud.testing.views import AbstractModelViewTest
-from ninja_crud.testing.views.helpers import TestAssertionHelper
 from ninja_crud.views.update_model_view import UpdateModelView
 
 
@@ -37,14 +36,13 @@ class UpdateModelViewTest(AbstractModelViewTest):
         headers: dict,
         payload: dict,
     ):
-        content = json.loads(response.content)
-
-        TestAssertionHelper.assert_content_equals_schema(
-            test_case=self.model_viewset_test_case,
-            content=content,
-            queryset=self.model_viewset_test_case.model_viewset_class.model.objects.get_queryset(),
-            schema_class=self.model_view.output_schema,
+        model = self.model_viewset_test_case.model_viewset_class.model.objects.get(
+            id=path_parameters["id"]
         )
+        schema = self.model_view.output_schema.from_orm(model)
+
+        content = json.loads(response.content)
+        self.model_viewset_test_case.assertDictEqual(content, json.loads(schema.json()))
 
     @tag("update")
     def test_update_model_ok(self):

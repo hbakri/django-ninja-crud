@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from typing import Optional
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.test import tag
 
@@ -36,8 +37,8 @@ class DeleteModelViewTest(AbstractModelViewTest):
         self.model_viewset_test_case.assertEqual(response.content, b"")
 
         model_class = self.model_viewset_test_case.model_viewset_class.model
-        queryset = model_class.objects.filter(id=path_parameters["id"])
-        self.model_viewset_test_case.assertEqual(queryset.count(), 0)
+        with self.model_viewset_test_case.assertRaises(ObjectDoesNotExist):
+            model_class.objects.get(id=path_parameters["id"])
 
     @tag("delete")
     def test_delete_model_ok(self):
