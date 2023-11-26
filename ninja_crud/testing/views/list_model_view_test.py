@@ -1,16 +1,19 @@
 import json
+import logging
 from http import HTTPStatus
 from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.test import tag
 from ninja import FilterSchema
+from ninja.pagination import LimitOffsetPagination
 
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters, QueryParameters
 from ninja_crud.testing.views import AbstractModelViewTest
-from ninja_crud.testing.views.helpers import TestAssertionHelper
 from ninja_crud.views.list_model_view import ListModelView
+
+logger = logging.getLogger(__name__)
 
 
 class ListModelViewTest(AbstractModelViewTest):
@@ -54,15 +57,43 @@ class ListModelViewTest(AbstractModelViewTest):
             model_class=self.model_viewset_test_case.model_viewset_class.model,
         )
 
-        TestAssertionHelper.assert_content_equals_schema_list(
-            test_case=self.model_viewset_test_case,
-            content=content,
-            queryset=queryset,
-            schema_class=self.model_view.output_schema,
-            limit=limit,
-            offset=offset,
-            pagination_class=self.model_view.pagination_class,
-        )
+        if self.model_view.pagination_class is None:
+            self.model_viewset_test_case.assertIsInstance(content, list)
+            self.model_viewset_test_case.assertEqual(len(content), queryset.count())
+
+            for item in content:
+                self.model_viewset_test_case.assertIsInstance(item, dict)
+                model = queryset.get(id=item["id"])
+                schema = self.model_view.output_schema.from_orm(model)
+                self.model_viewset_test_case.assertDictEqual(
+                    item, json.loads(schema.json())
+                )
+        elif self.model_view.pagination_class == LimitOffsetPagination:
+            self.model_viewset_test_case.assertIsInstance(content, dict)
+            self.model_viewset_test_case.assertIn("count", content)
+            self.model_viewset_test_case.assertIsInstance(content["count"], int)
+            self.model_viewset_test_case.assertEqual(
+                content["count"],
+                queryset.count(),
+            )
+            self.model_viewset_test_case.assertIn("items", content)
+            self.model_viewset_test_case.assertIsInstance(content["items"], list)
+            self.model_viewset_test_case.assertEqual(
+                len(content["items"]),
+                queryset[offset : offset + limit].count(),
+            )
+
+            for item in content["items"]:
+                self.model_viewset_test_case.assertIsInstance(item, dict)
+                model = queryset.get(id=item["id"])
+                schema = self.model_view.output_schema.from_orm(model)
+                self.model_viewset_test_case.assertDictEqual(
+                    item, json.loads(schema.json())
+                )
+        else:  # pragma: no cover
+            logger.warning(
+                f"Unsupported pagination class: {self.model_view.pagination_class}"
+            )
 
     @tag("list")
     def test_list_model_ok(self):

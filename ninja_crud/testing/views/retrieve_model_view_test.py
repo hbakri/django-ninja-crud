@@ -8,7 +8,6 @@ from django.test import tag
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters
 from ninja_crud.testing.views import AbstractModelViewTest
-from ninja_crud.testing.views.helpers.test_assertion_helper import default_serializer
 from ninja_crud.views.retrieve_model_view import RetrieveModelView
 
 
@@ -43,10 +42,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         schema = self.model_view.output_schema.from_orm(model)
 
         content = json.loads(response.content)
-        self.model_viewset_test_case.assertDictEqual(
-            content,
-            json.loads(json.dumps(schema.dict(), default=default_serializer)),
-        )
+        self.model_viewset_test_case.assertDictEqual(content, json.loads(schema.json()))
 
     @tag("retrieve")
     def test_retrieve_model_ok(self):
