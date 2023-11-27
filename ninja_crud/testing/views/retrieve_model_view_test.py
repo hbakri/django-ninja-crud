@@ -13,20 +13,26 @@ from ninja_crud.views import RetrieveModelView
 
 class RetrieveModelViewTest(AbstractModelViewTest):
     """
-    Provides a declarative and powerful way to test a RetrieveModelView.
+    Provides a declarative and powerful way to test the retrieve model view.
 
-    This class executes a matrix of test cases to validate the functionality of the RetrieveModelView,
-    checking its behavior under various conditions using combinations of path parameters, headers,
-    query parameters, and payload. Each test method within this class is automatically attached to
-    the test case when instantiated as a class attribute on a ModelViewSetTestCase subclass. The test
-    method names are dynamically generated based on the RetrieveModelView being tested.
+    This class executes a matrix of test cases to validate the functionality of the `RetrieveModelView`,
+    checking its behavior under various conditions using combinations of path parameters and headers.
+
+    Each test method within this class is automatically attached to the test case when instantiated
+    as a class attribute on a `ModelViewSetTestCase` subclass. The test method names are dynamically
+    generated based on the class attribute name. For example, if the `RetrieveModelViewTest` is being
+    used to test a `RetrieveModelView` named `retrieve_department_view`, the test methods will be named
+    `test_retrieve_department_view__test_retrieve_model_ok`,
+    `test_retrieve_department_view__test_retrieve_model_headers_unauthorized`, etc.
+
+    This naming convention ensures clear and consistent identification of test cases.
 
     Attributes:
-        model_view (RetrieveModelView): An instance of the RetrieveModelView under test.
+        model_view (RetrieveModelView): The retrieve model view to be tested.
         model_viewset_test_case (ModelViewSetTestCase): The test case to which this test belongs.
 
     Example:
-    1. Let's say your `ModelViewSet` looks like this:
+    1. Let's say you defined a `RetrieveModelView` like this:
     ```python
     # examples/views/department_views.py
     from ninja_crud import views, viewsets
@@ -37,9 +43,11 @@ class RetrieveModelViewTest(AbstractModelViewTest):
     class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
-        retrieve_department_view = views.RetrieveModelView(output_schema=DepartmentOut)
+        retrieve_department_view = views.RetrieveModelView(
+            output_schema=DepartmentOut
+        )
     ```
-    2. You can test the `RetrieveModelView` like this:
+    2. You can test the `retrieve_department_view` like this:
     ```python
     # examples/tests/test_department_views.py
     from ninja_crud import testing
@@ -54,33 +62,19 @@ class RetrieveModelViewTest(AbstractModelViewTest):
             super().setUpTestData()
             cls.department = Department.objects.create(title="department")
 
-        # Basic Usage: Static components
         test_retrieve_department_view = testing.views.RetrieveModelViewTest(
             path_parameters=testing.components.PathParameters(
                 ok={"id": 1},
                 not_found={"id": 999}
             )
         )
-
-        # Advanced Usage: Dynamic components
-        test_retrieve_department_view = testing.views.RetrieveModelViewTest(
-            path_parameters=lambda test_case: testing.components.PathParameters(
-                ok={"id": test_case.department.id},
-                not_found={"id": 999}
-            )
-        )
     ```
 
     Note:
-        -The class attribute `RetrieveModelViewTest` should be named after the view being tested.
-            For example, if you are testing the `retrieve_department_view` attribute of the
-            `DepartmentViewSet` class, the class attribute should be named
-            `test_retrieve_department_view`.
-        - The test methods' names are dynamically generated based on the RetrieveModelView being tested.
-            For example, if the RetrieveModelViewTest is assigned to a class attribute named
-            `test_retrieve_department_view`, the test methods will be named
-            `test_retrieve_department_view__test_retrieve_model_ok`,
-            `test_retrieve_department_view__test_retrieve_model_headers_unauthorized`, etc.
+        The class attribute `RetrieveModelViewTest` should be named after the view being tested.
+        For example, if you are testing the `retrieve_department_view` attribute of the
+        `DepartmentViewSet` class, the class attribute should be named
+        `test_retrieve_department_view`.
     """
 
     model_view: RetrieveModelView
