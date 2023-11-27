@@ -1,23 +1,23 @@
+import http
 import json
 import logging
-from http import HTTPStatus
 from typing import Optional
 
-from django.http import HttpRequest, HttpResponse
-from django.test import tag
-from ninja import FilterSchema
+import django.http
+import django.test
+import ninja
 from ninja.pagination import LimitOffsetPagination
 
+from ninja_crud import views
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters, QueryParameters
 from ninja_crud.testing.views import AbstractModelViewTest
-from ninja_crud.views.list_model_view import ListModelView
 
 logger = logging.getLogger(__name__)
 
 
 class ListModelViewTest(AbstractModelViewTest):
-    model_view: ListModelView
+    model_view: views.ListModelView
 
     def __init__(
         self,
@@ -25,7 +25,7 @@ class ListModelViewTest(AbstractModelViewTest):
         query_parameters: Optional[ArgOrCallable[QueryParameters, TestCaseType]] = None,
         headers: Optional[ArgOrCallable[Headers, TestCaseType]] = None,
     ) -> None:
-        super().__init__(model_view_class=ListModelView)
+        super().__init__(model_view_class=views.ListModelView)
         self.view_test_manager = ViewTestManager(
             handle_request=self.handle_request,
             path_parameters=path_parameters,
@@ -35,7 +35,7 @@ class ListModelViewTest(AbstractModelViewTest):
 
     def on_successful_request(
         self,
-        response: HttpResponse,
+        response: django.http.HttpResponse,
         path_parameters: dict,
         query_parameters: dict,
         headers: dict,
@@ -48,10 +48,10 @@ class ListModelViewTest(AbstractModelViewTest):
         if self.model_view.filter_schema is not None:
             filters = self.model_view.filter_schema(**query_parameters)
         else:
-            filters = FilterSchema()
+            filters = ninja.FilterSchema()
 
         queryset = self.model_view.list_models(
-            request=HttpRequest(),
+            request=django.http.HttpRequest(),
             id=path_parameters["id"] if self.model_view.detail else None,
             filters=filters,
             model_class=self.model_viewset_test_case.model_viewset_class.model,
@@ -80,7 +80,7 @@ class ListModelViewTest(AbstractModelViewTest):
             self.model_viewset_test_case.assertIsInstance(content["items"], list)
             self.model_viewset_test_case.assertEqual(
                 len(content["items"]),
-                queryset[offset : offset + limit].count(),
+                queryset[offset : offset + limit].count(),  # noqa: E203
             )
 
             for item in content["items"]:
@@ -95,36 +95,46 @@ class ListModelViewTest(AbstractModelViewTest):
                 f"Unsupported pagination class: {self.model_view.pagination_class}"
             )
 
-    @tag("list")
+    def on_failed_request(
+        self,
+        response: django.http.HttpResponse,
+        path_parameters: dict,
+        query_parameters: dict,
+        headers: dict,
+        payload: dict,
+    ):
+        pass
+
+    @django.test.tag("list")
     def test_list_model_ok(self):
         self.view_test_manager.test_view_ok(
             test_case=self.model_viewset_test_case,
             on_completion=self.on_successful_request,
-            status=HTTPStatus.OK,
+            status=http.HTTPStatus.OK,
         )
 
-    @tag("list")
+    @django.test.tag("list")
     def test_list_model_bad_request(self):
         self.view_test_manager.test_view_query_parameters_bad_request(
             test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
-    @tag("list")
+    @django.test.tag("list")
     def test_list_model_unauthorized(self):
         self.view_test_manager.test_view_headers_unauthorized(
             test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
-    @tag("list")
+    @django.test.tag("list")
     def test_list_model_forbidden(self):
         self.view_test_manager.test_view_headers_forbidden(
             test_case=self.model_viewset_test_case,
             on_completion=self.on_failed_request,
         )
 
-    @tag("list")
+    @django.test.tag("list")
     def test_list_model_not_found(self):
         self.view_test_manager.test_view_path_parameters_not_found(
             test_case=self.model_viewset_test_case,

@@ -28,42 +28,49 @@ docs:
   # ------------------- Reference ---------------------
   # --------------------- Views -----------------------
   - title: "AbstractModelView"
+    slug: "abstract-model-view"
     excerpt: "Abstract view for CRUD views"
     categorySlug: "views"
     hidden: false
     order: 0
     path: "docs/reference/views/AbstractModelView.md"
   - title: "ListModelView"
+    slug: "list-model-view"
     excerpt: "List view for CRUD views"
     categorySlug: "views"
     hidden: false
     order: 1
     path: "docs/reference/views/ListModelView.md"
   - title: "CreateModelView"
+    slug: "create-model-view"
     excerpt: "Create view for CRUD views"
     categorySlug: "views"
     hidden: false
     order: 2
     path: "docs/reference/views/CreateModelView.md"
   - title: "RetrieveModelView"
+    slug: "retrieve-model-view"
     excerpt: "Retrieve view for CRUD views"
     categorySlug: "views"
     hidden: false
     order: 3
     path: "docs/reference/views/RetrieveModelView.md"
   - title: "UpdateModelView"
+    slug: "update-model-view"
     excerpt: "Update view for CRUD views"
     categorySlug: "views"
     hidden: false
     order: 4
     path: "docs/reference/views/UpdateModelView.md"
   - title: "DeleteModelView"
+    slug: "delete-model-view"
     excerpt: "Delete view for CRUD views"
     categorySlug: "views"
     hidden: false
     order: 5
     path: "docs/reference/views/DeleteModelView.md"
   - title: "Types"
+    slug: "types"
     excerpt: "Types for CRUD views"
     categorySlug: "views"
     hidden: false
@@ -72,48 +79,98 @@ docs:
 
   # -------------------- Viewsets ---------------------
   - title: "ModelViewSet"
+    slug: "model-viewset"
     excerpt: "ModelViewSet for CRUD viewsets"
     categorySlug: "viewsets"
     hidden: false
     order: 0
     path: "docs/reference/viewsets/ModelViewSet.md"
   - title: "BaseModelViewSet"
+    slug: "base-model-viewset"
     excerpt: "BaseModelViewSet for CRUD viewsets"
     categorySlug: "viewsets"
     hidden: false
     order: 1
     path: "docs/reference/viewsets/BaseModelViewSet.md"
 
-  # -------------------- Testing ----------------------
-  # ------------------- Components --------------------
+  # --------------- Testing Components ----------------
   - title: "PathParameters"
+    slug: "path-parameters"
     excerpt: "PathParameters for testing"
     categorySlug: "testing-components"
     hidden: false
     order: 0
     path: "docs/reference/testing/core/components/PathParameters.md"
   - title: "QueryParameters"
+    slug: "query-parameters"
     excerpt: "QueryParameters for testing"
     categorySlug: "testing-components"
     hidden: false
     order: 1
     path: "docs/reference/testing/core/components/QueryParameters.md"
   - title: "Headers"
+    slug: "headers"
     excerpt: "Headers for testing"
     categorySlug: "testing-components"
     hidden: false
     order: 2
     path: "docs/reference/testing/core/components/Headers.md"
   - title: "Payloads"
+    slug: "payloads"
     excerpt: "Payloads for testing"
     categorySlug: "testing-components"
     hidden: false
     order: 3
     path: "docs/reference/testing/core/components/Payloads.md"
 
-  # -------------------- Viewsets ---------------------
+  # ----------------- Testing Views -------------------
+  - title: "AbstractModelViewTest"
+    slug: "abstract-model-view-test"
+    excerpt: "How to declaratively test AbstractModelView"
+    categorySlug: "testing-views"
+    hidden: false
+    order: 0
+    path: "docs/reference/testing/views/AbstractModelViewTest.md"
+  - title: "ListModelViewTest"
+    slug: "list-model-view-test"
+    excerpt: "How to declaratively test ListModelView"
+    categorySlug: "testing-views"
+    hidden: false
+    order: 1
+    path: "docs/reference/testing/views/ListModelViewTest.md"
+  - title: "CreateModelViewTest"
+    slug: "create-model-view-test"
+    excerpt: "How to declaratively test CreateModelView"
+    categorySlug: "testing-views"
+    hidden: false
+    order: 2
+    path: "docs/reference/testing/views/CreateModelViewTest.md"
+  - title: "RetrieveModelViewTest"
+    slug: "retrieve-model-view-test"
+    excerpt: "How to declaratively test RetrieveModelView"
+    categorySlug: "testing-views"
+    hidden: false
+    order: 3
+    path: "docs/reference/testing/views/RetrieveModelViewTest.md"
+  - title: "UpdateModelViewTest"
+    slug: "update-model-view-test"
+    excerpt: "How to declaratively test UpdateModelView"
+    categorySlug: "testing-views"
+    hidden: false
+    order: 4
+    path: "docs/reference/testing/views/UpdateModelViewTest.md"
+  - title: "DeleteModelViewTest"
+    slug: "delete-model-view-test"
+    excerpt: "How to declaratively test DeleteModelView"
+    categorySlug: "testing-views"
+    hidden: false
+    order: 5
+    path: "docs/reference/testing/views/DeleteModelViewTest.md"
+
+  # ---------------- Testing Viewsets -----------------
   - title: "ModelViewSetTestCase"
-    excerpt: "ModelViewSetTestCase for testing"
+    slug: "model-viewset-test-case"
+    excerpt: "How to test ModelViewSet"
     categorySlug: "testing-viewsets"
     hidden: false
     order: 0

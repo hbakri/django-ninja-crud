@@ -1,8 +1,9 @@
 import json
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Type
 
 import django.http
-from django.utils.http import urlencode
+import django.utils.http
 
 from ninja_crud.views import AbstractModelView
 
@@ -10,20 +11,18 @@ if TYPE_CHECKING:  # pragma: no cover
     from ninja_crud.testing.viewsets import ModelViewSetTestCase
 
 
-class AbstractModelViewTest:
+class AbstractModelViewTest(ABC):
     """
-    Base class for testing model views.
+    Abstract class for testing model views.
 
-    This class provides common functionalities for testing various CRUD operations
-    associated with a Django Ninja model view. It handles the setup and execution
-    of HTTP requests for different test scenarios.
+    Subclasses should implement the `on_successful_request` and `on_failed_request`
+    methods to handle the response from the server. These methods are called after
+    a request is made to the server and the response is received.
 
     Attributes:
-        model_viewset_test_case (ModelViewSetTestCase): The test case class that
-            contains the model viewset to be tested.
-        model_view_class (Type[AbstractModelView]): The model view class to be tested.
-        model_view (AbstractModelView): The model view instance to be tested that is
-            retrieved from the model viewset.
+        model_view_class (Type[AbstractModelView]): The class of the model view to be tested.
+        model_viewset_test_case (ModelViewSetTestCase): The test case to which this test belongs.
+        model_view (AbstractModelView): The model view to be tested.
     """
 
     model_viewset_test_case: "ModelViewSetTestCase"
@@ -63,12 +62,13 @@ class AbstractModelViewTest:
         return self.model_viewset_test_case.client_class().generic(
             method=self.model_view.method.value,
             path=path.format(**path_parameters),
-            QUERY_STRING=urlencode(query_parameters, doseq=True),
+            QUERY_STRING=django.utils.http.urlencode(query_parameters, doseq=True),
             data=json.dumps(payload),
             content_type="application/json",
             **headers,
         )
 
+    @abstractmethod
     def on_successful_request(
         self,
         response: django.http.HttpResponse,
@@ -92,6 +92,7 @@ class AbstractModelViewTest:
         """
         pass
 
+    @abstractmethod
     def on_failed_request(
         self,
         response: django.http.HttpResponse,
