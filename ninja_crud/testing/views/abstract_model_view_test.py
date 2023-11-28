@@ -15,26 +15,28 @@ class AbstractModelViewTest(ABC):
     """
     Abstract class for testing model views.
 
-    Subclasses should implement the `on_successful_request` and `on_failed_request`
-    methods to handle the response from the server. These methods are called after
-    a request is made to the server and the response is received.
+    This class provides a common interface for testing various types of model views. It defines
+    several methods that must be implemented by subclasses, including `on_successful_request` and
+    `on_failed_request`, which handle the response from the server after a request is made.
+
+    Each test method within this class is automatically attached to the test case when instantiated
+    as a class attribute on a `ModelViewSetTestCase` subclass. The test method names are dynamically
+    generated based on the class attribute name.
 
     Attributes:
         model_view (AbstractModelView): The model view to be tested.
-        model_view_class (Type[AbstractModelView]): The class of the model view to be tested.
         model_viewset_test_case (ModelViewSetTestCase): The test case to which this test belongs.
+
+    Note:
+        This is an abstract base class and should not be instantiated directly. Instead, use one of its
+        subclasses like `ListModelViewTest`, `CreateModelViewTest`, `RetrieveModelViewTest`,
+        `UpdateModelViewTest`, or `DeleteModelViewTest`.
     """
 
-    model_viewset_test_case: "ModelViewSetTestCase"
     model_view: AbstractModelView
+    model_viewset_test_case: "ModelViewSetTestCase"
 
     def __init__(self, model_view_class: Type[AbstractModelView]) -> None:
-        """
-        Initialize the model view test.
-
-        Args:
-            model_view_class (Type[AbstractModelView]): The class of the model view to be tested.
-        """
         self.model_view_class = model_view_class
 
     def handle_request(
@@ -46,6 +48,8 @@ class AbstractModelViewTest(ABC):
     ) -> django.http.HttpResponse:
         """
         Handles the execution of an HTTP request.
+
+        This method constructs the HTTP request and sends it to the server, then returns the server's response.
 
         Args:
             path_parameters (dict): The path parameters for the request.
