@@ -165,7 +165,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
         )
 
     @django.test.tag("delete")
-    def test_delete_model_unauthorized(self):
+    def test_delete_model_headers_unauthorized(self):
         """
         Tests the unauthorized headers scenarios.
 
@@ -178,7 +178,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
         )
 
     @django.test.tag("delete")
-    def test_delete_model_forbidden(self):
+    def test_delete_model_headers_forbidden(self):
         """
         Tests the forbidden headers scenarios.
 
@@ -191,7 +191,7 @@ class DeleteModelViewTest(AbstractModelViewTest):
         )
 
     @django.test.tag("delete")
-    def test_delete_model_not_found(self):
+    def test_delete_model_path_parameters_not_found(self):
         """
         Tests the not found path parameter scenarios.
 

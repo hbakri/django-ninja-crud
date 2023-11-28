@@ -136,12 +136,12 @@ class UpdateModelViewTest(AbstractModelViewTest):
             payload (dict): The payload sent with the request.
         """
         actual_output = json.loads(response.content)
-        expected_output = self.get_expected_output(
+        expected_output = self._get_expected_output(
             response=response, path_parameters=path_parameters
         )
         self.model_viewset_test_case.assertDictEqual(actual_output, expected_output)
 
-    def get_expected_output(
+    def _get_expected_output(
         self, response: django.http.HttpResponse, path_parameters: dict
     ) -> dict:
         model_class = self.model_viewset_test_case.model_viewset_class.model

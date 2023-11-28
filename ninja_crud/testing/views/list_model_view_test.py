@@ -29,8 +29,8 @@ class ListModelViewTest(AbstractModelViewTest):
     as a class attribute on a `ModelViewSetTestCase` subclass. The test method names are dynamically
     generated based on the class attribute name. For example, if the `ListModelViewTest` is used
     to test a `ListModelView` named `list_departments_view`, the test methods will be named
-    `test_list_departments_view__test_list_model_ok`,
-    `test_list_departments_view__test_list_model_headers_unauthorized`, etc.
+    `test_list_departments_view__test_list_models_ok`,
+    `test_list_departments_view__test_list_models_headers_unauthorized`, etc.
 
     This naming convention ensures clear and consistent identification of test cases.
 
@@ -136,7 +136,7 @@ class ListModelViewTest(AbstractModelViewTest):
             payload (dict): The payload sent with the request.
         """
         content = json.loads(response.content)
-        queryset = self.get_queryset(
+        queryset = self._get_queryset(
             response=response,
             path_parameters=path_parameters,
             query_parameters=query_parameters,
@@ -145,7 +145,7 @@ class ListModelViewTest(AbstractModelViewTest):
         if self.model_view.pagination_class is None:
             self.model_viewset_test_case.assertIsInstance(content, list)
             self.model_viewset_test_case.assertEqual(len(content), queryset.count())
-            self.validate_response_items(items=content, queryset=queryset)
+            self._validate_response_items(items=content, queryset=queryset)
 
         elif self.model_view.pagination_class == LimitOffsetPagination:
             self.model_viewset_test_case.assertIsInstance(content, dict)
@@ -164,14 +164,14 @@ class ListModelViewTest(AbstractModelViewTest):
                 len(content["items"]),
                 queryset[offset : offset + limit].count(),  # noqa: E203
             )
-            self.validate_response_items(items=content["items"], queryset=queryset)
+            self._validate_response_items(items=content["items"], queryset=queryset)
 
         else:  # pragma: no cover
             logger.warning(
                 f"Unsupported pagination class: {self.model_view.pagination_class}"
             )
 
-    def get_queryset(
+    def _get_queryset(
         self,
         response: django.http.HttpResponse,
         path_parameters: dict,
@@ -189,7 +189,9 @@ class ListModelViewTest(AbstractModelViewTest):
             model_class=self.model_viewset_test_case.model_viewset_class.model,
         )
 
-    def validate_response_items(self, items: list, queryset: django.db.models.QuerySet):
+    def _validate_response_items(
+        self, items: list, queryset: django.db.models.QuerySet
+    ):
         for item in items:
             self.model_viewset_test_case.assertIsInstance(item, dict)
             model = queryset.get(id=item["id"])
@@ -223,7 +225,7 @@ class ListModelViewTest(AbstractModelViewTest):
         pass
 
     @django.test.tag("list")
-    def test_list_model_ok(self):
+    def test_list_models_ok(self):
         """
         Tests the successful scenarios.
 
@@ -237,7 +239,7 @@ class ListModelViewTest(AbstractModelViewTest):
         )
 
     @django.test.tag("list")
-    def test_list_model_bad_request(self):
+    def test_list_models_query_parameters_bad_request(self):
         """
         Tests the bad request query parameter scenarios.
 
@@ -251,7 +253,7 @@ class ListModelViewTest(AbstractModelViewTest):
         )
 
     @django.test.tag("list")
-    def test_list_model_unauthorized(self):
+    def test_list_models_headers_unauthorized(self):
         """
         Tests the unauthorized headers scenarios.
 
@@ -265,7 +267,7 @@ class ListModelViewTest(AbstractModelViewTest):
         )
 
     @django.test.tag("list")
-    def test_list_model_forbidden(self):
+    def test_list_models_headers_forbidden(self):
         """
         Tests the forbidden headers scenarios.
 
@@ -279,7 +281,7 @@ class ListModelViewTest(AbstractModelViewTest):
         )
 
     @django.test.tag("list")
-    def test_list_model_not_found(self):
+    def test_list_models_path_parameters_not_found(self):
         """
         Tests the not found path parameter scenarios.
 
