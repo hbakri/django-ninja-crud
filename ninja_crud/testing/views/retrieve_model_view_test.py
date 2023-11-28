@@ -60,11 +60,11 @@ class RetrieveModelViewTest(AbstractModelViewTest):
 
         def setUpTestData(cls):
             super().setUpTestData()
-            cls.department = Department.objects.create(title="department")
+            cls.department_1 = Department.objects.create(title="department-1")
 
         test_retrieve_department_view = testing.views.RetrieveModelViewTest(
-            path_parameters=testing.components.PathParameters(
-                ok={"id": 1},
+            path_parameters=lambda test_case: testing.components.PathParameters(
+                ok={"id": test_case.department_1.id},
                 not_found={"id": 999}
             )
         )

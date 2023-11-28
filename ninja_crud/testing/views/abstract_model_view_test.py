@@ -20,9 +20,9 @@ class AbstractModelViewTest(ABC):
     a request is made to the server and the response is received.
 
     Attributes:
+        model_view (AbstractModelView): The model view to be tested.
         model_view_class (Type[AbstractModelView]): The class of the model view to be tested.
         model_viewset_test_case (ModelViewSetTestCase): The test case to which this test belongs.
-        model_view (AbstractModelView): The model view to be tested.
     """
 
     model_viewset_test_case: "ModelViewSetTestCase"

@@ -62,16 +62,18 @@ class UpdateModelViewTest(AbstractModelViewTest):
 
         def setUpTestData(cls):
             super().setUpTestData()
-            cls.department = Department.objects.create(title="department")
+            cls.department_1 = Department.objects.create(title="department-1")
+            cls.department_2 = Department.objects.create(title="department-2")
 
         test_update_department_view = testing.views.UpdateModelViewTest(
-            path_parameters=testing.components.PathParameters(
-                ok={"id": 1},
+            path_parameters=lambda test_case: testing.components.PathParameters(
+                ok={"id": test_case.department_1.id},
                 not_found={"id": 999}
             ),
-            payloads=testing.components.Payloads(
-                ok={"title": "updated department"},
-                bad_request={"title": ""}
+            payloads=lambda test_case: testing.components.Payloads(
+                ok={"title": "department-updated"},
+                bad_request={"title": ""},
+                conflict={"title": test_case.department_2.title}
             )
         )
     ```
