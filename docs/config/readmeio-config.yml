@@ -29,49 +29,49 @@ docs:
   # --------------------- Views -----------------------
   - title: "AbstractModelView"
     slug: "abstract-model-view"
-    excerpt: "Abstract view for CRUD views"
+    excerpt: "Overview and usage patterns of the AbstractModelView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 0
     path: "docs/reference/views/AbstractModelView.md"
   - title: "ListModelView"
     slug: "list-model-view"
-    excerpt: "List view for CRUD views"
+    excerpt: "Guide to implementing and utilizing the ListModelView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 1
     path: "docs/reference/views/ListModelView.md"
   - title: "CreateModelView"
     slug: "create-model-view"
-    excerpt: "Create view for CRUD views"
+    excerpt: "Instructions on how to leverage the CreateModelView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 2
     path: "docs/reference/views/CreateModelView.md"
   - title: "RetrieveModelView"
     slug: "retrieve-model-view"
-    excerpt: "Retrieve view for CRUD views"
+    excerpt: "Insight into the workings of the RetrieveModelView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 3
     path: "docs/reference/views/RetrieveModelView.md"
   - title: "UpdateModelView"
     slug: "update-model-view"
-    excerpt: "Update view for CRUD views"
+    excerpt: "Understanding and applying the UpdateModelView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 4
     path: "docs/reference/views/UpdateModelView.md"
   - title: "DeleteModelView"
     slug: "delete-model-view"
-    excerpt: "Delete view for CRUD views"
+    excerpt: "Exploring the functionality of the DeleteModelView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 5
     path: "docs/reference/views/DeleteModelView.md"
   - title: "Types"
     slug: "types"
-    excerpt: "Types for CRUD views"
+    excerpt: "Understanding the different data types used in Django Ninja CRUD views"
     categorySlug: "views"
     hidden: false
     order: 6
@@ -80,14 +80,14 @@ docs:
   # -------------------- Viewsets ---------------------
   - title: "ModelViewSet"
     slug: "model-viewset"
-    excerpt: "ModelViewSet for CRUD viewsets"
+    excerpt: "Detailed examination of ModelViewSet and its role in Django Ninja CRUD viewsets"
     categorySlug: "viewsets"
     hidden: false
     order: 0
     path: "docs/reference/viewsets/ModelViewSet.md"
   - title: "BaseModelViewSet"
     slug: "base-model-viewset"
-    excerpt: "BaseModelViewSet for CRUD viewsets"
+    excerpt: "Insight into the foundation of viewsets with BaseModelViewSet in Django Ninja CRUD"
     categorySlug: "viewsets"
     hidden: false
     order: 1
@@ -96,28 +96,28 @@ docs:
   # --------------- Testing Components ----------------
   - title: "PathParameters"
     slug: "path-parameters"
-    excerpt: "PathParameters for testing"
+    excerpt: "Navigating the intricacies of path parameters in Django Ninja CRUD testing scenarios"
     categorySlug: "testing-components"
     hidden: false
     order: 0
     path: "docs/reference/testing/core/components/PathParameters.md"
   - title: "QueryParameters"
     slug: "query-parameters"
-    excerpt: "QueryParameters for testing"
+    excerpt: "Practical tips for handling query parameters for testing in Django Ninja CRUD"
     categorySlug: "testing-components"
     hidden: false
     order: 1
     path: "docs/reference/testing/core/components/QueryParameters.md"
   - title: "Headers"
     slug: "headers"
-    excerpt: "Headers for testing"
+    excerpt: "Methods to efficiently manage headers in Django Ninja CRUD testing environments"
     categorySlug: "testing-components"
     hidden: false
     order: 2
     path: "docs/reference/testing/core/components/Headers.md"
   - title: "Payloads"
     slug: "payloads"
-    excerpt: "Payloads for testing"
+    excerpt: "Understanding and utilizing payloads in Django Ninja CRUD testing scenarios"
     categorySlug: "testing-components"
     hidden: false
     order: 3
@@ -126,42 +126,42 @@ docs:
   # ----------------- Testing Views -------------------
   - title: "AbstractModelViewTest"
     slug: "abstract-model-view-test"
-    excerpt: "Provides a declarative and powerful way to test the AbstractModelView"
+    excerpt: "Provides a declarative and powerful way to test AbstractModelView"
     categorySlug: "testing-views"
     hidden: false
     order: 0
     path: "docs/reference/testing/views/AbstractModelViewTest.md"
   - title: "ListModelViewTest"
     slug: "list-model-view-test"
-    excerpt: "Provides a declarative and powerful way to test the ListModelView"
+    excerpt: "Provides a declarative and powerful way to test ListModelView"
     categorySlug: "testing-views"
     hidden: false
     order: 1
     path: "docs/reference/testing/views/ListModelViewTest.md"
   - title: "CreateModelViewTest"
     slug: "create-model-view-test"
-    excerpt: "Provides a declarative and powerful way to test the CreateModelView"
+    excerpt: "Provides a declarative and powerful way to test CreateModelView"
     categorySlug: "testing-views"
     hidden: false
     order: 2
     path: "docs/reference/testing/views/CreateModelViewTest.md"
   - title: "RetrieveModelViewTest"
     slug: "retrieve-model-view-test"
-    excerpt: "Provides a declarative and powerful way to test the RetrieveModelView"
+    excerpt: "Provides a declarative and powerful way to test RetrieveModelView"
     categorySlug: "testing-views"
     hidden: false
     order: 3
     path: "docs/reference/testing/views/RetrieveModelViewTest.md"
   - title: "UpdateModelViewTest"
     slug: "update-model-view-test"
-    excerpt: "Provides a declarative and powerful way to test the UpdateModelView"
+    excerpt: "Provides a declarative and powerful way to test UpdateModelView"
     categorySlug: "testing-views"
     hidden: false
     order: 4
     path: "docs/reference/testing/views/UpdateModelViewTest.md"
   - title: "DeleteModelViewTest"
     slug: "delete-model-view-test"
-    excerpt: "Provides a declarative and powerful way to test the DeleteModelView"
+    excerpt: "Provides a declarative and powerful way to test DeleteModelView"
     categorySlug: "testing-views"
     hidden: false
     order: 5
@@ -170,7 +170,7 @@ docs:
   # ---------------- Testing Viewsets -----------------
   - title: "ModelViewSetTestCase"
     slug: "model-viewset-test-case"
-    excerpt: "How to test ModelViewSet"
+    excerpt: "Expanding test coverage with ModelViewSetTestCase in Django Ninja CRUD"
     categorySlug: "testing-viewsets"
     hidden: false
     order: 0
