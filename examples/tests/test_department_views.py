@@ -2,6 +2,7 @@ import uuid
 
 from examples.models import Department, Employee
 from examples.views.department_views import DepartmentViewSet
+from ninja_crud import testing
 from ninja_crud.testing.core.components import PathParameters, Payloads
 from ninja_crud.testing.views import (
     CreateModelViewTest,
@@ -10,10 +11,9 @@ from ninja_crud.testing.views import (
     RetrieveModelViewTest,
     UpdateModelViewTest,
 )
-from ninja_crud.testing.viewsets import ModelViewSetTestCase
 
 
-class TestDepartmentViewSet(ModelViewSetTestCase):
+class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
     model_viewset_class = DepartmentViewSet
     base_path = "api/departments"
 

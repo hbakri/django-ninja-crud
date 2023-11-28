@@ -1,8 +1,9 @@
 import json
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Type
 
 import django.http
-from django.utils.http import urlencode
+import django.utils.http
 
 from ninja_crud.views import AbstractModelView
 
@@ -10,32 +11,32 @@ if TYPE_CHECKING:  # pragma: no cover
     from ninja_crud.testing.viewsets import ModelViewSetTestCase
 
 
-class AbstractModelViewTest:
+class AbstractModelViewTest(ABC):
     """
-    Base class for testing model views.
+    Abstract class for testing model views.
 
-    This class provides common functionalities for testing various CRUD operations
-    associated with a Django Ninja model view. It handles the setup and execution
-    of HTTP requests for different test scenarios.
+    This class provides a common interface for testing various types of model views. It defines
+    several methods that must be implemented by subclasses, including `on_successful_request` and
+    `on_failed_request`, which handle the response from the server after a request is made.
+
+    Each test method within this class is automatically attached to the test case when instantiated
+    as a class attribute on a `ModelViewSetTestCase` subclass. The test method names are dynamically
+    generated based on the class attribute name.
 
     Attributes:
-        model_viewset_test_case (ModelViewSetTestCase): The test case class that
-            contains the model viewset to be tested.
-        model_view_class (Type[AbstractModelView]): The model view class to be tested.
-        model_view (AbstractModelView): The model view instance to be tested that is
-            retrieved from the model viewset.
+        model_view (AbstractModelView): The model view to be tested.
+        model_viewset_test_case (ModelViewSetTestCase): The test case to which this test belongs.
+
+    Note:
+        This is an abstract base class and should not be instantiated directly. Instead, use one of its
+        subclasses like `ListModelViewTest`, `CreateModelViewTest`, `RetrieveModelViewTest`,
+        `UpdateModelViewTest`, or `DeleteModelViewTest`.
     """
 
-    model_viewset_test_case: "ModelViewSetTestCase"
     model_view: AbstractModelView
+    model_viewset_test_case: "ModelViewSetTestCase"
 
     def __init__(self, model_view_class: Type[AbstractModelView]) -> None:
-        """
-        Initialize the model view test.
-
-        Args:
-            model_view_class (Type[AbstractModelView]): The class of the model view to be tested.
-        """
         self.model_view_class = model_view_class
 
     def handle_request(
@@ -47,6 +48,8 @@ class AbstractModelViewTest:
     ) -> django.http.HttpResponse:
         """
         Handles the execution of an HTTP request.
+
+        This method constructs the HTTP request and sends it to the server, then returns the server's response.
 
         Args:
             path_parameters (dict): The path parameters for the request.
@@ -63,12 +66,13 @@ class AbstractModelViewTest:
         return self.model_viewset_test_case.client_class().generic(
             method=self.model_view.method.value,
             path=path.format(**path_parameters),
-            QUERY_STRING=urlencode(query_parameters, doseq=True),
+            QUERY_STRING=django.utils.http.urlencode(query_parameters, doseq=True),
             data=json.dumps(payload),
             content_type="application/json",
             **headers,
         )
 
+    @abstractmethod
     def on_successful_request(
         self,
         response: django.http.HttpResponse,
@@ -92,6 +96,7 @@ class AbstractModelViewTest:
         """
         pass
 
+    @abstractmethod
     def on_failed_request(
         self,
         response: django.http.HttpResponse,
