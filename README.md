@@ -18,7 +18,9 @@ Initially inspired by DRF's [ModelViewSet](https://www.django-rest-framework.org
 - **Powerful Testing Framework**: Leverage a matrix-based testing framework for defining diverse test scenarios declaratively.
 - **Focus on What Matters**: Spend more time solving real-world problems and less on CRUD boilerplate.
 
-Django Ninja CRUD is not just a tool; it's a paradigm shift in Django web application development and testing. Its blend of declarative syntax, modularity, and powerful testing capabilities sets a new standard for developers seeking efficiency and precision.
+> **Django Ninja CRUD is not just a tool; it's a paradigm shift in Django web application development and testing.**
+
+Its blend of declarative syntax, modularity, and powerful testing capabilities sets a new standard for developers seeking efficiency and precision.
 
 ## 📝 Requirements
 
