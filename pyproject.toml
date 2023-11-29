@@ -29,12 +29,7 @@ classifiers = [
     "Framework :: Django :: 3.2",
     "Framework :: Django :: 4.1",
     "Framework :: Django :: 4.2",
-    "Framework :: Django :: 5.0b1",
     "Framework :: Django",
-    "Framework :: Django Ninja :: 0.21",
-    "Framework :: Django Ninja :: 0.22",
-    "Framework :: Django Ninja :: 1.0",
-    "Framework :: Django Ninja",
     "Typing :: Typed",
 ]
 packages = [{ include = "ninja_crud" },]
