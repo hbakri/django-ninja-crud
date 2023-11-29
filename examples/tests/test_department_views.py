@@ -15,7 +15,6 @@ class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
 
     @classmethod
     def setUpTestData(cls):
-        super().setUpTestData()
         cls.department_1 = Department.objects.create(title="department-1")
         cls.department_2 = Department.objects.create(title="department-2")
         cls.employee = Employee.objects.create(
