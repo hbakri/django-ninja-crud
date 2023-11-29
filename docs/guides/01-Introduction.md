@@ -1,12 +1,16 @@
-Django Ninja CRUD is an opinionated and powerful framework that accelerates the development of **CRUD** ([**C**reate, **R**ead, **U**pdate, **D**elete](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete)) operations with [Django Ninja](https://github.com/vitalik/django-ninja), promoting best practices for efficient, robust endpoint creation.
-Equally significant is its integrated testing suite: a robust, user-friendly toolset ensuring that your endpoints are not only swiftly constructed but also meticulously tested and validated, reflecting a commitment to quality and reliability in your development workflow.
+Django Ninja CRUD is a [declarative](https://en.wikipedia.org/wiki/Declarative_programming), powerful, and yet opinionated framework that simplifies the development of **CRUD** ([**C**reate, **R**ead, **U**pdate, **D**elete](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete)) views and tests with [Django Ninja](https://github.com/vitalik/django-ninja).
+It promotes best practices for efficient, robust endpoint creation, allowing you to focus on what matters most: solving real problems.
+Initially inspired by DRF's [ModelViewSet](https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset), Django Ninja CRUD evolved to address its limitations, adopting a [composition-over-inheritance](https://en.wikipedia.org/wiki/Composition_over_inheritance) approach to achieve true modularity – a foundational step towards a broader declarative interface for endpoint creation.
 
-# ⚡️ Key Features
+# ✨ Key Features
+- **Purely Declarative**: Embrace an approach where defining views and tests is a matter of declaring what you want, not how to achieve it.
+- **Unmatched Modularity**: Tailor your viewsets with the desired CRUD views and customize each view's behavior with ease. Extend the flexibility by creating your own subclasses of the provided views and tests.
+- **Powerful Testing Framework**: Leverage a matrix-based testing framework for defining diverse test scenarios declaratively.
+- **Focus on What Matters**: Spend more time solving real-world problems and less on CRUD boilerplate.
 
-- **Streamlined Setup**: With just a few lines of code, your **CRUD** operations are ready to roll. No more copy-pasting or reinventing the wheel for each project.
-- **Focus on What Matters**: Spend your precious time solving real problems, not stitching together basic operations. Django Ninja CRUD is like a trusty sidekick, handling the routine while you strategize the big picture.
-- **Reliable Code**: Predefined blueprints are battle-tested and developer-approved. They're customizable, transparent, and designed with best practices in mind.
-- **Integrated Testing Framework**: A robust, user-friendly toolset ensures that your endpoints are not only swiftly constructed but also meticulously tested and validated, reflecting a commitment to quality and reliability in your development workflow.
+Its blend of declarative syntax, modularity, and powerful testing capabilities sets a new standard for developers seeking efficiency and precision.
+
+> **Django Ninja CRUD is not just a tool; it's a paradigm shift in Django web application development and testing.**
 
 # 📝 Requirements
 
@@ -14,7 +18,7 @@ Equally significant is its integrated testing suite: a robust, user-friendly too
 ![Django versions](https://img.shields.io/badge/3.2%20|%204.1%20|%204.2%20|%205.0b1-blue?color=0C4B33&label=django&logo=django&logoColor=white)
 ![Django Ninja versions](https://img.shields.io/badge/0.21%20|%200.22%20|%201.0-blue?color=black&label=django-ninja&logo=fastapi&logoColor=white)
 
-# 📝 Installation
+# ⚒️ Installation
 
 ```shell
 pip install django-ninja-crud
