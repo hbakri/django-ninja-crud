@@ -14,7 +14,7 @@ Initially inspired by DRF's [ModelViewSet](https://www.django-rest-framework.org
 
 ## ✨ Key Features
 - **Purely Declarative**: Embrace an approach where defining views and tests is a matter of declaring what you want, not how to achieve it.
-- **Unmatched Modularity**: Tailor your ModelViewSet with the desired CRUD operations and customize each operation's behavior with ease. Extend the flexibility by creating your own subclasses of the provided views and tests.
+- **Unmatched Modularity**: Tailor your viewsets with the desired CRUD views and customize each view's behavior with ease. Extend the flexibility by creating your own subclasses of the provided views and tests.
 - **Powerful Testing Framework**: Leverage a matrix-based testing framework for defining diverse test scenarios declaratively.
 - **Focus on What Matters**: Spend more time solving real-world problems and less on CRUD boilerplate.
 
