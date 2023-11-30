@@ -55,50 +55,47 @@ class ModelViewSetTestCase(django.test.TestCase):
     from ninja import NinjaAPI
     from examples.views.department_views import router as department_router
 
-    api = NinjaAPI(urls_namespace="examples")
+    api = NinjaAPI(urls_namespace="api")
     api.add_router("departments", department_router)
     ```
 
     3. Create your test class by subclassing `ModelViewSetTestCase`:
     ```python
     # examples/tests/test_department_views.py
-    from ninja_crud.testing.core.components import PathParameters, Payloads
-    from ninja_crud.testing.views import (
-        CreateModelViewTest,
-        DeleteModelViewTest,
-        ListModelViewTest,
-        RetrieveModelViewTest,
-        UpdateModelViewTest,
-    )
-    from ninja_crud.testing.viewsets import ModelViewSetTestCase
+    from ninja_crud import testing
 
     from examples.models import Department
     from examples.views.department_views import DepartmentViewSet
 
-    class TestDepartmentViewSet(ModelViewSetTestCase):
+    class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
         model_viewset_class = DepartmentViewSet
-        base_path = "examples/departments"
+        base_path = "api/departments"
 
         @classmethod
         def setUpTestData(cls):
-            super().setUpTestData()
             cls.department_1 = Department.objects.create(title="department-1")
             cls.department_2 = Department.objects.create(title="department-2")
 
-        def get_path_parameters(self):
-            return PathParameters(ok={"id": self.department_1.id}, not_found={"id": 9999})
+        @property
+        def path_parameters(self):
+            return testing.components.PathParameters(
+                ok={"id": self.department_1.id},
+                not_found={"id": 9999}
+            )
 
-        payloads = Payloads(
-            ok={"title": "department-3"},
-            bad_request={"wrong_field": "wrong_value"},
-            conflict={"title": "department-2"},
-        )
+        @property
+        def payloads(self):
+            return testing.components.Payloads(
+                ok={"title": "department-3"},
+                bad_request={},
+                conflict={"title": self.department_2.title},
+            )
 
-        test_list_view = ListModelViewTest()
-        test_create_view = CreateModelViewTest(payloads=payloads)
-        test_retrieve_view = RetrieveModelViewTest(path_parameters=get_path_parameters)
-        test_update_view = UpdateModelViewTest(path_parameters=get_path_parameters, payloads=payloads)
-        test_delete_view = DeleteModelViewTest(path_parameters=get_path_parameters)
+        test_list_view = testing.views.ListModelViewTest()
+        test_create_view = testing.views.CreateModelViewTest(payloads)
+        test_retrieve_view = testing.views.RetrieveModelViewTest(path_parameters)
+        test_update_view = testing.views.UpdateModelViewTest(path_parameters, payloads)
+        test_delete_view = testing.views.DeleteModelViewTest(path_parameters)
     ```
 
     Note:
