@@ -61,7 +61,6 @@ class CreateModelViewTest(AbstractModelViewTest):
         base_path = "api/departments"
 
         def setUpTestData(cls):
-            super().setUpTestData()
             cls.department_1 = Department.objects.create(title="department-1")
 
         test_create_department_view = testing.views.CreateModelViewTest(

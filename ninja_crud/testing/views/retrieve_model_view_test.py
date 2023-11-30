@@ -59,7 +59,6 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         base_path = "api/departments"
 
         def setUpTestData(cls):
-            super().setUpTestData()
             cls.department_1 = Department.objects.create(title="department-1")
 
         test_retrieve_department_view = testing.views.RetrieveModelViewTest(
