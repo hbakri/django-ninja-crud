@@ -66,7 +66,6 @@ class ListModelViewTest(AbstractModelViewTest):
         base_path = "api/departments"
 
         def setUpTestData(cls):
-            super().setUpTestData()
             cls.department_1 = Department.objects.create(title="department-1")
             cls.department_2 = Department.objects.create(title="department-2")
             cls.department_3 = Department.objects.create(title="department-3")
