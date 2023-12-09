@@ -15,8 +15,8 @@ Its blend of declarative syntax, modularity, and powerful testing capabilities s
 # 📝 Requirements
 
 ![Python versions](https://img.shields.io/pypi/pyversions/django-ninja-crud.svg?color=306998&label=python&logo=python&logoColor=white)
-![Django versions](https://img.shields.io/badge/3.2%20|%204.1%20|%204.2%20|%205.0b1-blue?color=0C4B33&label=django&logo=django&logoColor=white)
-![Django Ninja versions](https://img.shields.io/badge/0.21%20|%200.22%20|%201.0-blue?color=black&label=django-ninja&logo=fastapi&logoColor=white)
+![Django versions](https://img.shields.io/badge/3.2_|_4.1_|_4.2_|_5.0-blue?color=0C4B33&label=django&logo=django&logoColor=white)
+![Django Ninja versions](https://img.shields.io/badge/0.21_|_0.22_|_1.0_|_1.1-blue?color=black&label=django-ninja&logo=fastapi&logoColor=white)
 
 # ⚒️ Installation
 
