@@ -8,9 +8,13 @@
 
 ![Django Ninja CRUD](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/docs/assets/images/django-ninja-crud-cover.png)
 
-Django Ninja CRUD is a [declarative](https://en.wikipedia.org/wiki/Declarative_programming), powerful, and yet opinionated framework that simplifies the development of **CRUD** ([**C**reate, **R**ead, **U**pdate, **D**elete](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete)) views and tests with [Django Ninja](https://github.com/vitalik/django-ninja).
+Django Ninja CRUD is a powerful, [declarative](https://en.wikipedia.org/wiki/Declarative_programming), and yet opinionated framework that simplifies the development of **CRUD** ([**C**reate, **R**ead, **U**pdate, **D**elete](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete)) endpoints and tests with [Django Ninja](https://github.com/vitalik/django-ninja).
 It promotes best practices for efficient, robust endpoint creation, allowing you to focus on what matters most: solving real problems.
 Initially inspired by DRF's [ModelViewSet](https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset), Django Ninja CRUD evolved to address its limitations, adopting a [composition-over-inheritance](https://en.wikipedia.org/wiki/Composition_over_inheritance) approach to achieve true modularity – a foundational step towards a broader declarative interface for endpoint creation.
+
+## 📖 Featured Article
+I'm excited to share my recent article: [**"Introducing Django Ninja CRUD"**](https://medium.com/@hbakri/introducing-django-ninja-crud-ee937bd2ea65) on Medium.
+This piece dives into the journey of creating Django Ninja CRUD, detailing its features, benefits, and the paradigm shift it brings to Django development.
 
 ## ✨ Key Features
 - **Purely Declarative**: Embrace an approach where defining views and tests is a matter of declaring what you want, not how to achieve it.
@@ -24,9 +28,9 @@ Its blend of declarative syntax, modularity, and powerful testing capabilities s
 
 ## 📝 Requirements
 
-![Python versions](https://img.shields.io/pypi/pyversions/django-ninja-crud.svg?color=306998&label=python&logo=python&logoColor=white)
-![Django versions](https://img.shields.io/badge/3.2_|_4.1_|_4.2_|_5.0-blue?color=0C4B33&label=django&logo=django&logoColor=white)
-![Django Ninja versions](https://img.shields.io/badge/0.21_|_0.22_|_1.0_|_1.1-blue?color=black&label=django-ninja&logo=fastapi&logoColor=white)
+[![Python versions](https://img.shields.io/pypi/pyversions/django-ninja-crud.svg?color=306998&label=python&logo=python&logoColor=white)](https://github.com/python/cpython)
+[![Django versions](https://img.shields.io/badge/3.2_|_4.1_|_4.2_|_5.0-blue?color=0C4B33&label=django&logo=django&logoColor=white)](https://github.com/django/django)
+[![Django Ninja versions](https://img.shields.io/badge/0.21_|_0.22_|_1.0_|_1.1-blue?color=black&label=django-ninja&logo=fastapi&logoColor=white)](https://github.com/vitalik/django-ninja)
 
 ## ⚒️ Installation
 ```bash
