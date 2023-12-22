@@ -46,5 +46,5 @@ jobs:
       env:
         DJANGO_SETTINGS_MODULE: tests.test_settings
       run: |
-        coverage run -m django test
-        coverage report --fail-under=100
+        python -m coverage run -m django test
+        python -m coverage report --fail-under=100
