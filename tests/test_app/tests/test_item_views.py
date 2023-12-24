@@ -36,28 +36,28 @@ class TestItemViewSet(ModelViewSetTestCase, BaseTestCase):
             forbidden={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
         )
 
-    test_list_view = ListModelViewTest(
+    test_list_items = ListModelViewTest(
         headers=get_headers_ok,
         query_parameters=lambda self: QueryParameters(
             ok=[{}, {"order_by": ["name"], "limit": 1}]
         ),
     )
-    test_retrieve_view = RetrieveModelViewTest(
+    test_retrieve_item = RetrieveModelViewTest(
         path_parameters=get_path_parameters,
         headers=get_headers_ok_forbidden,
     )
-    test_update_view = UpdateModelViewTest(
+    test_update_item = UpdateModelViewTest(
         path_parameters=get_path_parameters,
         headers=get_headers_ok_forbidden,
         payloads=Payloads(
             ok={"name": "new-name", "description": "new-description"},
         ),
     )
-    test_delete_view = DeleteModelViewTest(
+    test_delete_item = DeleteModelViewTest(
         path_parameters=get_path_parameters, headers=get_headers_ok_forbidden
     )
 
-    test_list_tags_view = ListModelViewTest(
+    test_list_tags = ListModelViewTest(
         path_parameters=lambda self: PathParameters(ok={"id": self.item_1.id}),
         headers=get_headers_ok,
     )

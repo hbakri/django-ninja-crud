@@ -10,12 +10,12 @@ from tests.test_app.schemas import ItemOut
 class TestListModelView(TestCase):
     def test_register_route_with_router_kwargs(self):
         router_mock = MagicMock()
-        model_view = ListModelView(
+        list_items = ListModelView(
             output_schema=ItemOut,
             router_kwargs={"exclude_unset": True},
         )
 
-        model_view.register_route(router_mock, Item)
+        list_items.register_route(router_mock, "list_items", Item)
 
         router_mock.api_operation.assert_called_once()
         self.assertTrue(router_mock.api_operation.call_args[1]["exclude_unset"])

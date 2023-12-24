@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, Union
 
 from django.db.models import Model
 from django.http import HttpRequest
-from ninja import FilterSchema, Query, Router, Schema
+from ninja import FilterSchema, Query, Schema
 from ninja.pagination import LimitOffsetPagination, PaginationBase, paginate
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
@@ -37,17 +37,22 @@ class ListModelView(AbstractModelView):
         model = Department
 
         # Basic usage: List all departments
-        # GET /departments/
-        list_departments_view = views.ListModelView(output_schema=DepartmentOut)
+        # GET /
+        list_departments = views.ListModelView(output_schema=DepartmentOut)
 
         # Advanced usage: List employees of a specific department
-        # GET /departments/{id}/employees/
-        list_employees_view = views.ListModelView(
+        # GET /{id}/employees/
+        list_employees = views.ListModelView(
             detail=True,
+            path="/{id}/employees/",
             queryset_getter=lambda id: Employee.objects.filter(department_id=id),
             output_schema=EmployeeOut,
         )
     ```
+
+    Note:
+        The attribute name (e.g., `list_departments`, `list_employees`) is flexible and customizable.
+        It serves as the name of the route and the operation id in the OpenAPI schema.
     """
 
     def __init__(
@@ -124,17 +129,16 @@ class ListModelView(AbstractModelView):
         self.queryset_getter = queryset_getter
         self._related_model_class = queryset_getter_model_class
 
-    def register_route(self, router: Router, model_class: Type[Model]) -> None:
+    def build_view(self, model_class: Type[Model]) -> Callable:
         if self.detail:
-            self._register_detail_route(router, model_class)
+            return self._build_detail_view(model_class)
         else:
-            self._register_collection_route(router, model_class)
+            return self._build_collection_view(model_class)
 
-    def _register_detail_route(self, router: Router, model_class: Type[Model]) -> None:
+    def _build_detail_view(self, model_class: Type[Model]) -> Callable:
         filter_schema = self.filter_schema
 
-        @self.configure_route(router=router, model_class=model_class)
-        def list_models(
+        def detail_view(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
             filters: filter_schema = Query(default=FilterSchema()),
@@ -148,18 +152,19 @@ class ListModelView(AbstractModelView):
                 request=request, id=id, filters=filters, model_class=model_class
             )
 
-    def _register_collection_route(
-        self, router: Router, model_class: Type[Model]
-    ) -> None:
+        return detail_view
+
+    def _build_collection_view(self, model_class: Type[Model]) -> Callable:
         filter_schema = self.filter_schema
 
-        @self.configure_route(router=router, model_class=model_class)
-        def list_models(
+        def collection_view(
             request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
         ):
             return self.list_models(
                 request=request, id=None, filters=filters, model_class=model_class
             )
+
+        return collection_view
 
     def list_models(
         self,
@@ -202,59 +207,6 @@ class ListModelView(AbstractModelView):
                 schema would be {200: List[DepartmentOut]}.
         """
         return {HTTPStatus.OK: List[self.output_schema]}
-
-    def get_operation_id(self, model_class: Type[Model]) -> str:
-        """
-        Provides an operation ID for the list view.
-
-        This operation ID is used in API documentation to uniquely identify this view.
-        It can be overriden using the `router_kwargs`.
-
-        Args:
-            model_class (Type[Model]): The Django model class associated with this view.
-
-        Returns:
-            str: The operation ID for the list view. Defaults to:
-                - For `detail=False`: "list_{model_name_to_snake_case}s". For example, for a model "Department",
-                    the operation ID would be "list_departments".
-                - For `detail=True`: "list_{model_name_to_snake_case}_{related_model_name_to_snake_case}s". For
-                    example, for a model "Department" with a related model "Item", the operation ID would be
-                    "list_department_items".
-        """
-        model_name = utils.to_snake_case(model_class.__name__)
-        if self.detail:
-            related_model_name = utils.to_snake_case(self._related_model_class.__name__)
-            return f"list_{model_name}_{related_model_name}s"
-        else:
-            return f"list_{model_name}s"
-
-    def get_summary(self, model_class: Type[Model]) -> str:
-        """
-        Provides a summary description for the list view.
-
-        This summary is used in API documentation to give a brief description of what this view does.
-        It can be overriden using the `router_kwargs`.
-
-        Args:
-            model_class (Type[Model]): The Django model class associated with this view.
-
-        Returns:
-            str: The summary description for the list view. Defaults to:
-                - For `detail=False`: "List {model_name_plural}". For example, for a model "Department",
-                    the summary would be "List Departments".
-                - For `detail=True`: "List {related_model_name_plural} related to a {model_name}". For example,
-                    for a model "Department" with a related model "Item", the summary would be
-                    "List Items related to a Department".
-        """
-        if self.detail:
-            verbose_model_name = model_class._meta.verbose_name
-            verbose_related_model_name_plural = (
-                self._related_model_class._meta.verbose_name_plural
-            )
-            return f"List {verbose_related_model_name_plural} related to a {verbose_model_name}"
-        else:
-            verbose_model_name_plural = model_class._meta.verbose_name_plural
-            return f"List {verbose_model_name_plural}"
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str

@@ -11,7 +11,18 @@ DATABASES = {
         "NAME": ":memory:",
     }
 }
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 ROOT_URLCONF = "tests.test_urls"
+
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": True,
+        "OPTIONS": {},
+    },
+]
 
 LOGGING = {
     "version": 1,

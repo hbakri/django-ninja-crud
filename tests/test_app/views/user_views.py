@@ -16,18 +16,12 @@ router = Router()
 
 class UserViewSet(ModelViewSet):
     model = User
-    input_schema = UserIn
-    output_schema = UserOut
 
-    list_view = ListModelView(output_schema=output_schema, pagination_class=None)
-    create_view = CreateModelView(
-        input_schema=input_schema, output_schema=output_schema
-    )
-    retrieve_view = RetrieveModelView(output_schema=output_schema)
-    update_view = UpdateModelView(
-        input_schema=input_schema, output_schema=output_schema
-    )
-    delete_view = DeleteModelView()
+    list_users = ListModelView(output_schema=UserOut, pagination_class=None)
+    create_user = CreateModelView(input_schema=UserIn, output_schema=UserOut)
+    retrieve_user = RetrieveModelView(output_schema=UserOut)
+    update_user = UpdateModelView(input_schema=UserIn, output_schema=UserOut)
+    delete_user = DeleteModelView()
 
 
 UserViewSet.register_routes(router)

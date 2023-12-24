@@ -9,9 +9,9 @@ from tests.test_app.models import Collection
 class TestDeleteModelView(TestCase):
     def test_register_route_router_kwargs(self):
         router_mock = MagicMock()
-        model_view = DeleteModelView(router_kwargs={"exclude_unset": True})
+        delete_collection = DeleteModelView(router_kwargs={"exclude_unset": True})
 
-        model_view.register_route(router_mock, Collection)
+        delete_collection.register_route(router_mock, "delete_collection", Collection)
 
         router_mock.api_operation.assert_called_once()
         self.assertTrue(router_mock.api_operation.call_args[1]["exclude_unset"])

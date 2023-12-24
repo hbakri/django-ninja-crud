@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
-from ninja import Router, Schema
+from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
@@ -31,9 +31,13 @@ class UpdateModelView(AbstractModelView):
         model = Department
 
         # Usage: Update a department by id
-        # PUT /departments/{id}/
-        update_department_view = views.UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+        # PUT /{id}/
+        update_department = views.UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
     ```
+
+    Note:
+        The attribute name (e.g., `update_department`) is flexible and customizable.
+        It serves as the name of the route and the operation id in the OpenAPI schema.
     """
 
     def __init__(
@@ -43,7 +47,7 @@ class UpdateModelView(AbstractModelView):
         pre_save: Optional[UpdateSaveHook] = None,
         post_save: Optional[UpdateSaveHook] = None,
         method: HTTPMethod = HTTPMethod.PUT,
-        path: Optional[str] = None,
+        path: Optional[str] = "/{id}",
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -76,8 +80,6 @@ class UpdateModelView(AbstractModelView):
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
                 arguments are provided, a warning will be logged and the override will be ignored.
         """
-        if path is None:
-            path = self._get_default_path()
         super().__init__(
             method=method,
             path=path,
@@ -94,11 +96,10 @@ class UpdateModelView(AbstractModelView):
         self.pre_save = pre_save
         self.post_save = post_save
 
-    def register_route(self, router: Router, model_class: Type[Model]) -> None:
+    def build_view(self, model_class: Type[Model]) -> Callable:
         input_schema = self.input_schema
 
-        @self.configure_route(router=router, model_class=model_class)
-        def update_model(
+        def view(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
             payload: input_schema,
@@ -106,6 +107,8 @@ class UpdateModelView(AbstractModelView):
             return HTTPStatus.OK, self.update_model(
                 request=request, id=id, payload=payload, model_class=model_class
             )
+
+        return view
 
     def update_model(
         self, request: HttpRequest, id: Any, payload: Schema, model_class: Type[Model]
@@ -130,10 +133,6 @@ class UpdateModelView(AbstractModelView):
 
         return new_instance
 
-    @staticmethod
-    def _get_default_path() -> str:
-        return "/{id}"
-
     def get_response(self) -> dict:
         """
         Provides a mapping of HTTP status codes to response schemas for the update view.
@@ -148,38 +147,6 @@ class UpdateModelView(AbstractModelView):
                 schema would be {200: DepartmentOut}.
         """
         return {HTTPStatus.OK: self.output_schema}
-
-    def get_operation_id(self, model_class: Type[Model]) -> str:
-        """
-        Provides an operation ID for the update view.
-
-        This operation ID is used in API documentation to uniquely identify this view.
-        It can be overriden using the `router_kwargs`.
-
-        Args:
-            model_class (Type[Model]): The Django model class associated with this view.
-
-        Returns:
-            str: The operation ID for the update view. Defaults to "update_{model_name_to_snake_case}". For
-                example, for a model "Department", the operation ID would be "update_department".
-        """
-        return f"update_{utils.to_snake_case(model_class.__name__)}"
-
-    def get_summary(self, model_class: Type[Model]) -> str:
-        """
-        Provides a summary description for the update view.
-
-        This summary is used in API documentation to give a brief description of what this view does.
-        It can be overriden using the `router_kwargs`.
-
-        Args:
-            model_class (Type[Model]): The Django model class associated with this view.
-
-        Returns:
-            str: The summary description for the update view. Defaults to "Update {model_name}". For
-                example, for a model "Department", the summary would be "Update Department".
-        """
-        return f"Update {model_class.__name__}"
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str

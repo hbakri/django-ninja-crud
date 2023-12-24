@@ -39,11 +39,11 @@ class ModelViewSet:
     class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
-        list_view = views.ListModelView(output_schema=DepartmentOut)
-        create_view = views.CreateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
-        retrieve_view = views.RetrieveModelView(output_schema=DepartmentOut)
-        update_view = views.UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
-        delete_view = views.DeleteModelView()
+        list_departments = views.ListModelView(output_schema=DepartmentOut)
+        create_department = views.CreateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+        retrieve_department = views.RetrieveModelView(output_schema=DepartmentOut)
+        update_department = views.UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+        delete_department = views.DeleteModelView()
 
     # The register_routes method must be called to register the routes
     DepartmentViewSet.register_routes(router)
@@ -117,9 +117,11 @@ class ModelViewSet:
         Parameters:
             router (Router): The Ninja Router to register the routes with.
         """
-        for _, attr_value in inspect.getmembers(cls):
+        for attr_name, attr_value in inspect.getmembers(cls):
             if isinstance(attr_value, AbstractModelView):
-                attr_value.register_route(router, cls.model)
+                attr_value.register_route(
+                    router, operation_id=attr_name, model_class=cls.model
+                )
 
     @classmethod
     def _validate_model_class(cls) -> None:
