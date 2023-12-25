@@ -141,7 +141,7 @@ class ListModelView(AbstractModelView):
         def detail_view(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
-            filters: filter_schema = Query(default=FilterSchema()),
+            filters: filter_schema = Query(default=None, include_in_schema=False),
         ):
             if not model_class.objects.filter(pk=id).exists():
                 raise model_class.DoesNotExist(
@@ -158,7 +158,8 @@ class ListModelView(AbstractModelView):
         filter_schema = self.filter_schema
 
         def collection_view(
-            request: HttpRequest, filters: filter_schema = Query(default=FilterSchema())
+            request: HttpRequest,
+            filters: filter_schema = Query(default=None, include_in_schema=False),
         ):
             return self.list_models(
                 request=request, id=None, filters=filters, model_class=model_class
@@ -170,7 +171,7 @@ class ListModelView(AbstractModelView):
         self,
         request: HttpRequest,
         id: Optional[Any],
-        filters: FilterSchema,
+        filters: Optional[FilterSchema],
         model_class: Type[Model],
     ):
         if self.queryset_getter:
@@ -179,7 +180,10 @@ class ListModelView(AbstractModelView):
         else:
             queryset = model_class.objects.get_queryset()
 
-        return filters.filter(queryset)
+        if filters:
+            queryset = filters.filter(queryset)
+
+        return queryset
 
     @staticmethod
     def _get_default_path(detail: bool, model_class: Type[Model]) -> str:
