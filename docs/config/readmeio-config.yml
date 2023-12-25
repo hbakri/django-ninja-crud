@@ -85,13 +85,6 @@ docs:
     hidden: false
     order: 0
     path: "docs/reference/viewsets/ModelViewSet.md"
-  - title: "BaseModelViewSet"
-    slug: "base-model-viewset"
-    excerpt: "Insight into the foundation of viewsets with BaseModelViewSet in Django Ninja CRUD"
-    categorySlug: "viewsets"
-    hidden: false
-    order: 1
-    path: "docs/reference/viewsets/BaseModelViewSet.md"
 
   # --------------- Testing Components ----------------
   - title: "PathParameters"

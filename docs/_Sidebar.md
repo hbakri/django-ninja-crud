@@ -24,7 +24,6 @@
 ### Viewsets
 
   - [ModelViewSet](ModelViewSet)
-  - [BaseModelViewSet](BaseModelViewSet)
 
 ### Testing
 
