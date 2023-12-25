@@ -7,8 +7,7 @@ from ninja import FilterSchema
 class OrderByFilterSchema(FilterSchema):
     order_by: Optional[List[str]] = None
 
-    @classmethod
-    def filter_order_by(cls, value) -> Q:
+    def filter_order_by(self, value) -> Q:
         return Q()
 
     def filter(self, queryset: QuerySet) -> QuerySet:
