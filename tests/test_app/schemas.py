@@ -3,7 +3,7 @@ from uuid import UUID
 
 from ninja import Schema
 
-from ninja_crud.schemas import OrderableFilterSchema
+from ninja_crud.schemas import OrderByFilterSchema
 
 
 class Identifiable(Schema):
@@ -15,7 +15,7 @@ class Representable(Schema):
     description: Optional[str] = None
 
 
-class CollectionFilter(OrderableFilterSchema):
+class CollectionFilter(OrderByFilterSchema):
     name: Optional[str] = None
 
 

@@ -179,10 +179,6 @@ class ListModelView(AbstractModelView):
         else:
             queryset = model_class.objects.get_queryset()
 
-        order_by_filters = filters.dict().pop("order_by", None)
-        if order_by_filters is not None:
-            queryset = queryset.order_by(*order_by_filters)
-
         return filters.filter(queryset)
 
     @staticmethod
