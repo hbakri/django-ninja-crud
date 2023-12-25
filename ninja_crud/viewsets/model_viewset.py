@@ -109,7 +109,7 @@ class ModelViewSet:
     @classmethod
     def register_routes(cls, router: Router) -> None:
         """
-        Register the routes with the given Ninja Router.
+        Register the routes with the given Ninja Router in the order they were defined.
 
         This method should be called after all the views have been attached to the
         ModelViewSet subclass.
@@ -117,11 +117,18 @@ class ModelViewSet:
         Parameters:
             router (Router): The Ninja Router to register the routes with.
         """
-        for attr_name, attr_value in inspect.getmembers(cls):
-            if isinstance(attr_value, AbstractModelView):
-                attr_value.register_route(
-                    router, operation_id=attr_name, model_class=cls.model
-                )
+        view_attributes = {
+            name: view
+            for name, view in inspect.getmembers(cls)
+            if isinstance(view, AbstractModelView)
+        }
+
+        attribute_order = list(cls.__dict__)
+        ordered_view_attributes = sorted(
+            view_attributes.items(), key=lambda item: attribute_order.index(item[0])
+        )
+        for name, view in ordered_view_attributes:
+            view.register_route(router, view_name=name, model_class=cls.model)
 
     @classmethod
     def _validate_model_class(cls) -> None:

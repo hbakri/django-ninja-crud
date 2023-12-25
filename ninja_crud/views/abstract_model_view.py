@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Callable, List, Optional, Type
 
 from django.db.models import Model
+from django.http import HttpRequest
 from ninja import Router
 
 from ninja_crud.views.enums import HTTPMethod
@@ -72,23 +73,23 @@ class AbstractModelView(ABC):
         pass
 
     def register_route(
-        self, router: Router, operation_id: str, model_class: Type[Model]
+        self, router: Router, view_name: str, model_class: Type[Model]
     ) -> None:
         view = self.build_view(model_class=model_class)
-        view.__name__ = operation_id
-        self._configure_route(router=router, operation_id=operation_id)(view)
+        view.__name__ = view_name
+        self._create_route_decorator(router=router)(view)
 
-    def _configure_route(self, router: Router, operation_id: str):
-        def decorator(route_func):
-            @router.api_operation(**self._get_router_kwargs(operation_id=operation_id))
+    def _create_route_decorator(self, router: Router):
+        def route_decorator(view: Callable):
+            @router.api_operation(**self._get_router_kwargs(view.__name__))
             @utils.merge_decorators(self.decorators)
-            @functools.wraps(route_func)
-            def wrapped_func(*args, **kwargs):
-                return route_func(*args, **kwargs)
+            @functools.wraps(view)
+            def wrapped_view(request: HttpRequest, *args, **kwargs):
+                return view(request, *args, **kwargs)
 
-            return wrapped_func
+            return wrapped_view
 
-        return decorator
+        return route_decorator
 
     def _get_router_kwargs(self, operation_id: str) -> dict:
         return {
