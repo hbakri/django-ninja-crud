@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
-from ninja import Router, Schema
+from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
@@ -33,16 +33,20 @@ class RetrieveModelView(AbstractModelView):
         model = Department
 
         # Usage: Retrieve a department by id
-        # GET /departments/{id}/
-        retrieve_department_view = views.RetrieveModelView(output_schema=DepartmentOut)
+        # GET /{id}
+        retrieve_department = views.RetrieveModelView(output_schema=DepartmentOut)
     ```
+
+    Note:
+        The attribute name (e.g., `retrieve_department`) is flexible and customizable.
+        It serves as the name of the route and the operation id in the OpenAPI schema.
     """
 
     def __init__(
         self,
         output_schema: Optional[Type[Schema]] = None,
         queryset_getter: Optional[DetailQuerySetGetter] = None,
-        path: Optional[str] = None,
+        path: Optional[str] = "/{id}",
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -62,8 +66,6 @@ class RetrieveModelView(AbstractModelView):
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
                 arguments are provided, a warning will be logged and the override will be ignored.
         """
-        if path is None:
-            path = self._get_default_path()
         super().__init__(
             method=HTTPMethod.GET,
             path=path,
@@ -72,17 +74,18 @@ class RetrieveModelView(AbstractModelView):
             router_kwargs=router_kwargs,
         )
 
+        self.output_schema = output_schema
+
+        self.queryset_getter = queryset_getter
         QuerySetGetterValidator.validate(queryset_getter, detail=self.detail)
 
-        self.output_schema = output_schema
-        self.queryset_getter = queryset_getter
-
-    def register_route(self, router: Router, model_class: Type[Model]) -> None:
-        @self.configure_route(router=router, model_class=model_class)
-        def retrieve_model(request: HttpRequest, id: utils.get_id_type(model_class)):
+    def build_view(self, model_class: Type[Model]) -> Callable:
+        def view(request: HttpRequest, id: utils.get_id_type(model_class)):
             return HTTPStatus.OK, self.retrieve_model(
                 request=request, id=id, model_class=model_class
             )
+
+        return view
 
     def retrieve_model(self, request: HttpRequest, id: Any, model_class: Type[Model]):
         if self.queryset_getter:
@@ -91,10 +94,6 @@ class RetrieveModelView(AbstractModelView):
             queryset = model_class.objects.get_queryset()
 
         return queryset.get(pk=id)
-
-    @staticmethod
-    def _get_default_path() -> str:
-        return "/{id}"
 
     def get_response(self) -> dict:
         """
@@ -110,38 +109,6 @@ class RetrieveModelView(AbstractModelView):
                 schema would be {200: DepartmentOut}.
         """
         return {HTTPStatus.OK: self.output_schema}
-
-    def get_operation_id(self, model_class: Type[Model]) -> str:
-        """
-        Provides an operation ID for the retrieve view.
-
-        This operation ID is used in API documentation to uniquely identify this view.
-        It can be overriden using the `router_kwargs`.
-
-        Args:
-            model_class (Type[Model]): The Django model class associated with this view.
-
-        Returns:
-            str: The operation ID for the retrieve view. Defaults to "retrieve_{model_name_to_snake_case}". For
-                example, for a model "Department", the operation ID would be "retrieve_department".
-        """
-        return f"retrieve_{utils.to_snake_case(model_class.__name__)}"
-
-    def get_summary(self, model_class: Type[Model]) -> str:
-        """
-        Provides a summary description for the retrieve view.
-
-        This summary is used in API documentation to give a brief description of what this view does.
-        It can be overriden using the `router_kwargs`.
-
-        Args:
-            model_class (Type[Model]): The Django model class associated with this view.
-
-        Returns:
-            str: The summary description for the retrieve view. Defaults to "Retrieve {model_name}". For
-                example, for a model "Department", the summary would be "Retrieve Department".
-        """
-        return f"Retrieve {model_class.__name__}"
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str

@@ -1,7 +1,6 @@
 from functools import wraps
 
 from django.core.exceptions import PermissionDenied
-from django.http import HttpRequest
 from ninja import Router
 
 from ninja_crud.views import (
@@ -26,10 +25,10 @@ router = Router()
 
 def user_is_creator(func):
     @wraps(func)
-    def wrapper(request: HttpRequest, *args, **kwargs):
+    def wrapper(request, *args, **kwargs):
         collection_id = kwargs.get("id")
         collection = Collection.objects.get(id=collection_id)
-        if collection.created_by != request.user:
+        if collection.created_by != request.auth:
             raise PermissionDenied()
         return func(request, *args, **kwargs)
 
@@ -38,39 +37,38 @@ def user_is_creator(func):
 
 class CollectionViewSet(ModelViewSet):
     model = Collection
-    input_schema = CollectionIn
-    output_schema = CollectionOut
-    filter_schema = CollectionFilter
 
-    list_view = ListModelView(output_schema=output_schema, filter_schema=filter_schema)
-    create_view = CreateModelView(
-        input_schema=input_schema,
-        output_schema=output_schema,
+    list_collections = ListModelView(
+        output_schema=CollectionOut, filter_schema=CollectionFilter
+    )
+    create_collection = CreateModelView(
+        input_schema=CollectionIn,
+        output_schema=CollectionOut,
         model_factory=lambda: Collection(),
         pre_save=lambda request, instance: setattr(
-            instance, "created_by", request.user
+            instance, "created_by", request.auth
         ),
         post_save=lambda request, instance: None,
     )
-    retrieve_view = RetrieveModelView(output_schema=output_schema)
-    update_view = UpdateModelView(
-        input_schema=input_schema,
-        output_schema=output_schema,
+    retrieve_collection = RetrieveModelView(output_schema=CollectionOut)
+    update_collection = UpdateModelView(
+        input_schema=CollectionIn,
+        output_schema=CollectionOut,
         decorators=[user_is_creator],
     )
-    delete_view = DeleteModelView(
+    delete_collection = DeleteModelView(
         pre_delete=lambda request, instance: None,
         post_delete=lambda request, id, deleted_instance: None,
         decorators=[user_is_creator],
     )
 
-    list_items_view = ListModelView(
+    list_collection_items = ListModelView(
         detail=True,
         queryset_getter=lambda id: Item.objects.filter(collection_id=id),
         output_schema=ItemOut,
         decorators=[user_is_creator],
     )
-    create_item_view = CreateModelView(
+    create_collection_item = CreateModelView(
         detail=True,
         model_factory=lambda id: Item(collection_id=id),
         input_schema=ItemIn,

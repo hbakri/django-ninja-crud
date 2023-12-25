@@ -85,11 +85,11 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     default_input_schema = DepartmentIn
     default_output_schema = DepartmentOut
 
-    list_view = views.ListModelView()
-    create_view = views.CreateModelView()
-    retrieve_view = views.RetrieveModelView()
-    update_view = views.UpdateModelView()
-    delete_view = views.DeleteModelView()
+    list_departments = views.ListModelView()
+    create_department = views.CreateModelView()
+    retrieve_department = views.RetrieveModelView()
+    update_department = views.UpdateModelView()
+    delete_department = views.DeleteModelView()
 
 
 # The register_routes method must be called to register the routes
@@ -138,11 +138,11 @@ class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
             conflict={"title": self.department_2.title},
         )
 
-    test_list_view = testing.views.ListModelViewTest()
-    test_create_view = testing.views.CreateModelViewTest(payloads)
-    test_retrieve_view = testing.views.RetrieveModelViewTest(path_parameters)
-    test_update_view = testing.views.UpdateModelViewTest(path_parameters, payloads)
-    test_delete_view = testing.views.DeleteModelViewTest(path_parameters)
+    test_list_departments = testing.views.ListModelViewTest()
+    test_create_department = testing.views.CreateModelViewTest(payloads)
+    test_retrieve_department = testing.views.RetrieveModelViewTest(path_parameters)
+    test_update_department = testing.views.UpdateModelViewTest(path_parameters, payloads)
+    test_delete_department = testing.views.DeleteModelViewTest(path_parameters)
 
     # You can then add additional tests as needed
     def test_retrieve_department_statistics(self):

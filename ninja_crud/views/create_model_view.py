@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, Union
 
 from django.db.models import Model
 from django.http import HttpRequest
-from ninja import Router, Schema
+from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
@@ -37,21 +37,26 @@ class CreateModelView(AbstractModelView):
         model = Department
 
         # Basic usage: Create a department
-        # POST /departments/
-        create_department_view = views.CreateModelView(
+        # POST /
+        create_department = views.CreateModelView(
             input_schema=DepartmentIn,
             output_schema=DepartmentOut
         )
 
         # Advanced usage: Create an employee for a specific department
-        # POST /departments/{id}/employees/
-        create_employee_view = views.CreateModelView(
+        # POST /{id}/employees/
+        create_employee = views.CreateModelView(
             detail=True,
+            path="/{id}/employees/",
             model_factory=lambda id: Employee(department_id=id),
             input_schema=EmployeeIn,
             output_schema=EmployeeOut,
         )
     ```
+
+    Note:
+        The attribute name (e.g., `create_department`, `create_employee`) is flexible and customizable.
+        It serves as the name of the route and the operation id in the OpenAPI schema.
     """
 
     def __init__(
@@ -142,17 +147,16 @@ class CreateModelView(AbstractModelView):
         self.post_save = post_save
         self._related_model_class = model_factory_class
 
-    def register_route(self, router: Router, model_class: Type[Model]) -> None:
+    def build_view(self, model_class: Type[Model]) -> Callable:
         if self.detail:
-            self._register_detail_route(router, model_class)
+            return self._build_detail_view(model_class)
         else:
-            self._register_collection_route(router, model_class)
+            return self._build_collection_view(model_class)
 
-    def _register_detail_route(self, router: Router, model_class: Type[Model]) -> None:
+    def _build_detail_view(self, model_class: Type[Model]) -> Callable:
         input_schema = self.input_schema
 
-        @self.configure_route(router=router, model_class=model_class)
-        def create_model(
+        def detail_view(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
             payload: input_schema,
@@ -166,16 +170,17 @@ class CreateModelView(AbstractModelView):
                 request=request, id=id, payload=payload, model_class=model_class
             )
 
-    def _register_collection_route(
-        self, router: Router, model_class: Type[Model]
-    ) -> None:
+        return detail_view
+
+    def _build_collection_view(self, model_class: Type[Model]) -> Callable:
         input_schema = self.input_schema
 
-        @self.configure_route(router=router, model_class=model_class)
-        def create_model(request: HttpRequest, payload: input_schema):
+        def collection_view(request: HttpRequest, payload: input_schema):
             return HTTPStatus.CREATED, self.create_model(
                 request=request, id=None, payload=payload, model_class=model_class
             )
+
+        return collection_view
 
     def create_model(
         self,
@@ -228,59 +233,6 @@ class CreateModelView(AbstractModelView):
                 schema would be {201: DepartmentOut}.
         """
         return {HTTPStatus.CREATED: self.output_schema}
-
-    def get_operation_id(self, model_class: Type[Model]) -> str:
-        """
-        Provides an operation ID for the create view.
-
-        This operation ID is used in API documentation to uniquely identify this view.
-        It can be overriden using the `router_kwargs`.
-
-        Args:
-            model_class (Type[Model]): The Django model class associated with this view.
-
-        Returns:
-            str: The operation ID for the create view. Defaults to:
-                - For `detail=False`: "create_{model_name_to_snake_case}". For example, for a model "Department",
-                    the operation ID would be "create_department".
-                - For `detail=True`: "create_{model_name_to_snake_case}_{related_model_name_to_snake_case}". For
-                    example, for a model "Department" and a related model "Item", the operation ID would be
-                    "create_department_item".
-        """
-        model_name = utils.to_snake_case(model_class.__name__)
-        if self.detail:
-            related_model_name = utils.to_snake_case(self._related_model_class.__name__)
-            return f"create_{model_name}_{related_model_name}"
-        else:
-            return f"create_{model_name}"
-
-    def get_summary(self, model_class: Type[Model]) -> str:
-        """
-        Provides a summary description for the create view.
-
-        This summary is used in API documentation to give a brief description of what this view does.
-        It can be overriden using the `router_kwargs`.
-
-        Args:
-            model_class (Type[Model]): The Django model class associated with this view.
-
-        Returns:
-            str: The summary description for the create view. Defaults to:
-                - For `detail=False`: "Create {model_name}". For example, for a model "Department", the summary
-                    would be "Create Department".
-                - For `detail=True`: "Create {related_model_name} related to a {model_name}". For example, for a
-                    model "Department" and a related model "Item", the summary would be "Create Item related to a
-                    Department".
-        """
-        verbose_model_name = model_class._meta.verbose_name
-        if self.detail:
-            verbose_model_name = model_class._meta.verbose_name
-            verbose_related_model_name = self._related_model_class._meta.verbose_name
-            return (
-                f"Create {verbose_related_model_name} related to a {verbose_model_name}"
-            )
-        else:
-            return f"Create {verbose_model_name}"
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str

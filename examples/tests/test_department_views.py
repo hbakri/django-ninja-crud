@@ -33,13 +33,15 @@ class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
         conflict={"title": "department-2"},
     )
 
-    test_list_view = testing.views.ListModelViewTest()
-    test_create_view = testing.views.CreateModelViewTest(payloads=department_payloads)
-    test_retrieve_view = testing.views.RetrieveModelViewTest(path_parameters)
-    test_update_view = testing.views.UpdateModelViewTest(
+    test_list_departments = testing.views.ListModelViewTest()
+    test_create_department = testing.views.CreateModelViewTest(
+        payloads=department_payloads
+    )
+    test_retrieve_department = testing.views.RetrieveModelViewTest(path_parameters)
+    test_update_department = testing.views.UpdateModelViewTest(
         path_parameters, payloads=department_payloads
     )
-    test_delete_view = testing.views.DeleteModelViewTest(path_parameters)
+    test_delete_department = testing.views.DeleteModelViewTest(path_parameters)
 
     employee_payloads = testing.components.Payloads(
         ok={
@@ -49,9 +51,9 @@ class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
         bad_request={"first_name": 1},
     )
 
-    test_list_employees_view = testing.views.ListModelViewTest(
+    test_list_employees = testing.views.ListModelViewTest(
         path_parameters=path_parameters
     )
-    test_create_employee_view = testing.views.CreateModelViewTest(
+    test_create_employee = testing.views.CreateModelViewTest(
         path_parameters=path_parameters, payloads=employee_payloads
     )

@@ -33,10 +33,10 @@ class TestUserViewSet(ModelViewSetTestCase, BaseTestCase):
             },
         )
 
-    test_list_view = ListModelViewTest()
-    test_create_view = CreateModelViewTest(payloads=get_user_payloads)
-    test_retrieve_view = RetrieveModelViewTest(path_parameters=get_path_parameters)
-    test_update_view = UpdateModelViewTest(
+    test_list_users = ListModelViewTest()
+    test_create_user = CreateModelViewTest(payloads=get_user_payloads)
+    test_retrieve_user = RetrieveModelViewTest(path_parameters=get_path_parameters)
+    test_update_user = UpdateModelViewTest(
         path_parameters=get_path_parameters, payloads=get_user_payloads
     )
-    test_delete_view = DeleteModelViewTest(path_parameters=get_path_parameters)
+    test_delete_user = DeleteModelViewTest(path_parameters=get_path_parameters)

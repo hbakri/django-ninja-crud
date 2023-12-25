@@ -41,8 +41,8 @@ class TestEmployeeViewSet(ModelViewSetTestCase):
         bad_request={"first_name": 1},
     )
 
-    test_retrieve_view = RetrieveModelViewTest(path_parameters=get_path_parameters)
-    test_update_view = UpdateModelViewTest(
+    test_retrieve_employee = RetrieveModelViewTest(path_parameters=get_path_parameters)
+    test_update_employee = UpdateModelViewTest(
         path_parameters=get_path_parameters, payloads=employee_payloads
     )
-    test_delete_view = DeleteModelViewTest(path_parameters=get_path_parameters)
+    test_delete_employee = DeleteModelViewTest(path_parameters=get_path_parameters)

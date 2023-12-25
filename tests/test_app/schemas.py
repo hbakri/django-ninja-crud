@@ -35,6 +35,10 @@ class ItemOut(Identifiable, Representable):
     collection_id: UUID
 
 
+class TagOut(Identifiable, Representable):
+    pass
+
+
 class UserIn(Schema):
     username: str
     email: str

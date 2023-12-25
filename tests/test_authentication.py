@@ -7,7 +7,4 @@ class TokenBearer(HttpBearer):
     def authenticate(self, request: HttpRequest, token: str) -> bool:
         user_queryset = User.objects.filter(id=token)
         if user_queryset.exists():
-            request.user = user_queryset.get()
-            return True
-        else:
-            return False
+            return user_queryset.get()

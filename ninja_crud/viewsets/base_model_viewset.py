@@ -90,7 +90,7 @@ class BaseModelViewSet(ModelViewSet):
     update_view = UpdateModelView()
     delete_view = DeleteModelView()
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs):  # pragma: no cover
         """
         Special method in Python that is automatically called when a class is subclassed.
 
