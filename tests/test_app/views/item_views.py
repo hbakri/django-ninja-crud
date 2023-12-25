@@ -3,7 +3,7 @@ from functools import wraps
 from django.core.exceptions import PermissionDenied
 from ninja import Router
 
-from ninja_crud.schemas import OrderableFilterSchema
+from ninja_crud.schemas import OrderByFilterSchema
 from ninja_crud.views import (
     DeleteModelView,
     ListModelView,
@@ -35,7 +35,7 @@ class ItemViewSet(ModelViewSet):
     default_output_schema = ItemOut
 
     list_items = ListModelView(
-        filter_schema=OrderableFilterSchema,
+        filter_schema=OrderByFilterSchema,
         queryset_getter=lambda: Item.objects.get_queryset(),
     )
     retrieve_item = RetrieveModelView(
