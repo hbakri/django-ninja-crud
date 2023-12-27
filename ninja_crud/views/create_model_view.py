@@ -67,7 +67,7 @@ class CreateModelView(AbstractModelView):
         model_factory: Union[DetailModelFactory, CollectionModelFactory, None] = None,
         pre_save: Union[CreateDetailSaveHook, CreateCollectionSaveHook, None] = None,
         post_save: Union[CreateDetailSaveHook, CreateCollectionSaveHook, None] = None,
-        path: Optional[str] = None,
+        path: str = "/",
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -106,14 +106,8 @@ class CreateModelView(AbstractModelView):
                 - For `detail=True`: (request: HttpRequest, id: Any, instance: Model) -> None
 
                 If not provided, the function will be a no-op.
-            path (Optional[str], optional): The path to use for the view. Defaults to:
-                - For `detail=False`: "/"
-                - For `detail=True`: "/{id}/{related_model_name_plural_to_snake_case}/"
-
-                Where `related_model_name_plural_to_snake_case` refers to the plural form of the related model's name,
-                converted to snake_case. For example, for a related model "ItemDetail", the path might look like
-                "/{id}/item_details/". This format is particularly useful when querying related entities or
-                sub-resources of a main resource.
+            path (str, optional): The path to use for the view. Defaults to "/". If `detail=True`, the path must
+                be provided and should contain the id of the object. See the example above for more details.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
@@ -123,15 +117,11 @@ class CreateModelView(AbstractModelView):
             raise ValueError(
                 "Expected 'model_factory' when 'detail=True', but found None."
             )
-        ModelFactoryValidator.validate(model_factory, detail)
-        model_factory_class: Optional[Type[Model]] = (
-            model_factory(None).__class__ if detail else None
-        )
-
-        if path is None:
-            path = self._get_default_path(
-                detail=detail, model_class=model_factory_class
+        if detail and path == "/":
+            raise ValueError(
+                "Expected 'path' to be non-default when 'detail=True', but found '/'"
             )
+
         super().__init__(
             method=HTTPMethod.POST,
             path=path,
@@ -142,10 +132,10 @@ class CreateModelView(AbstractModelView):
 
         self.input_schema = input_schema
         self.output_schema = output_schema
+        ModelFactoryValidator.validate(model_factory, detail)
         self.model_factory = model_factory
         self.pre_save = pre_save
         self.post_save = post_save
-        self._related_model_class = model_factory_class
 
     def build_view(self, model_class: Type[Model]) -> Callable:
         if self.detail:
@@ -210,14 +200,6 @@ class CreateModelView(AbstractModelView):
             self.post_save(*args)
 
         return instance
-
-    @staticmethod
-    def _get_default_path(detail: bool, model_class: Type[Model]) -> str:
-        if detail:
-            related_model_name = utils.to_snake_case(model_class.__name__)
-            return f"/{{id}}/{related_model_name}s/"
-        else:
-            return "/"
 
     def get_response(self) -> dict:
         """

@@ -38,7 +38,7 @@ class DeleteModelView(AbstractModelView):
         self,
         pre_delete: Optional[PreDeleteHook] = None,
         post_delete: Optional[PostDeleteHook] = None,
-        path: Optional[str] = "/{id}",
+        path: str = "/{id}",
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -58,7 +58,7 @@ class DeleteModelView(AbstractModelView):
                 Should have the signature (request: HttpRequest, id: Any, deleted_instance: Model) -> None.
 
                 If not provided, the function will be a no-op.
-            path (Optional[str], optional): The path to use for the view. Defaults to "/{id}".
+            path (str, optional): The path to use for the view. Defaults to "/{id}".
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these

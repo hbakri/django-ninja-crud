@@ -32,10 +32,20 @@ class TestCreateModelView(TestCase):
                 output_schema=ItemOut,
             )
 
+        # path must be provided if detail=True
+        with self.assertRaises(ValueError):
+            CreateModelView(
+                detail=True,
+                model_factory=lambda id: Item(),
+                input_schema=ItemIn,
+                output_schema=ItemOut,
+            )
+
         # model_factory must be callable
         with self.assertRaises(TypeError):
             CreateModelView(
                 detail=True,
+                path="/{id}/items/",
                 model_factory="not callable",
                 input_schema=ItemIn,
                 output_schema=ItemOut,
@@ -45,6 +55,7 @@ class TestCreateModelView(TestCase):
         with self.assertRaises(TypeError):
             CreateModelView(
                 detail=True,
+                path="/{id}/items/",
                 model_factory=lambda id: None,
                 input_schema=ItemIn,
                 output_schema=ItemOut,
@@ -54,6 +65,7 @@ class TestCreateModelView(TestCase):
         with self.assertRaises(ValueError):
             CreateModelView(
                 detail=True,
+                path="/{id}/items/",
                 model_factory=lambda: Item(),
                 input_schema=ItemIn,
                 output_schema=ItemOut,

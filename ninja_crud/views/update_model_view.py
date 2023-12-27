@@ -47,7 +47,7 @@ class UpdateModelView(AbstractModelView):
         pre_save: Optional[UpdateSaveHook] = None,
         post_save: Optional[UpdateSaveHook] = None,
         method: HTTPMethod = HTTPMethod.PUT,
-        path: Optional[str] = "/{id}",
+        path: str = "/{id}",
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -74,7 +74,7 @@ class UpdateModelView(AbstractModelView):
 
                 If not provided, the function will be a no-op.
             method (HTTPMethod, optional): The HTTP method for the view. Defaults to HTTPMethod.PUT.
-            path (Optional[str], optional): The path to use for the view. Defaults to "/{id}".
+            path (str, optional): The path to use for the view. Defaults to "/{id}".
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
@@ -87,6 +87,7 @@ class UpdateModelView(AbstractModelView):
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
+
         if method.value not in [HTTPMethod.PUT.value, HTTPMethod.PATCH.value]:
             raise ValueError(
                 f"Expected 'method' to be either PUT or PATCH, but found {method}."

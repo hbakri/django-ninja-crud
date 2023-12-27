@@ -64,12 +64,14 @@ class CollectionViewSet(ModelViewSet):
 
     list_collection_items = ListModelView(
         detail=True,
+        path="/{id}/items/",
         queryset_getter=lambda id: Item.objects.filter(collection_id=id),
         output_schema=ItemOut,
         decorators=[user_is_creator],
     )
     create_collection_item = CreateModelView(
         detail=True,
+        path="/{id}/items/",
         model_factory=lambda id: Item(collection_id=id),
         input_schema=ItemIn,
         output_schema=ItemOut,
