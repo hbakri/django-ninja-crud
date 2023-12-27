@@ -1,12 +1,7 @@
-import re
 from typing import Type
 from uuid import UUID
 
 from django.db.models import Model
-
-
-def to_snake_case(name: str, separator: str = "_"):
-    return re.sub(r"(?<!^)(?=[A-Z])", separator, name).lower()
 
 
 def merge_decorators(decorators):

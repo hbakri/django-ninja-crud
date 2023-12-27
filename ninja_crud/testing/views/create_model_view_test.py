@@ -133,7 +133,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         self.model_viewset_test_case.assertIn("id", content)
 
         if self.model_view.detail:
-            model_class = self.model_view._related_model_class
+            model_class = self.model_view.model_factory(None).__class__
         else:
             model_class = self.model_viewset_test_case.model_viewset_class.model
         model = model_class.objects.get(id=content["id"])
