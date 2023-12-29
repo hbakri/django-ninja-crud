@@ -50,7 +50,6 @@ class ItemViewSet(ModelViewSet):
     delete_item = DeleteModelView(decorators=[user_is_collection_creator])
 
     list_tags = ListModelView(
-        detail=True,
         path="/{id}/tags/",
         queryset_getter=lambda id: Tag.objects.filter(items__id=id),
         output_schema=TagOut,

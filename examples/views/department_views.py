@@ -19,13 +19,11 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     delete_department = views.DeleteModelView()
 
     list_employees = views.ListModelView(
-        detail=True,
         path="/{id}/employees/",
         queryset_getter=lambda id: Employee.objects.filter(department_id=id),
         output_schema=EmployeeOut,
     )
     create_employee = views.CreateModelView(
-        detail=True,
         path="/{id}/employees/",
         model_factory=lambda id: Employee(department_id=id),
         input_schema=EmployeeIn,

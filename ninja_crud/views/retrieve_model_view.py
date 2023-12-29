@@ -9,6 +9,7 @@ from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.helpers import utils
 from ninja_crud.views.helpers.types import DetailQuerySetGetter
+from ninja_crud.views.validators.path_validator import PathValidator
 from ninja_crud.views.validators.queryset_getter_validator import (
     QuerySetGetterValidator,
 )
@@ -60,7 +61,7 @@ class RetrieveModelView(AbstractModelView):
                 for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet[Model].
 
                 If not provided, the default manager of the `model` specified in the `ModelViewSet` will be used.
-            path (str, optional): The path to use for the view. Defaults to "/{id}".
+            path (str, optional): The path to use for the view. Defaults to "/{id}". Must include a "{id}" parameter.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
@@ -69,13 +70,14 @@ class RetrieveModelView(AbstractModelView):
         super().__init__(
             method=HTTPMethod.GET,
             path=path,
-            detail=True,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
 
+        PathValidator.validate(path=path, allow_no_parameters=False)
+        QuerySetGetterValidator.validate(queryset_getter=queryset_getter, path=path)
+
         self.output_schema = output_schema
-        QuerySetGetterValidator.validate(queryset_getter, detail=self.detail)
         self.queryset_getter = queryset_getter
 
     def build_view(self, model_class: Type[Model]) -> Callable:

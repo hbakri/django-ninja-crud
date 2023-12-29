@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -9,10 +9,8 @@ from ninja.pagination import LimitOffsetPagination, PaginationBase, paginate
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.helpers import utils
-from ninja_crud.views.helpers.types import (
-    CollectionQuerySetGetter,
-    DetailQuerySetGetter,
-)
+from ninja_crud.views.helpers.types import QuerySetGetter
+from ninja_crud.views.validators.path_validator import PathValidator
 from ninja_crud.views.validators.queryset_getter_validator import (
     QuerySetGetterValidator,
 )
@@ -43,7 +41,6 @@ class ListModelView(AbstractModelView):
         # Advanced usage: List employees of a specific department
         # GET /{id}/employees/
         list_employees = views.ListModelView(
-            detail=True,
             path="/{id}/employees/",
             queryset_getter=lambda id: Employee.objects.filter(department_id=id),
             output_schema=EmployeeOut,
@@ -59,10 +56,7 @@ class ListModelView(AbstractModelView):
         self,
         output_schema: Optional[Type[Schema]] = None,
         filter_schema: Optional[Type[FilterSchema]] = None,
-        detail: bool = False,
-        queryset_getter: Union[
-            DetailQuerySetGetter, CollectionQuerySetGetter, None
-        ] = None,
+        queryset_getter: Optional[QuerySetGetter] = None,
         pagination_class: Optional[Type[PaginationBase]] = LimitOffsetPagination,
         path: str = "/",
         decorators: Optional[List[Callable]] = None,
@@ -75,52 +69,40 @@ class ListModelView(AbstractModelView):
             output_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved objects.
                 Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
             filter_schema (Optional[Type[FilterSchema]], optional): The schema used to validate the filters.
-            detail (bool, optional): Whether the view is a detail or collection view. Defaults to False.
-
-                If set to True, `queryset_getter` must be provided.
-            queryset_getter (Union[DetailQuerySetGetter, CollectionQuerySetGetter, None], optional): A
-                function to customize the queryset used for retrieving the objects. Defaults to None.
-                The function should have one of the following signatures:
-                - For `detail=False`: () -> QuerySet[Model]
-                - For `detail=True`: (id: Any) -> QuerySet[Model]
+            queryset_getter (Optional[QuerySetGetter], optional): A function to customize the queryset used
+                to retrieve the objects. Defaults to None.
+                - If `path` has no parameters: () -> QuerySet[Model]
+                - If `path` has a "{id}" parameter: (id: Any) -> QuerySet[Model]
 
                 If not provided, the default manager of the `model` specified in the `ModelViewSet` will be used.
             pagination_class (Optional[Type[PaginationBase]], optional): The pagination class to use for the view.
                 Defaults to LimitOffsetPagination.
-            path (str, optional): The path to use for the view. Defaults to "/". If `detail=True`, the path must
-                be provided and should contain the id of the object. See the example above for more details.
+            path (str, optional): The path to use for the view. Defaults to "/". The path may include a "{id}"
+                parameter to indicate that the view is for a specific instance of the model.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
                 arguments are provided, a warning will be logged and the override will be ignored.
         """
-        if detail and queryset_getter is None:
-            raise ValueError(
-                "Expected 'queryset_getter' when 'detail=True', but found None."
-            )
-        if detail and path == "/":
-            raise ValueError(
-                "Expected 'path' to be non-default when 'detail=True', but found '/'"
-            )
-
         super().__init__(
             method=HTTPMethod.GET,
             path=path,
-            detail=detail,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
 
+        PathValidator.validate(path=path, allow_no_parameters=True)
+        QuerySetGetterValidator.validate(queryset_getter=queryset_getter, path=path)
+
         self.output_schema = output_schema
         self.filter_schema = filter_schema
-        QuerySetGetterValidator.validate(queryset_getter, detail=self.detail)
         self.queryset_getter = queryset_getter
         self.pagination_class = pagination_class
         if self.pagination_class is not None:
             self.decorators.append(paginate(self.pagination_class))
 
     def build_view(self, model_class: Type[Model]) -> Callable:
-        if self.detail:
+        if "{id}" in self.path:
             return self._build_detail_view(model_class)
         else:
             return self._build_collection_view(model_class)
@@ -165,7 +147,7 @@ class ListModelView(AbstractModelView):
         model_class: Type[Model],
     ):
         if self.queryset_getter:
-            args = [id] if self.detail else []
+            args = [id] if "{id}" in self.path else []
             queryset = self.queryset_getter(*args)
         else:
             queryset = model_class.objects.get_queryset()

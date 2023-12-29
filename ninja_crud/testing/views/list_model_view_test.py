@@ -183,7 +183,7 @@ class ListModelViewTest(AbstractModelViewTest):
 
         return self.model_view.list_models(
             request=response.wsgi_request,  # type: ignore
-            id=path_parameters["id"] if self.model_view.detail else None,
+            id=path_parameters["id"] if "{id}" in self.model_view.path else None,
             filters=filters,
             model_class=self.model_viewset_test_case.model_viewset_class.model,
         )

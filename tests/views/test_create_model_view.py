@@ -23,40 +23,11 @@ class TestCreateModelView(TestCase):
 
     # noinspection PyTypeChecker
     def test_model_factory_validator(self):
-        # model_factory must be provided if detail=True
-        with self.assertRaises(ValueError):
-            CreateModelView(
-                detail=True,
-                model_factory=None,
-                input_schema=ItemIn,
-                output_schema=ItemOut,
-            )
-
-        # path must be provided if detail=True
-        with self.assertRaises(ValueError):
-            CreateModelView(
-                detail=True,
-                model_factory=lambda id: Item(),
-                input_schema=ItemIn,
-                output_schema=ItemOut,
-            )
-
         # model_factory must be callable
         with self.assertRaises(TypeError):
             CreateModelView(
-                detail=True,
                 path="/{id}/items/",
                 model_factory="not callable",
-                input_schema=ItemIn,
-                output_schema=ItemOut,
-            )
-
-        # model_factory must return an instance
-        with self.assertRaises(TypeError):
-            CreateModelView(
-                detail=True,
-                path="/{id}/items/",
-                model_factory=lambda id: None,
                 input_schema=ItemIn,
                 output_schema=ItemOut,
             )
@@ -64,7 +35,6 @@ class TestCreateModelView(TestCase):
         # model_factory must have the correct number of arguments
         with self.assertRaises(ValueError):
             CreateModelView(
-                detail=True,
                 path="/{id}/items/",
                 model_factory=lambda: Item(),
                 input_schema=ItemIn,
@@ -73,7 +43,6 @@ class TestCreateModelView(TestCase):
 
         with self.assertRaises(ValueError):
             CreateModelView(
-                detail=False,
                 model_factory=lambda id: Collection(),
                 input_schema=ItemIn,
                 output_schema=ItemOut,

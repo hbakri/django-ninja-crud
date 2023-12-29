@@ -30,13 +30,6 @@ class TestRetrieveModelView(TestCase):
                 output_schema=ItemOut,
             )
 
-        # queryset_getter must return a queryset
-        with self.assertRaises(TypeError):
-            RetrieveModelView(
-                queryset_getter=lambda id: None,
-                output_schema=ItemOut,
-            )
-
         # queryset_getter must have the correct number of arguments
         with self.assertRaises(ValueError):
             RetrieveModelView(

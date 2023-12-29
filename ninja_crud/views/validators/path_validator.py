@@ -2,35 +2,33 @@ import re
 
 
 class PathValidator:
-    @staticmethod
-    def validate(path: str, detail: bool) -> None:
+    @classmethod
+    def validate(cls, path: str, allow_no_parameters: bool = True) -> None:
         if not isinstance(path, str):
             raise TypeError(
                 f"Expected 'path' to be a string, but found type {type(path)}."
             )
 
-        if not path.startswith("/"):
+        if not cls._is_path_valid(path, allow_no_parameters):
+            expected = (
+                "a path with no parameters or" if allow_no_parameters else "a path with"
+            )
             raise ValueError(
-                f"Expected 'path' to start with a forward slash ('/'), but found '{path}'."
+                f"Invalid path '{path}'. Expected {expected} exactly one '{{id}}' parameter."
             )
 
-        if detail:
-            PathValidator._validate_for_detail(path)
-        else:
-            PathValidator._validate_for_collection(path)
-
-    @staticmethod
-    def _validate_for_detail(path: str) -> None:
-        pattern = re.compile(r"^/?[^{]*(\{id})[^{]*$")
-        if not pattern.match(path):
-            raise ValueError(
-                f"Detail route path must contain only one parameter, and that should be {{id}}, got '{path}'"
-            )
+    @classmethod
+    def _is_path_valid(cls, path: str, allow_no_parameters: bool) -> bool:
+        has_no_parameters = cls._has_no_parameters(path)
+        has_only_id_parameter = cls._has_only_id_parameter(path)
+        return has_only_id_parameter or (allow_no_parameters and has_no_parameters)
 
     @staticmethod
-    def _validate_for_collection(path: str) -> None:
-        pattern = re.compile(r"^/?[^{]*$")
-        if not pattern.match(path):
-            raise ValueError(
-                f"Collection route path must not contain any parameters, got '{path}'"
-            )
+    def _has_no_parameters(path: str) -> bool:
+        no_parameters_pattern = r"^[^{}]*$"
+        return re.match(no_parameters_pattern, path) is not None
+
+    @staticmethod
+    def _has_only_id_parameter(path: str) -> bool:
+        only_id_parameter_pattern = r"^[^{}]*\{id\}[^{}]*$"
+        return re.match(only_id_parameter_pattern, path) is not None

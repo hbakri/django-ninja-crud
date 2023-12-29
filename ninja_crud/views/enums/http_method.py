@@ -2,22 +2,26 @@ from enum import Enum
 
 
 class HTTPMethod(str, Enum):
-    """HTTP request methods and their descriptions.
+    """HTTP methods and descriptions
 
-    See https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods for more information.
+    Methods from the following RFCs are all observed:
+
+        * RFC 7231: Hypertext Transfer Protocol (HTTP/1.1), obsoletes 2616
+        * RFC 5789: PATCH Method for HTTP
     """
 
-    def __new__(cls, value, description=""):
-        obj = str.__new__(cls)
+    def __new__(cls, value, description):
+        obj = str.__new__(cls, value)
         obj._value_ = value
-
         obj.description = description
         return obj
 
-    GET = "GET", "Retrieve a resource"
-    POST = "POST", "Create a resource"
-    PUT = "PUT", "Update a resource"
-    DELETE = "DELETE", "Delete a resource"
-    PATCH = "PATCH", "Partially update a resource"
-    HEAD = "HEAD", "Retrieve resource headers"
-    OPTIONS = "OPTIONS", "Retrieve resource options"
+    CONNECT = "CONNECT", "Establish a connection to the server."
+    DELETE = "DELETE", "Remove the target."
+    GET = "GET", "Retrieve the target."
+    HEAD = "HEAD", "Same as GET, but only retrieve the status line and header section."
+    OPTIONS = "OPTIONS", "Describe the communication options for the target."
+    PATCH = "PATCH", "Apply partial modifications to a target."
+    POST = "POST", "Perform target-specific processing with the request payload."
+    PUT = "PUT", "Replace the target with the request payload."
+    TRACE = "TRACE", "Perform a message loop-back test along the path to the target."

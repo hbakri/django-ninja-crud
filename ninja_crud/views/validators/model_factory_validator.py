@@ -1,18 +1,12 @@
 from inspect import signature
 from types import MappingProxyType
-from typing import Union
 
-from django.db.models import Model
-
-from ninja_crud.views.helpers.types import CollectionModelFactory, DetailModelFactory
+from ninja_crud.views.helpers.types import ModelFactory
 
 
 class ModelFactoryValidator:
-    @staticmethod
-    def validate(
-        model_factory: Union[DetailModelFactory, CollectionModelFactory],
-        detail: bool,
-    ) -> None:
+    @classmethod
+    def validate(cls, model_factory: ModelFactory, path: str) -> None:
         if model_factory is None:
             return
 
@@ -22,36 +16,23 @@ class ModelFactoryValidator:
             )
 
         parameters = signature(model_factory).parameters
-        if detail:
-            ModelFactoryValidator._validate_for_detail(model_factory, parameters)
+        if "{id}" in path:
+            cls._validate_detail(parameters)
         else:
-            ModelFactoryValidator._validate_for_collection(model_factory, parameters)
+            cls._validate_collection(parameters)
 
     @staticmethod
-    def _validate_for_detail(
-        model_factory: DetailModelFactory, parameters: MappingProxyType
-    ) -> None:
+    def _validate_detail(parameters: MappingProxyType) -> None:
         if len(parameters) != 1:
             raise ValueError(
-                f"Expected 'model_factory' to accept a single 'id' parameter when 'detail=True'. "
+                f"Expected 'model_factory' to accept a single 'id' parameter when path contains '{{id}}'. "
                 f"Instead, found {len(parameters)} parameters: {', '.join(parameters)}."
             )
-        ModelFactoryValidator._check_model_type(model=model_factory(None))
 
     @staticmethod
-    def _validate_for_collection(
-        model_factory: CollectionModelFactory, parameters: MappingProxyType
-    ) -> None:
+    def _validate_collection(parameters: MappingProxyType) -> None:
         if len(parameters) != 0:
             raise ValueError(
-                f"Expected 'model_factory' to accept no parameters when 'detail=False'. "
+                f"Expected 'model_factory' to accept no parameters when path does not contain '{{id}}'. "
                 f"Instead, found {len(parameters)} parameters: {', '.join(parameters)}."
-            )
-        ModelFactoryValidator._check_model_type(model=model_factory())
-
-    @staticmethod
-    def _check_model_type(model: Model) -> None:
-        if not isinstance(model, Model):
-            raise TypeError(
-                f"Expected 'model_factory' to return an instance of a Django Model, but found type {type(model)}."
             )

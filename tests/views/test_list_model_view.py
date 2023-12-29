@@ -22,44 +22,17 @@ class TestListModelView(TestCase):
 
     # noinspection PyTypeChecker
     def test_queryset_getter_validator(self):
-        # queryset_getter must be provided if detail=True
-        with self.assertRaises(ValueError):
-            ListModelView(
-                detail=True,
-                queryset_getter=None,
-                output_schema=ItemOut,
-            )
-
-        # path must be provided if detail=True
-        with self.assertRaises(ValueError):
-            ListModelView(
-                detail=True,
-                queryset_getter=lambda id: Item.objects.get_queryset(),
-                output_schema=ItemOut,
-            )
-
         # queryset_getter must be callable
         with self.assertRaises(TypeError):
             ListModelView(
-                detail=True,
                 path="/{id}/items/",
                 queryset_getter="not callable",
-                output_schema=ItemOut,
-            )
-
-        # queryset_getter must return a queryset
-        with self.assertRaises(TypeError):
-            ListModelView(
-                detail=True,
-                path="/{id}/items/",
-                queryset_getter=lambda id: None,
                 output_schema=ItemOut,
             )
 
         # queryset_getter must have the correct number of arguments
         with self.assertRaises(ValueError):
             ListModelView(
-                detail=True,
                 path="/{id}/items/",
                 queryset_getter=lambda: Item.objects.get_queryset(),
                 output_schema=ItemOut,
@@ -67,7 +40,6 @@ class TestListModelView(TestCase):
 
         with self.assertRaises(ValueError):
             ListModelView(
-                detail=False,
                 queryset_getter=lambda id: Item.objects.get_queryset(),
                 output_schema=ItemOut,
             )
