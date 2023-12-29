@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
-from ninja import Router
+from ninja import FilterSchema, Router, Schema
 
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.helpers import utils
@@ -28,6 +28,9 @@ class AbstractModelView(ABC):
         self,
         method: HTTPMethod,
         path: str,
+        filter_schema: Optional[Type[FilterSchema]] = None,
+        input_schema: Optional[Type[Schema]] = None,
+        output_schema: Optional[Type[Schema]] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -37,6 +40,12 @@ class AbstractModelView(ABC):
         Args:
             method (HTTPMethod): The HTTP method for the view.
             path (str): The path to use for the view.
+            filter_schema (Optional[Type[FilterSchema]], optional): The schema used to deserialize the query parameters.
+                Defaults to None.
+            input_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
+                Defaults to None.
+            output_schema (Optional[Type[Schema]], optional): The schema used to serialize the response body.
+                Defaults to None.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
@@ -45,6 +54,9 @@ class AbstractModelView(ABC):
         HTTPMethodValidator.validate(method=method)
         self.method = method
         self.path = path
+        self.filter_schema = filter_schema
+        self.input_schema = input_schema
+        self.output_schema = output_schema
         self.decorators = decorators or []
         self.router_kwargs = router_kwargs or {}
         self.viewset_class: Optional[Type["ModelViewSet"]] = None
@@ -140,3 +152,23 @@ class AbstractModelView(ABC):
                     f"Could not determine '{attribute_name}' for {viewset_class.__name__}.{model_view_name}."
                 )
             setattr(self, attribute_name, default_attribute)
+
+    def bind_default_input_schema(
+        self, viewset_class: Type["ModelViewSet"], model_view_name: str
+    ) -> None:
+        self.bind_default_value(
+            viewset_class=viewset_class,
+            model_view_name=model_view_name,
+            attribute_name="input_schema",
+            default_attribute_name="default_input_schema",
+        )
+
+    def bind_default_output_schema(
+        self, viewset_class: Type["ModelViewSet"], model_view_name: str
+    ) -> None:
+        self.bind_default_value(
+            viewset_class=viewset_class,
+            model_view_name=model_view_name,
+            attribute_name="output_schema",
+            default_attribute_name="default_output_schema",
+        )

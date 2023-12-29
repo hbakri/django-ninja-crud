@@ -110,6 +110,9 @@ class CreateModelView(AbstractModelView):
         super().__init__(
             method=HTTPMethod.POST,
             path=path,
+            filter_schema=None,
+            input_schema=input_schema,
+            output_schema=output_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -117,8 +120,6 @@ class CreateModelView(AbstractModelView):
         PathValidator.validate(path=path, allow_no_parameters=True)
         ModelFactoryValidator.validate(model_factory=model_factory, path=path)
 
-        self.input_schema = input_schema
-        self.output_schema = output_schema
         self.model_factory = model_factory
         self.pre_save = pre_save
         self.post_save = post_save
@@ -210,15 +211,5 @@ class CreateModelView(AbstractModelView):
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         super().bind_to_viewset(viewset_class, model_view_name)
-        self.bind_default_value(
-            viewset_class=viewset_class,
-            model_view_name=model_view_name,
-            attribute_name="output_schema",
-            default_attribute_name="default_output_schema",
-        )
-        self.bind_default_value(
-            viewset_class=viewset_class,
-            model_view_name=model_view_name,
-            attribute_name="input_schema",
-            default_attribute_name="default_input_schema",
-        )
+        self.bind_default_input_schema(viewset_class, model_view_name)
+        self.bind_default_output_schema(viewset_class, model_view_name)
