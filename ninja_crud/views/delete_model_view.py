@@ -70,6 +70,9 @@ class DeleteModelView(AbstractModelView):
         super().__init__(
             method=HTTPMethod.DELETE,
             path=path,
+            filter_schema=None,
+            input_schema=None,
+            output_schema=None,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
-from ninja import Router
+from ninja import FilterSchema, Router, Schema
 
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.helpers import utils
@@ -28,6 +28,9 @@ class AbstractModelView(ABC):
         self,
         method: HTTPMethod,
         path: str,
+        filter_schema: Optional[Type[FilterSchema]] = None,
+        input_schema: Optional[Type[Schema]] = None,
+        output_schema: Optional[Type[Schema]] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -37,6 +40,12 @@ class AbstractModelView(ABC):
         Args:
             method (HTTPMethod): The HTTP method for the view.
             path (str): The path to use for the view.
+            filter_schema (Optional[Type[Schema]], optional): The schema used to deserialize the query parameters.
+                Defaults to None.
+            input_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
+                Defaults to None.
+            output_schema (Optional[Type[Schema]], optional): The schema used to serialize the response body.
+                Defaults to None.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
@@ -45,6 +54,9 @@ class AbstractModelView(ABC):
         HTTPMethodValidator.validate(method=method)
         self.method = method
         self.path = path
+        self.filter_schema = filter_schema
+        self.input_schema = input_schema
+        self.output_schema = output_schema
         self.decorators = decorators or []
         self.router_kwargs = router_kwargs or {}
         self.viewset_class: Optional[Type["ModelViewSet"]] = None

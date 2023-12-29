@@ -70,6 +70,9 @@ class RetrieveModelView(AbstractModelView):
         super().__init__(
             method=HTTPMethod.GET,
             path=path,
+            filter_schema=None,
+            input_schema=None,
+            output_schema=output_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -77,7 +80,6 @@ class RetrieveModelView(AbstractModelView):
         PathValidator.validate(path=path, allow_no_parameters=False)
         QuerySetGetterValidator.validate(queryset_getter=queryset_getter, path=path)
 
-        self.output_schema = output_schema
         self.queryset_getter = queryset_getter
 
     def build_view(self, model_class: Type[Model]) -> Callable:

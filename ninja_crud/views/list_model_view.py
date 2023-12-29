@@ -87,6 +87,9 @@ class ListModelView(AbstractModelView):
         super().__init__(
             method=HTTPMethod.GET,
             path=path,
+            filter_schema=filter_schema,
+            input_schema=None,
+            output_schema=output_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -94,8 +97,6 @@ class ListModelView(AbstractModelView):
         PathValidator.validate(path=path, allow_no_parameters=True)
         QuerySetGetterValidator.validate(queryset_getter=queryset_getter, path=path)
 
-        self.output_schema = output_schema
-        self.filter_schema = filter_schema
         self.queryset_getter = queryset_getter
         self.pagination_class = pagination_class
         if self.pagination_class is not None:

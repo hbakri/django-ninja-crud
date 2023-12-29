@@ -110,6 +110,9 @@ class CreateModelView(AbstractModelView):
         super().__init__(
             method=HTTPMethod.POST,
             path=path,
+            filter_schema=None,
+            input_schema=input_schema,
+            output_schema=output_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -117,8 +120,6 @@ class CreateModelView(AbstractModelView):
         PathValidator.validate(path=path, allow_no_parameters=True)
         ModelFactoryValidator.validate(model_factory=model_factory, path=path)
 
-        self.input_schema = input_schema
-        self.output_schema = output_schema
         self.model_factory = model_factory
         self.pre_save = pre_save
         self.post_save = post_save

@@ -85,6 +85,9 @@ class UpdateModelView(AbstractModelView):
         super().__init__(
             method=method,
             path=path,
+            filter_schema=None,
+            input_schema=input_schema,
+            output_schema=output_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -94,8 +97,6 @@ class UpdateModelView(AbstractModelView):
         )
         PathValidator.validate(path=path, allow_no_parameters=False)
 
-        self.input_schema = input_schema
-        self.output_schema = output_schema
         self.pre_save = pre_save
         self.post_save = post_save
 
