@@ -8,6 +8,7 @@ from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.helpers import utils
 from ninja_crud.views.helpers.types import PostDeleteHook, PreDeleteHook
+from ninja_crud.views.validators.path_validator import PathValidator
 
 
 class DeleteModelView(AbstractModelView):
@@ -49,16 +50,18 @@ class DeleteModelView(AbstractModelView):
             pre_delete (Optional[PreDeleteHook], optional): A function that is called before deleting the instance.
                 Defaults to None.
 
-                Should have the signature (request: HttpRequest, instance: Model) -> None.
+                The function should have the signature:
+                - (request: HttpRequest, instance: Model) -> None.
 
                 If not provided, the function will be a no-op.
             post_delete (Optional[PostDeleteHook], optional): A function that is called after deleting the instance.
                 Defaults to None.
 
-                Should have the signature (request: HttpRequest, id: Any, deleted_instance: Model) -> None.
+                The function should have the signature:
+                - (request: HttpRequest, id: Any, deleted_instance: Model) -> None.
 
                 If not provided, the function will be a no-op.
-            path (str, optional): The path to use for the view. Defaults to "/{id}".
+            path (str, optional): The path to use for the view. Defaults to "/{id}". Must include a "{id}" parameter.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
@@ -67,10 +70,12 @@ class DeleteModelView(AbstractModelView):
         super().__init__(
             method=HTTPMethod.DELETE,
             path=path,
-            detail=True,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
+
+        PathValidator.validate(path=path, allow_no_parameters=False)
+
         self.pre_delete = pre_delete
         self.post_delete = post_delete
 

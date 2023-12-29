@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -9,12 +9,11 @@ from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.helpers import utils
 from ninja_crud.views.helpers.types import (
-    CollectionModelFactory,
-    CreateCollectionSaveHook,
-    CreateDetailSaveHook,
-    DetailModelFactory,
+    CreateHook,
+    ModelFactory,
 )
 from ninja_crud.views.validators.model_factory_validator import ModelFactoryValidator
+from ninja_crud.views.validators.path_validator import PathValidator
 
 if TYPE_CHECKING:  # pragma: no cover
     from ninja_crud.viewsets import ModelViewSet
@@ -46,7 +45,6 @@ class CreateModelView(AbstractModelView):
         # Advanced usage: Create an employee for a specific department
         # POST /{id}/employees/
         create_employee = views.CreateModelView(
-            detail=True,
             path="/{id}/employees/",
             model_factory=lambda id: Employee(department_id=id),
             input_schema=EmployeeIn,
@@ -63,10 +61,9 @@ class CreateModelView(AbstractModelView):
         self,
         input_schema: Optional[Type[Schema]] = None,
         output_schema: Optional[Type[Schema]] = None,
-        detail: bool = False,
-        model_factory: Union[DetailModelFactory, CollectionModelFactory, None] = None,
-        pre_save: Union[CreateDetailSaveHook, CreateCollectionSaveHook, None] = None,
-        post_save: Union[CreateDetailSaveHook, CreateCollectionSaveHook, None] = None,
+        model_factory: Optional[ModelFactory] = None,
+        pre_save: Optional[CreateHook] = None,
+        post_save: Optional[CreateHook] = None,
         path: str = "/",
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
@@ -79,66 +76,55 @@ class CreateModelView(AbstractModelView):
                 Defaults to None. If not provided, the `default_input_schema` of the `ModelViewSet` will be used.
             output_schema (Optional[Type[Schema]], optional): The schema used to serialize the created instance.
                 Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
-            detail (bool, optional): Whether the view is a detail or collection view. Defaults to False.
-
-                If set to True, `model_factory` must be provided.
-            model_factory (Union[DetailModelFactory, CollectionModelFactory, None], optional): A function
-                that returns a new instance of a model. Defaults to None.
+            model_factory (Optional[ModelFactory], optional): A function that returns a new instance of a model.
+                Defaults to None.
 
                 The function should have one of the following signatures:
-                - For `detail=False`: () -> Model
-                - For `detail=True`: (id: Any) -> Model
+                - If `path` has no parameters: () -> Model
+                - If `path` has a "{id}" parameter: (id: Any) -> Model
 
                 If not provided, the `model` specified in the `ModelViewSet` will be used.
-            pre_save (Union[CreateDetailSaveHook, CreateCollectionSaveHook, None], optional): A function that
-                is called before saving the instance. Defaults to None.
+            pre_save (Optional[CreateHook], optional): A function that is called before saving the instance.
+                Defaults to None.
 
                 The function should have one of the following signatures:
-                - For `detail=False`: (request: HttpRequest, instance: Model) -> None
-                - For `detail=True`: (request: HttpRequest, id: Any, instance: Model) -> None
+                - If `path` has no parameters: (request: HttpRequest, instance: Model) -> None
+                - If `path` has a "{id}" parameter: (request: HttpRequest, id: Any, instance: Model) -> None
 
                 If not provided, the function will be a no-op.
-            post_save (Union[CreateDetailSaveHook, CreateCollectionSaveHook, None], optional): A function that
-                is called after saving the instance. Defaults to None.
+            post_save (Optional[CreateHook], optional): A function that is called after saving the instance.
+                Defaults to None.
 
                 The function should have one of the following signatures:
-                - For `detail=False`: (request: HttpRequest, instance: Model) -> None
-                - For `detail=True`: (request: HttpRequest, id: Any, instance: Model) -> None
+                - If `path` has no parameters: (request: HttpRequest, instance: Model) -> None
+                - If `path` has a "{id}" parameter: (request: HttpRequest, id: Any, instance: Model) -> None
 
                 If not provided, the function will be a no-op.
-            path (str, optional): The path to use for the view. Defaults to "/". If `detail=True`, the path must
-                be provided and should contain the id of the object. See the example above for more details.
+            path (str, optional): The path to use for the view. Defaults to "/". The path may include a "{id}"
+                parameter to indicate that the view is for a specific instance of the model.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
                 arguments are provided, a warning will be logged and the override will be ignored.
         """
-        if detail and model_factory is None:
-            raise ValueError(
-                "Expected 'model_factory' when 'detail=True', but found None."
-            )
-        if detail and path == "/":
-            raise ValueError(
-                "Expected 'path' to be non-default when 'detail=True', but found '/'"
-            )
-
         super().__init__(
             method=HTTPMethod.POST,
             path=path,
-            detail=detail,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
 
+        PathValidator.validate(path=path, allow_no_parameters=True)
+        ModelFactoryValidator.validate(model_factory=model_factory, path=path)
+
         self.input_schema = input_schema
         self.output_schema = output_schema
-        ModelFactoryValidator.validate(model_factory, detail)
         self.model_factory = model_factory
         self.pre_save = pre_save
         self.post_save = post_save
 
     def build_view(self, model_class: Type[Model]) -> Callable:
-        if self.detail:
+        if "{id}" in self.path:
             return self._build_detail_view(model_class)
         else:
             return self._build_collection_view(model_class)
@@ -180,7 +166,7 @@ class CreateModelView(AbstractModelView):
         model_class: Type[Model],
     ) -> Model:
         if self.model_factory:
-            args = [id] if self.detail else []
+            args = [id] if "{id}" in self.path else []
             instance = self.model_factory(*args)
         else:
             instance = model_class()
@@ -189,14 +175,18 @@ class CreateModelView(AbstractModelView):
             setattr(instance, field, value)
 
         if self.pre_save:
-            args = (request, id, instance) if self.detail else (request, instance)
+            args = (
+                (request, id, instance) if "{id}" in self.path else (request, instance)
+            )
             self.pre_save(*args)
 
         instance.full_clean()
         instance.save()
 
         if self.post_save:
-            args = (request, id, instance) if self.detail else (request, instance)
+            args = (
+                (request, id, instance) if "{id}" in self.path else (request, instance)
+            )
             self.post_save(*args)
 
         return instance

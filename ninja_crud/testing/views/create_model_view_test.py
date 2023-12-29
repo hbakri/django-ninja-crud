@@ -132,8 +132,9 @@ class CreateModelViewTest(AbstractModelViewTest):
         self.model_viewset_test_case.assertIsInstance(content, dict)
         self.model_viewset_test_case.assertIn("id", content)
 
-        if self.model_view.detail:
-            model_class = self.model_view.model_factory(None).__class__
+        if self.model_view.model_factory is not None:
+            args = [None] if "{id}" in self.model_view.path else []
+            model_class = self.model_view.model_factory(*args).__class__
         else:
             model_class = self.model_viewset_test_case.model_viewset_class.model
         model = model_class.objects.get(id=content["id"])

@@ -1,4 +1,4 @@
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, TypeVar, Union
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
@@ -31,6 +31,11 @@ Returns:
     QuerySet[ModelType]: The QuerySet of model instances.
 """
 
+QuerySetGetter = Union[DetailQuerySetGetter, CollectionQuerySetGetter]
+"""
+Alias for a callable expected to retrieve a QuerySet for a detail or collection view.
+"""
+
 DetailModelFactory = Callable[[Any], ModelType]
 """
 Alias for a callable that returns a new instance for a detail view.
@@ -53,7 +58,12 @@ Returns:
     ModelType: The instance of the model that was created.
 """
 
-CreateDetailSaveHook = Callable[[HttpRequest, Any, ModelType], None]
+ModelFactory = Union[DetailModelFactory, CollectionModelFactory]
+"""
+Alias for a callable that returns a new instance for a detail or collection view.
+"""
+
+DetailCreateHook = Callable[[HttpRequest, Any, ModelType], None]
 """
 Alias for a callback/hook executed during a create operation on a detail view.
 
@@ -63,7 +73,7 @@ Parameters:
     instance (ModelType): The instance of the model that was created.
 """
 
-CreateCollectionSaveHook = Callable[[HttpRequest, ModelType], None]
+CollectionCreateHook = Callable[[HttpRequest, ModelType], None]
 """
 Alias for a callback/hook executed during a create operation on a collection view.
 
@@ -72,7 +82,12 @@ Parameters:
     instance (ModelType): The instance of the model that was created.
 """
 
-UpdateSaveHook = Callable[[HttpRequest, ModelType, ModelType], None]
+CreateHook = Union[DetailCreateHook, CollectionCreateHook]
+"""
+Alias for a callback/hook executed during a create operation.
+"""
+
+UpdateHook = Callable[[HttpRequest, ModelType, ModelType], None]
 """
 Alias for a callback/hook executed during an update operation.
 

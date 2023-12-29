@@ -9,7 +9,7 @@ from ninja import Router
 
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.helpers import utils
-from ninja_crud.views.validators.path_validator import PathValidator
+from ninja_crud.views.validators.http_method_validator import HTTPMethodValidator
 
 if TYPE_CHECKING:  # pragma: no cover
     from ninja_crud.viewsets import ModelViewSet
@@ -28,7 +28,6 @@ class AbstractModelView(ABC):
         self,
         method: HTTPMethod,
         path: str,
-        detail: bool,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -38,20 +37,14 @@ class AbstractModelView(ABC):
         Args:
             method (HTTPMethod): The HTTP method for the view.
             path (str): The path to use for the view.
-            detail (bool): Whether the view is for a detail or collection route.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
                 arguments are provided, a warning will be logged and the override will be ignored.
         """
-        if not isinstance(method, HTTPMethod):
-            raise TypeError(
-                f"Expected 'method' to be an instance of HTTPMethod, but found type {type(method)}."
-            )
+        HTTPMethodValidator.validate(method=method)
         self.method = method
-        PathValidator.validate(path, detail)
         self.path = path
-        self.detail = detail
         self.decorators = decorators or []
         self.router_kwargs = router_kwargs or {}
         self.viewset_class: Optional[Type["ModelViewSet"]] = None

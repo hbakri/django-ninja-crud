@@ -9,7 +9,9 @@ from ninja import Schema
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.helpers import utils
-from ninja_crud.views.helpers.types import UpdateSaveHook
+from ninja_crud.views.helpers.types import UpdateHook
+from ninja_crud.views.validators.http_method_validator import HTTPMethodValidator
+from ninja_crud.views.validators.path_validator import PathValidator
 
 if TYPE_CHECKING:  # pragma: no cover
     from ninja_crud.viewsets import ModelViewSet
@@ -44,8 +46,8 @@ class UpdateModelView(AbstractModelView):
         self,
         input_schema: Optional[Type[Schema]] = None,
         output_schema: Optional[Type[Schema]] = None,
-        pre_save: Optional[UpdateSaveHook] = None,
-        post_save: Optional[UpdateSaveHook] = None,
+        pre_save: Optional[UpdateHook] = None,
+        post_save: Optional[UpdateHook] = None,
         method: HTTPMethod = HTTPMethod.PUT,
         path: str = "/{id}",
         decorators: Optional[List[Callable]] = None,
@@ -59,14 +61,14 @@ class UpdateModelView(AbstractModelView):
                 Defaults to None. If not provided, the `default_input_schema` of the `ModelViewSet` will be used.
             output_schema (Optional[Type[Schema]], optional): The schema used to serialize the updated instance.
                 Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
-            pre_save (Optional[UpdateSaveHook], optional): A function that is called before saving the instance.
+            pre_save (Optional[UpdateHook], optional): A function that is called before saving the instance.
                 Defaults to None.
 
                 The function should have the signature:
                 - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
 
                 If not provided, the function will be a no-op.
-            post_save (Optional[UpdateSaveHook], optional): A function that is called after saving the instance.
+            post_save (Optional[UpdateHook], optional): A function that is called after saving the instance.
                 Defaults to None.
 
                 The function should have the signature:
@@ -74,7 +76,7 @@ class UpdateModelView(AbstractModelView):
 
                 If not provided, the function will be a no-op.
             method (HTTPMethod, optional): The HTTP method for the view. Defaults to HTTPMethod.PUT.
-            path (str, optional): The path to use for the view. Defaults to "/{id}".
+            path (str, optional): The path to use for the view. Defaults to "/{id}". Must include a "{id}" parameter.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
                 Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
@@ -83,15 +85,15 @@ class UpdateModelView(AbstractModelView):
         super().__init__(
             method=method,
             path=path,
-            detail=True,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
 
-        if method.value not in [HTTPMethod.PUT.value, HTTPMethod.PATCH.value]:
-            raise ValueError(
-                f"Expected 'method' to be either PUT or PATCH, but found {method}."
-            )
+        HTTPMethodValidator.validate(
+            method=method, choices=[HTTPMethod.PUT, HTTPMethod.PATCH]
+        )
+        PathValidator.validate(path=path, allow_no_parameters=False)
+
         self.input_schema = input_schema
         self.output_schema = output_schema
         self.pre_save = pre_save
