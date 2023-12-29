@@ -117,9 +117,4 @@ class RetrieveModelView(AbstractModelView):
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         super().bind_to_viewset(viewset_class, model_view_name)
-        self.bind_default_value(
-            viewset_class=viewset_class,
-            model_view_name=model_view_name,
-            attribute_name="output_schema",
-            default_attribute_name="default_output_schema",
-        )
+        self.bind_default_output_schema(viewset_class, model_view_name)

@@ -40,7 +40,7 @@ class AbstractModelView(ABC):
         Args:
             method (HTTPMethod): The HTTP method for the view.
             path (str): The path to use for the view.
-            filter_schema (Optional[Type[Schema]], optional): The schema used to deserialize the query parameters.
+            filter_schema (Optional[Type[FilterSchema]], optional): The schema used to deserialize the query parameters.
                 Defaults to None.
             input_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
                 Defaults to None.
@@ -152,3 +152,23 @@ class AbstractModelView(ABC):
                     f"Could not determine '{attribute_name}' for {viewset_class.__name__}.{model_view_name}."
                 )
             setattr(self, attribute_name, default_attribute)
+
+    def bind_default_input_schema(
+        self, viewset_class: Type["ModelViewSet"], model_view_name: str
+    ) -> None:
+        self.bind_default_value(
+            viewset_class=viewset_class,
+            model_view_name=model_view_name,
+            attribute_name="input_schema",
+            default_attribute_name="default_input_schema",
+        )
+
+    def bind_default_output_schema(
+        self, viewset_class: Type["ModelViewSet"], model_view_name: str
+    ) -> None:
+        self.bind_default_value(
+            viewset_class=viewset_class,
+            model_view_name=model_view_name,
+            attribute_name="output_schema",
+            default_attribute_name="default_output_schema",
+        )

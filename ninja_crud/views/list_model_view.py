@@ -68,7 +68,8 @@ class ListModelView(AbstractModelView):
         Args:
             output_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved objects.
                 Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
-            filter_schema (Optional[Type[FilterSchema]], optional): The schema used to validate the filters.
+            filter_schema (Optional[Type[FilterSchema]], optional): The schema used to deserialize the query parameters.
+                Defaults to None.
             queryset_getter (Optional[QuerySetGetter], optional): A function to customize the queryset used
                 to retrieve the objects. Defaults to None.
                 - If `path` has no parameters: () -> QuerySet[Model]
@@ -177,9 +178,4 @@ class ListModelView(AbstractModelView):
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         super().bind_to_viewset(viewset_class, model_view_name)
-        self.bind_default_value(
-            viewset_class=viewset_class,
-            model_view_name=model_view_name,
-            attribute_name="output_schema",
-            default_attribute_name="default_output_schema",
-        )
+        self.bind_default_output_schema(viewset_class, model_view_name)
