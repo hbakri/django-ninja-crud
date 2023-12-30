@@ -13,7 +13,7 @@ class TestUpdateModelView(TestCase):
         router_mock = MagicMock()
         update_item = UpdateModelView(
             input_schema=ItemIn,
-            output_schema=ItemOut,
+            response_schema=ItemOut,
             router_kwargs={"exclude_unset": True},
         )
 
@@ -26,7 +26,7 @@ class TestUpdateModelView(TestCase):
         with self.assertRaises(ValueError):
             UpdateModelView(
                 input_schema=ItemIn,
-                output_schema=ItemOut,
+                response_schema=ItemOut,
                 method=HTTPMethod.GET,
             )
 
@@ -35,5 +35,5 @@ class TestUpdateModelView(TestCase):
             UpdateModelView(
                 method=1,
                 input_schema=ItemIn,
-                output_schema=ItemOut,
+                response_schema=ItemOut,
             )

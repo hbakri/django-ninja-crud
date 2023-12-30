@@ -32,7 +32,7 @@ def user_is_collection_creator(func):
 class ItemViewSet(ModelViewSet):
     model = Item
     default_input_schema = ItemIn
-    default_output_schema = ItemOut
+    default_response_schema = ItemOut
 
     list_items = ListModelView(
         filter_schema=OrderByFilterSchema,
@@ -52,7 +52,7 @@ class ItemViewSet(ModelViewSet):
     list_tags = ListModelView(
         path="/{id}/tags/",
         queryset_getter=lambda id: Tag.objects.filter(items__id=id),
-        output_schema=TagOut,
+        response_schema=TagOut,
     )
 
 

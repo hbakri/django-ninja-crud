@@ -14,7 +14,7 @@ class TestModelViewSetTestCase(unittest.TestCase):
         class ExampleModelViewSet(ModelViewSet):
             model = Department
 
-            list_view = ListModelView(output_schema=DepartmentOut)
+            list_view = ListModelView(response_schema=DepartmentOut)
 
         class TestExampleModelViewSet(ModelViewSetTestCase):
             test_list_view = ListModelViewTest()
@@ -42,7 +42,7 @@ class TestModelViewSetTestCase(unittest.TestCase):
         class ExampleModelViewSet(ModelViewSet):
             model = Department
 
-            list_view = ListModelView(output_schema=DepartmentOut)
+            list_view = ListModelView(response_schema=DepartmentOut)
 
         class TestExampleModelViewSet(ModelViewSetTestCase):
             test_list_view = ListModelViewTest()
@@ -56,8 +56,8 @@ class TestModelViewSetTestCase(unittest.TestCase):
         class ExampleModelViewSet(ModelViewSet):
             model = Department
 
-            list_view = ListModelView(output_schema=DepartmentOut)
-            other_list_view = ListModelView(output_schema=DepartmentOut)
+            list_view = ListModelView(response_schema=DepartmentOut)
+            other_list_view = ListModelView(response_schema=DepartmentOut)
 
         class TestExampleModelViewSet(ModelViewSetTestCase):
             test_list_view = ListModelViewTest()

@@ -39,21 +39,21 @@ class CollectionViewSet(ModelViewSet):
     model = Collection
 
     list_collections = ListModelView(
-        output_schema=CollectionOut, filter_schema=CollectionFilter
+        response_schema=CollectionOut, filter_schema=CollectionFilter
     )
     create_collection = CreateModelView(
         input_schema=CollectionIn,
-        output_schema=CollectionOut,
+        response_schema=CollectionOut,
         model_factory=lambda: Collection(),
         pre_save=lambda request, instance: setattr(
             instance, "created_by", request.auth
         ),
         post_save=lambda request, instance: None,
     )
-    retrieve_collection = RetrieveModelView(output_schema=CollectionOut)
+    retrieve_collection = RetrieveModelView(response_schema=CollectionOut)
     update_collection = UpdateModelView(
         input_schema=CollectionIn,
-        output_schema=CollectionOut,
+        response_schema=CollectionOut,
         decorators=[user_is_creator],
     )
     delete_collection = DeleteModelView(
@@ -65,14 +65,14 @@ class CollectionViewSet(ModelViewSet):
     list_collection_items = ListModelView(
         path="/{id}/items/",
         queryset_getter=lambda id: Item.objects.filter(collection_id=id),
-        output_schema=ItemOut,
+        response_schema=ItemOut,
         decorators=[user_is_creator],
     )
     create_collection_item = CreateModelView(
         path="/{id}/items/",
         model_factory=lambda id: Item(collection_id=id),
         input_schema=ItemIn,
-        output_schema=ItemOut,
+        response_schema=ItemOut,
         pre_save=lambda request, id, instance: None,
         post_save=lambda request, id, instance: None,
         decorators=[user_is_creator],

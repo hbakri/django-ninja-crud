@@ -12,7 +12,7 @@ class TestCreateModelView(TestCase):
         router_mock = MagicMock()
         create_item = CreateModelView(
             input_schema=ItemIn,
-            output_schema=ItemOut,
+            response_schema=ItemOut,
             router_kwargs={"exclude_unset": True},
         )
 
@@ -29,7 +29,7 @@ class TestCreateModelView(TestCase):
                 path="/{id}/items/",
                 model_factory="not callable",
                 input_schema=ItemIn,
-                output_schema=ItemOut,
+                response_schema=ItemOut,
             )
 
         # model_factory must have the correct number of arguments
@@ -38,12 +38,12 @@ class TestCreateModelView(TestCase):
                 path="/{id}/items/",
                 model_factory=lambda: Item(),
                 input_schema=ItemIn,
-                output_schema=ItemOut,
+                response_schema=ItemOut,
             )
 
         with self.assertRaises(ValueError):
             CreateModelView(
                 model_factory=lambda id: Collection(),
                 input_schema=ItemIn,
-                output_schema=ItemOut,
+                response_schema=ItemOut,
             )

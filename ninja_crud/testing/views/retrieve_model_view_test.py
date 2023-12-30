@@ -44,7 +44,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         model = Department
 
         retrieve_department_view = views.RetrieveModelView(
-            output_schema=DepartmentOut
+            response_schema=DepartmentOut
         )
     ```
     2. You can test the `retrieve_department_view` like this:
@@ -144,7 +144,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
             id=path_parameters["id"],
             model_class=self.model_viewset_test_case.model_viewset_class.model,
         )
-        schema = self.model_view.output_schema.from_orm(model)
+        schema = self.model_view.response_schema.from_orm(model)
         return json.loads(schema.json())
 
     def on_failed_request(

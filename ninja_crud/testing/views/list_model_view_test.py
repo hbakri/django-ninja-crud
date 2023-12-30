@@ -51,7 +51,7 @@ class ListModelViewTest(AbstractModelViewTest):
         model = Department
 
         list_departments_view = views.ListModelView(
-            output_schema=DepartmentOut
+            response_schema=DepartmentOut
         )
     ```
     2. You can test the `list_departments_view` like this:
@@ -194,9 +194,9 @@ class ListModelViewTest(AbstractModelViewTest):
         for item in items:
             self.model_viewset_test_case.assertIsInstance(item, dict)
             model = queryset.get(id=item["id"])
-            output_schema = self.model_view.output_schema.from_orm(model)
+            response_schema = self.model_view.response_schema.from_orm(model)
             self.model_viewset_test_case.assertDictEqual(
-                item, json.loads(output_schema.json())
+                item, json.loads(response_schema.json())
             )
 
     def on_failed_request(

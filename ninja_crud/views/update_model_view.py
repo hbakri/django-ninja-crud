@@ -34,7 +34,7 @@ class UpdateModelView(AbstractModelView):
 
         # Usage: Update a department by id
         # PUT /{id}/
-        update_department = views.UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+        update_department = views.UpdateModelView(input_schema=DepartmentIn, response_schema=DepartmentOut)
     ```
 
     Note:
@@ -45,7 +45,7 @@ class UpdateModelView(AbstractModelView):
     def __init__(
         self,
         input_schema: Optional[Type[Schema]] = None,
-        output_schema: Optional[Type[Schema]] = None,
+        response_schema: Optional[Type[Schema]] = None,
         pre_save: Optional[UpdateHook] = None,
         post_save: Optional[UpdateHook] = None,
         method: HTTPMethod = HTTPMethod.PUT,
@@ -59,8 +59,8 @@ class UpdateModelView(AbstractModelView):
         Args:
             input_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
                 Defaults to None. If not provided, the `default_input_schema` of the `ModelViewSet` will be used.
-            output_schema (Optional[Type[Schema]], optional): The schema used to serialize the updated instance.
-                Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
+            response_schema (Optional[Type[Schema]], optional): The schema used to serialize the updated instance.
+                Defaults to None. If not provided, the `default_response_schema` of the `ModelViewSet` will be used.
             pre_save (Optional[UpdateHook], optional): A function that is called before saving the instance.
                 Defaults to None.
 
@@ -87,7 +87,7 @@ class UpdateModelView(AbstractModelView):
             path=path,
             filter_schema=None,
             input_schema=input_schema,
-            output_schema=output_schema,
+            response_schema=response_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -147,14 +147,14 @@ class UpdateModelView(AbstractModelView):
 
         Returns:
             dict: A mapping of HTTP status codes to response schemas for the update view.
-                Defaults to {200: self.output_schema}. For example, for a model "Department", the response
+                Defaults to {200: self.response_schema}. For example, for a model "Department", the response
                 schema would be {200: DepartmentOut}.
         """
-        return {HTTPStatus.OK: self.output_schema}
+        return {HTTPStatus.OK: self.response_schema}
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         super().bind_to_viewset(viewset_class, model_view_name)
         self.bind_default_input_schema(viewset_class, model_view_name)
-        self.bind_default_output_schema(viewset_class, model_view_name)
+        self.bind_default_response_schema(viewset_class, model_view_name)

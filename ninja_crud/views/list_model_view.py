@@ -36,14 +36,14 @@ class ListModelView(AbstractModelView):
 
         # Basic usage: List all departments
         # GET /
-        list_departments = views.ListModelView(output_schema=DepartmentOut)
+        list_departments = views.ListModelView(response_schema=DepartmentOut)
 
         # Advanced usage: List employees of a specific department
         # GET /{id}/employees/
         list_employees = views.ListModelView(
             path="/{id}/employees/",
             queryset_getter=lambda id: Employee.objects.filter(department_id=id),
-            output_schema=EmployeeOut,
+            response_schema=EmployeeOut,
         )
     ```
 
@@ -54,7 +54,7 @@ class ListModelView(AbstractModelView):
 
     def __init__(
         self,
-        output_schema: Optional[Type[Schema]] = None,
+        response_schema: Optional[Type[Schema]] = None,
         filter_schema: Optional[Type[FilterSchema]] = None,
         queryset_getter: Optional[QuerySetGetter] = None,
         pagination_class: Optional[Type[PaginationBase]] = LimitOffsetPagination,
@@ -66,8 +66,8 @@ class ListModelView(AbstractModelView):
         Initializes the ListModelView.
 
         Args:
-            output_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved objects.
-                Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
+            response_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved objects.
+                Defaults to None. If not provided, the `default_response_schema` of the `ModelViewSet` will be used.
             filter_schema (Optional[Type[FilterSchema]], optional): The schema used to deserialize the query parameters.
                 Defaults to None.
             queryset_getter (Optional[QuerySetGetter], optional): A function to customize the queryset used
@@ -90,7 +90,7 @@ class ListModelView(AbstractModelView):
             path=path,
             filter_schema=filter_schema,
             input_schema=None,
-            output_schema=output_schema,
+            response_schema=response_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -169,13 +169,13 @@ class ListModelView(AbstractModelView):
 
         Returns:
             dict: A mapping of HTTP status codes to response schemas for the list view.
-                Defaults to {200: List[self.output_schema]}. For example, for a model "Department", the response
+                Defaults to {200: List[self.response_schema]}. For example, for a model "Department", the response
                 schema would be {200: List[DepartmentOut]}.
         """
-        return {HTTPStatus.OK: List[self.output_schema]}
+        return {HTTPStatus.OK: List[self.response_schema]}
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         super().bind_to_viewset(viewset_class, model_view_name)
-        self.bind_default_output_schema(viewset_class, model_view_name)
+        self.bind_default_response_schema(viewset_class, model_view_name)

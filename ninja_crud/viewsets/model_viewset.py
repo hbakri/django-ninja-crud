@@ -20,7 +20,7 @@ class ModelViewSet:
         model (Type[Model]): The Django model class for CRUD operations.
         default_input_schema (Optional[Type[Schema]], optional): The default schema to use for
             deserializing the request payload. Defaults to None.
-        default_output_schema (Optional[Type[Schema]], optional): The default schema to use for
+        default_response_schema (Optional[Type[Schema]], optional): The default schema to use for
             serializing the response payload. Defaults to None.
 
     Example:
@@ -39,10 +39,10 @@ class ModelViewSet:
     class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
-        list_departments = views.ListModelView(output_schema=DepartmentOut)
-        create_department = views.CreateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
-        retrieve_department = views.RetrieveModelView(output_schema=DepartmentOut)
-        update_department = views.UpdateModelView(input_schema=DepartmentIn, output_schema=DepartmentOut)
+        list_departments = views.ListModelView(response_schema=DepartmentOut)
+        create_department = views.CreateModelView(input_schema=DepartmentIn, response_schema=DepartmentOut)
+        retrieve_department = views.RetrieveModelView(response_schema=DepartmentOut)
+        update_department = views.UpdateModelView(input_schema=DepartmentIn, response_schema=DepartmentOut)
         delete_department = views.DeleteModelView()
 
     # The register_routes method must be called to register the routes
@@ -72,7 +72,7 @@ class ModelViewSet:
 
     model: Type[Model]
     default_input_schema: Optional[Type[Schema]]
-    default_output_schema: Optional[Type[Schema]]
+    default_response_schema: Optional[Type[Schema]]
 
     def __init_subclass__(cls, **kwargs):
         """
@@ -86,7 +86,7 @@ class ModelViewSet:
         if hasattr(cls, "model"):
             cls._validate_model_class()
             cls._validate_input_schema_class(optional=True)
-            cls._validate_output_schema_class(optional=True)
+            cls._validate_response_schema_class(optional=True)
             cls._bind_model_views()
 
     @classmethod
@@ -96,7 +96,7 @@ class ModelViewSet:
 
         This allows the views to access the ModelViewSet subclass via the `viewset_class`
         attribute, and access default schemas via the `default_input_schema` and
-        `default_output_schema` attributes.
+        `default_response_schema` attributes.
 
         Note:
             This method is called automatically during the subclass initialization of
@@ -158,9 +158,9 @@ class ModelViewSet:
         )
 
     @classmethod
-    def _validate_output_schema_class(cls, optional: bool = True) -> None:
+    def _validate_response_schema_class(cls, optional: bool = True) -> None:
         """
-        Validates that the `default_output_schema` attribute is a subclass of `Schema`.
+        Validates that the `default_response_schema` attribute is a subclass of `Schema`.
 
         Parameters:
             - optional (bool, optional): Whether the attribute is optional. Defaults to `True`.
@@ -170,5 +170,8 @@ class ModelViewSet:
             - TypeError: If the attribute is not a subclass of `Schema`.
         """
         utils.validate_class_attribute_type(
-            cls, "default_output_schema", expected_type=Type[Schema], optional=optional
+            cls,
+            "default_response_schema",
+            expected_type=Type[Schema],
+            optional=optional,
         )
