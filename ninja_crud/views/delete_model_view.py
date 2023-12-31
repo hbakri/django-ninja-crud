@@ -72,7 +72,7 @@ class DeleteModelView(AbstractModelView):
             path=path,
             filter_schema=None,
             input_schema=None,
-            output_schema=None,
+            response_schema=None,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )

@@ -10,9 +10,9 @@ router = Router()
 class EmployeeViewSet(viewsets.ModelViewSet):
     model = Employee
 
-    retrieve_employee = views.RetrieveModelView(output_schema=EmployeeOut)
+    retrieve_employee = views.RetrieveModelView(response_schema=EmployeeOut)
     update_employee = views.UpdateModelView(
-        input_schema=EmployeeIn, output_schema=EmployeeOut
+        input_schema=EmployeeIn, response_schema=EmployeeOut
     )
     delete_employee = views.DeleteModelView()
 

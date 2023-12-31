@@ -39,7 +39,7 @@ class CreateModelView(AbstractModelView):
         # POST /
         create_department = views.CreateModelView(
             input_schema=DepartmentIn,
-            output_schema=DepartmentOut
+            response_schema=DepartmentOut
         )
 
         # Advanced usage: Create an employee for a specific department
@@ -48,7 +48,7 @@ class CreateModelView(AbstractModelView):
             path="/{id}/employees/",
             model_factory=lambda id: Employee(department_id=id),
             input_schema=EmployeeIn,
-            output_schema=EmployeeOut,
+            response_schema=EmployeeOut,
         )
     ```
 
@@ -60,7 +60,7 @@ class CreateModelView(AbstractModelView):
     def __init__(
         self,
         input_schema: Optional[Type[Schema]] = None,
-        output_schema: Optional[Type[Schema]] = None,
+        response_schema: Optional[Type[Schema]] = None,
         model_factory: Optional[ModelFactory] = None,
         pre_save: Optional[CreateHook] = None,
         post_save: Optional[CreateHook] = None,
@@ -74,8 +74,8 @@ class CreateModelView(AbstractModelView):
         Args:
             input_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
                 Defaults to None. If not provided, the `default_input_schema` of the `ModelViewSet` will be used.
-            output_schema (Optional[Type[Schema]], optional): The schema used to serialize the created instance.
-                Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
+            response_schema (Optional[Type[Schema]], optional): The schema used to serialize the created instance.
+                Defaults to None. If not provided, the `default_response_schema` of the `ModelViewSet` will be used.
             model_factory (Optional[ModelFactory], optional): A function that returns a new instance of a model.
                 Defaults to None.
 
@@ -112,7 +112,7 @@ class CreateModelView(AbstractModelView):
             path=path,
             filter_schema=None,
             input_schema=input_schema,
-            output_schema=output_schema,
+            response_schema=response_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -202,14 +202,14 @@ class CreateModelView(AbstractModelView):
 
         Returns:
             dict: A mapping of HTTP status codes to response schemas for the create view.
-                Defaults to {201: self.output_schema}. For example, for a model "Department", the response
+                Defaults to {201: self.response_schema}. For example, for a model "Department", the response
                 schema would be {201: DepartmentOut}.
         """
-        return {HTTPStatus.CREATED: self.output_schema}
+        return {HTTPStatus.CREATED: self.response_schema}
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         super().bind_to_viewset(viewset_class, model_view_name)
         self.bind_default_input_schema(viewset_class, model_view_name)
-        self.bind_default_output_schema(viewset_class, model_view_name)
+        self.bind_default_response_schema(viewset_class, model_view_name)

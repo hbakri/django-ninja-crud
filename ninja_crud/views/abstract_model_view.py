@@ -30,7 +30,7 @@ class AbstractModelView(ABC):
         path: str,
         filter_schema: Optional[Type[FilterSchema]] = None,
         input_schema: Optional[Type[Schema]] = None,
-        output_schema: Optional[Type[Schema]] = None,
+        response_schema: Optional[Type[Schema]] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
@@ -44,7 +44,7 @@ class AbstractModelView(ABC):
                 Defaults to None.
             input_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
                 Defaults to None.
-            output_schema (Optional[Type[Schema]], optional): The schema used to serialize the response body.
+            response_schema (Optional[Type[Schema]], optional): The schema used to serialize the response body.
                 Defaults to None.
             decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
             router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
@@ -56,7 +56,7 @@ class AbstractModelView(ABC):
         self.path = path
         self.filter_schema = filter_schema
         self.input_schema = input_schema
-        self.output_schema = output_schema
+        self.response_schema = response_schema
         self.decorators = decorators or []
         self.router_kwargs = router_kwargs or {}
         self.viewset_class: Optional[Type["ModelViewSet"]] = None
@@ -163,12 +163,12 @@ class AbstractModelView(ABC):
             default_attribute_name="default_input_schema",
         )
 
-    def bind_default_output_schema(
+    def bind_default_response_schema(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         self.bind_default_value(
             viewset_class=viewset_class,
             model_view_name=model_view_name,
-            attribute_name="output_schema",
-            default_attribute_name="default_output_schema",
+            attribute_name="response_schema",
+            default_attribute_name="default_response_schema",
         )

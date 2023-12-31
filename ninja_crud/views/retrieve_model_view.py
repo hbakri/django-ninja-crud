@@ -35,7 +35,7 @@ class RetrieveModelView(AbstractModelView):
 
         # Usage: Retrieve a department by id
         # GET /{id}
-        retrieve_department = views.RetrieveModelView(output_schema=DepartmentOut)
+        retrieve_department = views.RetrieveModelView(response_schema=DepartmentOut)
     ```
 
     Note:
@@ -45,7 +45,7 @@ class RetrieveModelView(AbstractModelView):
 
     def __init__(
         self,
-        output_schema: Optional[Type[Schema]] = None,
+        response_schema: Optional[Type[Schema]] = None,
         queryset_getter: Optional[DetailQuerySetGetter] = None,
         path: str = "/{id}",
         decorators: Optional[List[Callable]] = None,
@@ -55,8 +55,8 @@ class RetrieveModelView(AbstractModelView):
         Initializes the RetrieveModelView.
 
         Args:
-            output_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved object.
-                Defaults to None. If not provided, the `default_output_schema` of the `ModelViewSet` will be used.
+            response_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved object.
+                Defaults to None. If not provided, the `default_response_schema` of the `ModelViewSet` will be used.
             queryset_getter (Optional[DetailQuerySetGetter], optional): A function to customize the queryset used
                 for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet[Model].
 
@@ -72,7 +72,7 @@ class RetrieveModelView(AbstractModelView):
             path=path,
             filter_schema=None,
             input_schema=None,
-            output_schema=output_schema,
+            response_schema=response_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -108,13 +108,13 @@ class RetrieveModelView(AbstractModelView):
 
         Returns:
             dict: A mapping of HTTP status codes to response schemas for the retrieve view.
-                Defaults to {200: self.output_schema}. For example, for a model "Department", the response
+                Defaults to {200: self.response_schema}. For example, for a model "Department", the response
                 schema would be {200: DepartmentOut}.
         """
-        return {HTTPStatus.OK: self.output_schema}
+        return {HTTPStatus.OK: self.response_schema}
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         super().bind_to_viewset(viewset_class, model_view_name)
-        self.bind_default_output_schema(viewset_class, model_view_name)
+        self.bind_default_response_schema(viewset_class, model_view_name)

@@ -11,7 +11,7 @@ class TestListModelView(TestCase):
     def test_register_route_with_router_kwargs(self):
         router_mock = MagicMock()
         list_items = ListModelView(
-            output_schema=ItemOut,
+            response_schema=ItemOut,
             router_kwargs={"exclude_unset": True},
         )
 
@@ -27,7 +27,7 @@ class TestListModelView(TestCase):
             ListModelView(
                 path="/{id}/items/",
                 queryset_getter="not callable",
-                output_schema=ItemOut,
+                response_schema=ItemOut,
             )
 
         # queryset_getter must have the correct number of arguments
@@ -35,11 +35,11 @@ class TestListModelView(TestCase):
             ListModelView(
                 path="/{id}/items/",
                 queryset_getter=lambda: Item.objects.get_queryset(),
-                output_schema=ItemOut,
+                response_schema=ItemOut,
             )
 
         with self.assertRaises(ValueError):
             ListModelView(
                 queryset_getter=lambda id: Item.objects.get_queryset(),
-                output_schema=ItemOut,
+                response_schema=ItemOut,
             )

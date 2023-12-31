@@ -11,10 +11,10 @@ router = Router()
 class UserViewSet(ModelViewSet):
     model = User
 
-    list_users = views.ListModelView(output_schema=UserOut, pagination_class=None)
-    create_user = views.CreateModelView(input_schema=UserIn, output_schema=UserOut)
-    retrieve_user = views.RetrieveModelView(output_schema=UserOut)
-    update_user = views.UpdateModelView(input_schema=UserIn, output_schema=UserOut)
+    list_users = views.ListModelView(response_schema=UserOut, pagination_class=None)
+    create_user = views.CreateModelView(input_schema=UserIn, response_schema=UserOut)
+    retrieve_user = views.RetrieveModelView(response_schema=UserOut)
+    update_user = views.UpdateModelView(input_schema=UserIn, response_schema=UserOut)
     delete_user = views.DeleteModelView()
 
 

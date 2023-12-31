@@ -12,7 +12,7 @@ class TestRetrieveModelView(TestCase):
     def test_register_route_router_kwargs(self):
         router_mock = MagicMock()
         retrieve_item = RetrieveModelView(
-            output_schema=ItemOut,
+            response_schema=ItemOut,
             router_kwargs={"exclude_unset": True},
         )
 
@@ -27,43 +27,43 @@ class TestRetrieveModelView(TestCase):
         with self.assertRaises(TypeError):
             RetrieveModelView(
                 queryset_getter="not callable",
-                output_schema=ItemOut,
+                response_schema=ItemOut,
             )
 
         # queryset_getter must have the correct number of arguments
         with self.assertRaises(ValueError):
             RetrieveModelView(
                 queryset_getter=lambda: Item.objects.get_queryset(),
-                output_schema=ItemOut,
+                response_schema=ItemOut,
             )
 
-    def test_bind_to_viewset_with_output_schema(self):
-        model_view = RetrieveModelView(output_schema=ItemOut)
+    def test_bind_to_viewset_with_response_schema(self):
+        model_view = RetrieveModelView(response_schema=ItemOut)
 
         class ItemModelViewSet(ModelViewSet):
             model = Item
             default_input_schema = None
-            default_output_schema = None
+            default_response_schema = None
 
         model_view.bind_to_viewset(ItemModelViewSet, model_view_name="retrieve")
 
-    def test_bind_to_viewset_without_output_schema(self):
+    def test_bind_to_viewset_without_response_schema(self):
         model_view = RetrieveModelView()
 
         class ItemModelViewSet(ModelViewSet):
             model = Item
             default_input_schema = None
-            default_output_schema = ItemOut
+            default_response_schema = ItemOut
 
         model_view.bind_to_viewset(ItemModelViewSet, model_view_name="retrieve")
 
-    def test_bind_to_viewset_without_output_schema_error(self):
+    def test_bind_to_viewset_without_response_schema_error(self):
         model_view = RetrieveModelView()
 
         class ItemModelViewSet(ModelViewSet):
             model = Item
             default_input_schema = None
-            default_output_schema = None
+            default_response_schema = None
 
         with self.assertRaises(ValueError):
             model_view.bind_to_viewset(ItemModelViewSet, model_view_name="retrieve")
