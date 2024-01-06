@@ -12,7 +12,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
     retrieve_employee = views.RetrieveModelView(response_schema=EmployeeOut)
     update_employee = views.UpdateModelView(
-        input_schema=EmployeeIn, response_schema=EmployeeOut
+        payload_schema=EmployeeIn, response_schema=EmployeeOut
     )
     delete_employee = views.DeleteModelView()
 

@@ -71,7 +71,7 @@ class RetrieveModelView(AbstractModelView):
             method=HTTPMethod.GET,
             path=path,
             filter_schema=None,
-            input_schema=None,
+            payload_schema=None,
             response_schema=response_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,

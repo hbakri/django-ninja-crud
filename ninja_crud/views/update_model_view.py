@@ -34,7 +34,7 @@ class UpdateModelView(AbstractModelView):
 
         # Usage: Update a department by id
         # PUT /{id}/
-        update_department = views.UpdateModelView(input_schema=DepartmentIn, response_schema=DepartmentOut)
+        update_department = views.UpdateModelView(payload_schema=DepartmentIn, response_schema=DepartmentOut)
     ```
 
     Note:
@@ -44,7 +44,7 @@ class UpdateModelView(AbstractModelView):
 
     def __init__(
         self,
-        input_schema: Optional[Type[Schema]] = None,
+        payload_schema: Optional[Type[Schema]] = None,
         response_schema: Optional[Type[Schema]] = None,
         pre_save: Optional[UpdateHook] = None,
         post_save: Optional[UpdateHook] = None,
@@ -57,8 +57,8 @@ class UpdateModelView(AbstractModelView):
         Initializes the UpdateModelView.
 
         Args:
-            input_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
-                Defaults to None. If not provided, the `default_input_schema` of the `ModelViewSet` will be used.
+            payload_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
+                Defaults to None. If not provided, the `default_payload_schema` of the `ModelViewSet` will be used.
             response_schema (Optional[Type[Schema]], optional): The schema used to serialize the updated instance.
                 Defaults to None. If not provided, the `default_response_schema` of the `ModelViewSet` will be used.
             pre_save (Optional[UpdateHook], optional): A function that is called before saving the instance.
@@ -86,7 +86,7 @@ class UpdateModelView(AbstractModelView):
             method=method,
             path=path,
             filter_schema=None,
-            input_schema=input_schema,
+            payload_schema=payload_schema,
             response_schema=response_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,
@@ -101,12 +101,12 @@ class UpdateModelView(AbstractModelView):
         self.post_save = post_save
 
     def build_view(self, model_class: Type[Model]) -> Callable:
-        input_schema = self.input_schema
+        payload_schema = self.payload_schema
 
         def view(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
-            payload: input_schema,
+            payload: payload_schema,
         ):
             return HTTPStatus.OK, self.update_model(
                 request=request, id=id, payload=payload, model_class=model_class
@@ -156,5 +156,5 @@ class UpdateModelView(AbstractModelView):
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         super().bind_to_viewset(viewset_class, model_view_name)
-        self.bind_default_input_schema(viewset_class, model_view_name)
+        self.bind_default_payload_schema(viewset_class, model_view_name)
         self.bind_default_response_schema(viewset_class, model_view_name)

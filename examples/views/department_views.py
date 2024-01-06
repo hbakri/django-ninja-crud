@@ -9,7 +9,7 @@ router = Router()
 
 class DepartmentViewSet(viewsets.ModelViewSet):
     model = Department
-    default_input_schema = DepartmentIn
+    default_payload_schema = DepartmentIn
     default_response_schema = DepartmentOut
 
     list_departments = views.ListModelView()
@@ -26,7 +26,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     create_employee = views.CreateModelView(
         path="/{id}/employees/",
         model_factory=lambda id: Employee(department_id=id),
-        input_schema=EmployeeIn,
+        payload_schema=EmployeeIn,
         response_schema=EmployeeOut,
     )
 

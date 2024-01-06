@@ -11,7 +11,7 @@ class TestCreateModelView(TestCase):
     def test_register_route_with_router_kwargs(self):
         router_mock = MagicMock()
         create_item = CreateModelView(
-            input_schema=ItemIn,
+            payload_schema=ItemIn,
             response_schema=ItemOut,
             router_kwargs={"exclude_unset": True},
         )
@@ -28,7 +28,7 @@ class TestCreateModelView(TestCase):
             CreateModelView(
                 path="/{id}/items/",
                 model_factory="not callable",
-                input_schema=ItemIn,
+                payload_schema=ItemIn,
                 response_schema=ItemOut,
             )
 
@@ -37,13 +37,13 @@ class TestCreateModelView(TestCase):
             CreateModelView(
                 path="/{id}/items/",
                 model_factory=lambda: Item(),
-                input_schema=ItemIn,
+                payload_schema=ItemIn,
                 response_schema=ItemOut,
             )
 
         with self.assertRaises(ValueError):
             CreateModelView(
                 model_factory=lambda id: Collection(),
-                input_schema=ItemIn,
+                payload_schema=ItemIn,
                 response_schema=ItemOut,
             )

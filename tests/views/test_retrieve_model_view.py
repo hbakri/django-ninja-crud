@@ -42,7 +42,7 @@ class TestRetrieveModelView(TestCase):
 
         class ItemModelViewSet(ModelViewSet):
             model = Item
-            default_input_schema = None
+            default_payload_schema = None
             default_response_schema = None
 
         model_view.bind_to_viewset(ItemModelViewSet, model_view_name="retrieve")
@@ -52,7 +52,7 @@ class TestRetrieveModelView(TestCase):
 
         class ItemModelViewSet(ModelViewSet):
             model = Item
-            default_input_schema = None
+            default_payload_schema = None
             default_response_schema = ItemOut
 
         model_view.bind_to_viewset(ItemModelViewSet, model_view_name="retrieve")
@@ -62,7 +62,7 @@ class TestRetrieveModelView(TestCase):
 
         class ItemModelViewSet(ModelViewSet):
             model = Item
-            default_input_schema = None
+            default_payload_schema = None
             default_response_schema = None
 
         with self.assertRaises(ValueError):

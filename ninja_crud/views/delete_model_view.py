@@ -71,7 +71,7 @@ class DeleteModelView(AbstractModelView):
             method=HTTPMethod.DELETE,
             path=path,
             filter_schema=None,
-            input_schema=None,
+            payload_schema=None,
             response_schema=None,
             decorators=decorators,
             router_kwargs=router_kwargs,
