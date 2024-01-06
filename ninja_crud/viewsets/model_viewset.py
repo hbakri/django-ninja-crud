@@ -18,7 +18,7 @@ class ModelViewSet:
 
     Attributes:
         model (Type[Model]): The Django model class for CRUD operations.
-        default_input_schema (Optional[Type[Schema]], optional): The default schema to use for
+        default_payload_schema (Optional[Type[Schema]], optional): The default schema to use for
             deserializing the request payload. Defaults to None.
         default_response_schema (Optional[Type[Schema]], optional): The default schema to use for
             serializing the response payload. Defaults to None.
@@ -40,9 +40,9 @@ class ModelViewSet:
         model = Department
 
         list_departments = views.ListModelView(response_schema=DepartmentOut)
-        create_department = views.CreateModelView(input_schema=DepartmentIn, response_schema=DepartmentOut)
+        create_department = views.CreateModelView(payload_schema=DepartmentIn, response_schema=DepartmentOut)
         retrieve_department = views.RetrieveModelView(response_schema=DepartmentOut)
-        update_department = views.UpdateModelView(input_schema=DepartmentIn, response_schema=DepartmentOut)
+        update_department = views.UpdateModelView(payload_schema=DepartmentIn, response_schema=DepartmentOut)
         delete_department = views.DeleteModelView()
 
     # The register_routes method must be called to register the routes
@@ -50,7 +50,7 @@ class ModelViewSet:
 
     # Beyond the CRUD operations managed by the viewset,
     # the router can be used in the standard Django Ninja way
-    @router.get("/statistics/", response=dict)
+    @router.get("/statistics/")
     def retrieve_department_statistics(request: HttpRequest):
         return {"total": Department.objects.count()}
     ```
@@ -71,7 +71,7 @@ class ModelViewSet:
     """
 
     model: Type[Model]
-    default_input_schema: Optional[Type[Schema]]
+    default_payload_schema: Optional[Type[Schema]]
     default_response_schema: Optional[Type[Schema]]
 
     def __init_subclass__(cls, **kwargs):
@@ -85,7 +85,7 @@ class ModelViewSet:
 
         if hasattr(cls, "model"):
             cls._validate_model_class()
-            cls._validate_input_schema_class(optional=True)
+            cls._validate_payload_schema_class(optional=True)
             cls._validate_response_schema_class(optional=True)
             cls._bind_model_views()
 
@@ -95,7 +95,7 @@ class ModelViewSet:
         Binds instances of `AbstractModelView` to the ModelViewSet subclass.
 
         This allows the views to access the ModelViewSet subclass via the `viewset_class`
-        attribute, and access default schemas via the `default_input_schema` and
+        attribute, and access default schemas via the `default_payload_schema` and
         `default_response_schema` attributes.
 
         Note:
@@ -142,9 +142,9 @@ class ModelViewSet:
         utils.validate_class_attribute_type(cls, "model", expected_type=Type[Model])
 
     @classmethod
-    def _validate_input_schema_class(cls, optional: bool = True) -> None:
+    def _validate_payload_schema_class(cls, optional: bool = True) -> None:
         """
-        Validates that the `default_input_schema` attribute is a subclass of `Schema`.
+        Validates that the `default_payload_schema` attribute is a subclass of `Schema`.
 
         Parameters:
             - optional (bool, optional): Whether the attribute is optional. Defaults to `True`.
@@ -154,7 +154,7 @@ class ModelViewSet:
             - TypeError: If the attribute is not a subclass of `Schema`.
         """
         utils.validate_class_attribute_type(
-            cls, "default_input_schema", expected_type=Type[Schema], optional=optional
+            cls, "default_payload_schema", expected_type=Type[Schema], optional=optional
         )
 
     @classmethod

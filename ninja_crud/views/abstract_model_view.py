@@ -29,7 +29,7 @@ class AbstractModelView(ABC):
         method: HTTPMethod,
         path: str,
         filter_schema: Optional[Type[FilterSchema]] = None,
-        input_schema: Optional[Type[Schema]] = None,
+        payload_schema: Optional[Type[Schema]] = None,
         response_schema: Optional[Type[Schema]] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
@@ -42,7 +42,7 @@ class AbstractModelView(ABC):
             path (str): The path to use for the view.
             filter_schema (Optional[Type[FilterSchema]], optional): The schema used to deserialize the query parameters.
                 Defaults to None.
-            input_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
+            payload_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
                 Defaults to None.
             response_schema (Optional[Type[Schema]], optional): The schema used to serialize the response body.
                 Defaults to None.
@@ -55,7 +55,7 @@ class AbstractModelView(ABC):
         self.method = method
         self.path = path
         self.filter_schema = filter_schema
-        self.input_schema = input_schema
+        self.payload_schema = payload_schema
         self.response_schema = response_schema
         self.decorators = decorators or []
         self.router_kwargs = router_kwargs or {}
@@ -153,14 +153,14 @@ class AbstractModelView(ABC):
                 )
             setattr(self, attribute_name, default_attribute)
 
-    def bind_default_input_schema(
+    def bind_default_payload_schema(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         self.bind_default_value(
             viewset_class=viewset_class,
             model_view_name=model_view_name,
-            attribute_name="input_schema",
-            default_attribute_name="default_input_schema",
+            attribute_name="payload_schema",
+            default_attribute_name="default_payload_schema",
         )
 
     def bind_default_response_schema(

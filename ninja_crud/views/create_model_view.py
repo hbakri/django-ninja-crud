@@ -38,7 +38,7 @@ class CreateModelView(AbstractModelView):
         # Basic usage: Create a department
         # POST /
         create_department = views.CreateModelView(
-            input_schema=DepartmentIn,
+            payload_schema=DepartmentIn,
             response_schema=DepartmentOut
         )
 
@@ -47,7 +47,7 @@ class CreateModelView(AbstractModelView):
         create_employee = views.CreateModelView(
             path="/{id}/employees/",
             model_factory=lambda id: Employee(department_id=id),
-            input_schema=EmployeeIn,
+            payload_schema=EmployeeIn,
             response_schema=EmployeeOut,
         )
     ```
@@ -59,7 +59,7 @@ class CreateModelView(AbstractModelView):
 
     def __init__(
         self,
-        input_schema: Optional[Type[Schema]] = None,
+        payload_schema: Optional[Type[Schema]] = None,
         response_schema: Optional[Type[Schema]] = None,
         model_factory: Optional[ModelFactory] = None,
         pre_save: Optional[CreateHook] = None,
@@ -72,8 +72,8 @@ class CreateModelView(AbstractModelView):
         Initializes the CreateModelView.
 
         Args:
-            input_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
-                Defaults to None. If not provided, the `default_input_schema` of the `ModelViewSet` will be used.
+            payload_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
+                Defaults to None. If not provided, the `default_payload_schema` of the `ModelViewSet` will be used.
             response_schema (Optional[Type[Schema]], optional): The schema used to serialize the created instance.
                 Defaults to None. If not provided, the `default_response_schema` of the `ModelViewSet` will be used.
             model_factory (Optional[ModelFactory], optional): A function that returns a new instance of a model.
@@ -111,7 +111,7 @@ class CreateModelView(AbstractModelView):
             method=HTTPMethod.POST,
             path=path,
             filter_schema=None,
-            input_schema=input_schema,
+            payload_schema=payload_schema,
             response_schema=response_schema,
             decorators=decorators,
             router_kwargs=router_kwargs,
@@ -131,12 +131,12 @@ class CreateModelView(AbstractModelView):
             return self._build_collection_view(model_class)
 
     def _build_detail_view(self, model_class: Type[Model]) -> Callable:
-        input_schema = self.input_schema
+        payload_schema = self.payload_schema
 
         def detail_view(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
-            payload: input_schema,
+            payload: payload_schema,
         ):
             if not model_class.objects.filter(pk=id).exists():
                 raise model_class.DoesNotExist(
@@ -150,9 +150,9 @@ class CreateModelView(AbstractModelView):
         return detail_view
 
     def _build_collection_view(self, model_class: Type[Model]) -> Callable:
-        input_schema = self.input_schema
+        payload_schema = self.payload_schema
 
-        def collection_view(request: HttpRequest, payload: input_schema):
+        def collection_view(request: HttpRequest, payload: payload_schema):
             return HTTPStatus.CREATED, self.create_model(
                 request=request, id=None, payload=payload, model_class=model_class
             )
@@ -211,5 +211,5 @@ class CreateModelView(AbstractModelView):
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
     ) -> None:
         super().bind_to_viewset(viewset_class, model_view_name)
-        self.bind_default_input_schema(viewset_class, model_view_name)
+        self.bind_default_payload_schema(viewset_class, model_view_name)
         self.bind_default_response_schema(viewset_class, model_view_name)

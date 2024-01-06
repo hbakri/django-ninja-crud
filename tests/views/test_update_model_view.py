@@ -12,7 +12,7 @@ class TestUpdateModelView(TestCase):
     def test_register_route_router_kwargs(self):
         router_mock = MagicMock()
         update_item = UpdateModelView(
-            input_schema=ItemIn,
+            payload_schema=ItemIn,
             response_schema=ItemOut,
             router_kwargs={"exclude_unset": True},
         )
@@ -25,7 +25,7 @@ class TestUpdateModelView(TestCase):
     def test_method_validator(self):
         with self.assertRaises(ValueError):
             UpdateModelView(
-                input_schema=ItemIn,
+                payload_schema=ItemIn,
                 response_schema=ItemOut,
                 method=HTTPMethod.GET,
             )
@@ -34,6 +34,6 @@ class TestUpdateModelView(TestCase):
             # noinspection PyTypeChecker
             UpdateModelView(
                 method=1,
-                input_schema=ItemIn,
+                payload_schema=ItemIn,
                 response_schema=ItemOut,
             )

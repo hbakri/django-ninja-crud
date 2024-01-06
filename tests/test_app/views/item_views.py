@@ -31,7 +31,7 @@ def user_is_collection_creator(func):
 
 class ItemViewSet(ModelViewSet):
     model = Item
-    default_input_schema = ItemIn
+    default_payload_schema = ItemIn
     default_response_schema = ItemOut
 
     list_items = ListModelView(

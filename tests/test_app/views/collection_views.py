@@ -42,7 +42,7 @@ class CollectionViewSet(ModelViewSet):
         response_schema=CollectionOut, filter_schema=CollectionFilter
     )
     create_collection = CreateModelView(
-        input_schema=CollectionIn,
+        payload_schema=CollectionIn,
         response_schema=CollectionOut,
         model_factory=lambda: Collection(),
         pre_save=lambda request, instance: setattr(
@@ -52,7 +52,7 @@ class CollectionViewSet(ModelViewSet):
     )
     retrieve_collection = RetrieveModelView(response_schema=CollectionOut)
     update_collection = UpdateModelView(
-        input_schema=CollectionIn,
+        payload_schema=CollectionIn,
         response_schema=CollectionOut,
         decorators=[user_is_creator],
     )
@@ -71,7 +71,7 @@ class CollectionViewSet(ModelViewSet):
     create_collection_item = CreateModelView(
         path="/{id}/items/",
         model_factory=lambda id: Item(collection_id=id),
-        input_schema=ItemIn,
+        payload_schema=ItemIn,
         response_schema=ItemOut,
         pre_save=lambda request, id, instance: None,
         post_save=lambda request, id, instance: None,

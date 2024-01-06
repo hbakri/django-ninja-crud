@@ -45,7 +45,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         model = Department
 
         create_department_view = views.CreateModelView(
-            input_schema=DepartmentIn,
+            payload_schema=DepartmentIn,
             response_schema=DepartmentOut
         )
     ```

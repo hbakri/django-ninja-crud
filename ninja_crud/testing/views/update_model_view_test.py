@@ -45,7 +45,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
         model = Department
 
         update_department_view = views.UpdateModelView(
-            input_schema=DepartmentIn,
+            payload_schema=DepartmentIn,
             response_schema=DepartmentOut
         )
     ```

@@ -37,7 +37,7 @@ class ModelViewSetTestCase(django.test.TestCase):
 
     class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
-        default_input_schema = DepartmentIn
+        default_payload_schema = DepartmentIn
         default_response_schema = DepartmentOut
 
         list_departments = views.ListModelView()
