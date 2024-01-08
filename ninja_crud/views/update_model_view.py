@@ -88,6 +88,7 @@ class UpdateModelView(AbstractModelView):
             filter_schema=None,
             payload_schema=payload_schema,
             response_schema=response_schema,
+            response_status=HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -100,8 +101,9 @@ class UpdateModelView(AbstractModelView):
         self.pre_save = pre_save
         self.post_save = post_save
 
-    def build_view(self, model_class: Type[Model]) -> Callable:
-        payload_schema = self.payload_schema
+    def build_view(self) -> Callable:
+        model_class = self.get_model_viewset_class().model
+        payload_schema = self.request_body
 
         def view(
             request: HttpRequest,
@@ -136,21 +138,6 @@ class UpdateModelView(AbstractModelView):
             self.post_save(request, old_instance, new_instance)
 
         return new_instance
-
-    def get_response(self) -> dict:
-        """
-        Provides a mapping of HTTP status codes to response schemas for the update view.
-
-        This response schema is used in API documentation to describe the response body for this view.
-        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
-        will be ignored.
-
-        Returns:
-            dict: A mapping of HTTP status codes to response schemas for the update view.
-                Defaults to {200: self.response_schema}. For example, for a model "Department", the response
-                schema would be {200: DepartmentOut}.
-        """
-        return {HTTPStatus.OK: self.response_schema}
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str

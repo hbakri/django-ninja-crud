@@ -4,15 +4,6 @@ from uuid import UUID
 from django.db.models import Model
 
 
-def merge_decorators(decorators):
-    def merged_decorator(func):
-        for decorator in reversed(decorators):
-            func = decorator(func)
-        return func
-
-    return merged_decorator
-
-
 def get_id_type(model_class: Type[Model]) -> Type:  # pragma: no cover
     id_field = model_class._meta.pk
     id_internal_type = id_field.get_internal_type()

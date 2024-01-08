@@ -145,7 +145,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
     ) -> dict:
         model_class = self.model_viewset_test_case.model_viewset_class.model
         model = model_class.objects.get(id=path_parameters["id"])
-        schema = self.model_view.response_schema.from_orm(model)
+        schema = self.model_view.response_body.from_orm(model)
         return json.loads(schema.json())
 
     def on_failed_request(

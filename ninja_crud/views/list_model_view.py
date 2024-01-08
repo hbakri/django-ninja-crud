@@ -91,6 +91,7 @@ class ListModelView(AbstractModelView):
             filter_schema=filter_schema,
             payload_schema=None,
             response_schema=response_schema,
+            response_status=HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -103,14 +104,15 @@ class ListModelView(AbstractModelView):
         if self.pagination_class is not None:
             self.decorators.append(paginate(self.pagination_class))
 
-    def build_view(self, model_class: Type[Model]) -> Callable:
+    def build_view(self) -> Callable:
+        model_class = self.get_model_viewset_class().model
         if "{id}" in self.path:
             return self._build_detail_view(model_class)
         else:
             return self._build_collection_view(model_class)
 
     def _build_detail_view(self, model_class: Type[Model]) -> Callable:
-        filter_schema = self.filter_schema
+        filter_schema = self.query_parameters
 
         def detail_view(
             request: HttpRequest,
@@ -129,7 +131,7 @@ class ListModelView(AbstractModelView):
         return detail_view
 
     def _build_collection_view(self, model_class: Type[Model]) -> Callable:
-        filter_schema = self.filter_schema
+        filter_schema = self.query_parameters
 
         def collection_view(
             request: HttpRequest,
@@ -159,20 +161,12 @@ class ListModelView(AbstractModelView):
 
         return queryset
 
-    def get_response(self) -> dict:
-        """
-        Provides a mapping of HTTP status codes to response schemas for the list view.
-
-        This response schema is used in API documentation to describe the response body for this view.
-        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
-        will be ignored.
-
-        Returns:
-            dict: A mapping of HTTP status codes to response schemas for the list view.
-                Defaults to {200: List[self.response_schema]}. For example, for a model "Department", the response
-                schema would be {200: List[DepartmentOut]}.
-        """
-        return {HTTPStatus.OK: List[self.response_schema]}
+    def _get_router_kwargs(self, operation_id: str) -> dict:
+        router_kwargs = super()._get_router_kwargs(operation_id)
+        router_kwargs["response"] = {
+            self.response_status.value: List[self.response_body]
+        }
+        return router_kwargs
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str

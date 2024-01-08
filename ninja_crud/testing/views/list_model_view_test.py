@@ -176,8 +176,8 @@ class ListModelViewTest(AbstractModelViewTest):
         path_parameters: dict,
         query_parameters: dict,
     ) -> django.db.models.QuerySet:
-        if self.model_view.filter_schema is not None:
-            filters = self.model_view.filter_schema(**query_parameters)
+        if self.model_view.query_parameters is not None:
+            filters = self.model_view.query_parameters(**query_parameters)
         else:
             filters = ninja.FilterSchema()
 
@@ -194,7 +194,7 @@ class ListModelViewTest(AbstractModelViewTest):
         for item in items:
             self.model_viewset_test_case.assertIsInstance(item, dict)
             model = queryset.get(id=item["id"])
-            response_schema = self.model_view.response_schema.from_orm(model)
+            response_schema = self.model_view.response_body.from_orm(model)
             self.model_viewset_test_case.assertDictEqual(
                 item, json.loads(response_schema.json())
             )

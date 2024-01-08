@@ -73,6 +73,7 @@ class DeleteModelView(AbstractModelView):
             filter_schema=None,
             payload_schema=None,
             response_schema=None,
+            response_status=HTTPStatus.NO_CONTENT,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -82,7 +83,9 @@ class DeleteModelView(AbstractModelView):
         self.pre_delete = pre_delete
         self.post_delete = post_delete
 
-    def build_view(self, model_class: Type[Model]) -> Callable:
+    def build_view(self) -> Callable:
+        model_class = self.get_model_viewset_class().model
+
         def view(request: HttpRequest, id: utils.get_id_type(model_class)):
             return HTTPStatus.NO_CONTENT, self.delete_model(
                 request=request, id=id, model_class=model_class
@@ -102,17 +105,3 @@ class DeleteModelView(AbstractModelView):
 
         if self.post_delete is not None:
             self.post_delete(request, id, instance)
-
-    def get_response(self) -> dict:
-        """
-        Provides a mapping of HTTP status codes to response schemas for the delete view.
-
-        This response schema is used in API documentation to describe the response body for this view.
-        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
-        will be ignored.
-
-        Returns:
-            dict: A mapping of HTTP status codes to response schemas for the delete view.
-                Defaults to {204: None}.
-        """
-        return {HTTPStatus.NO_CONTENT: None}

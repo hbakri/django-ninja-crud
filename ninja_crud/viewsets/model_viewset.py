@@ -51,7 +51,7 @@ class ModelViewSet:
     # Beyond the CRUD operations managed by the viewset,
     # the router can be used in the standard Django Ninja way
     @router.get("/statistics/")
-    def retrieve_department_statistics(request: HttpRequest):
+    def get_department_statistics(request: HttpRequest):
         return {"total": Department.objects.count()}
     ```
 
@@ -94,9 +94,9 @@ class ModelViewSet:
         """
         Binds instances of `AbstractModelView` to the ModelViewSet subclass.
 
-        This allows the views to access the ModelViewSet subclass via the `viewset_class`
-        attribute, and access default schemas via the `default_payload_schema` and
-        `default_response_schema` attributes.
+        This allows the views to access the ModelViewSet subclass via the
+        `model_viewset_class` attribute, and access default schemas via the
+        `default_payload_schema` and `default_response_schema` attributes.
 
         Note:
             This method is called automatically during the subclass initialization of
@@ -128,7 +128,7 @@ class ModelViewSet:
             view_attributes.items(), key=lambda item: attribute_order.index(item[0])
         )
         for name, view in ordered_view_attributes:
-            view.register_route(router, view_name=name, model_class=cls.model)
+            view.register_route(router, route_name=name)
 
     @classmethod
     def _validate_model_class(cls) -> None:

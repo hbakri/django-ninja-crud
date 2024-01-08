@@ -73,6 +73,7 @@ class RetrieveModelView(AbstractModelView):
             filter_schema=None,
             payload_schema=None,
             response_schema=response_schema,
+            response_status=HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -82,7 +83,9 @@ class RetrieveModelView(AbstractModelView):
 
         self.queryset_getter = queryset_getter
 
-    def build_view(self, model_class: Type[Model]) -> Callable:
+    def build_view(self) -> Callable:
+        model_class = self.get_model_viewset_class().model
+
         def view(request: HttpRequest, id: utils.get_id_type(model_class)):
             return HTTPStatus.OK, self.retrieve_model(
                 request=request, id=id, model_class=model_class
@@ -97,21 +100,6 @@ class RetrieveModelView(AbstractModelView):
             queryset = model_class.objects.get_queryset()
 
         return queryset.get(pk=id)
-
-    def get_response(self) -> dict:
-        """
-        Provides a mapping of HTTP status codes to response schemas for the retrieve view.
-
-        This response schema is used in API documentation to describe the response body for this view.
-        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
-        will be ignored.
-
-        Returns:
-            dict: A mapping of HTTP status codes to response schemas for the retrieve view.
-                Defaults to {200: self.response_schema}. For example, for a model "Department", the response
-                schema would be {200: DepartmentOut}.
-        """
-        return {HTTPStatus.OK: self.response_schema}
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str

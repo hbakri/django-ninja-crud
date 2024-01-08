@@ -99,7 +99,7 @@ DepartmentViewSet.register_routes(router)
 # Beyond the CRUD operations managed by the viewset,
 # the router can be used in the standard Django Ninja way
 @router.get("/statistics/", response=dict)
-def retrieve_department_statistics(request: HttpRequest):
+def get_department_statistics(request: HttpRequest):
     return {"total": Department.objects.count()}
 ```
 
@@ -145,7 +145,7 @@ class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
     test_delete_department = testing.views.DeleteModelViewTest(path_parameters)
 
     # You can then add additional tests as needed
-    def test_retrieve_department_statistics(self):
+    def test_get_department_statistics(self):
         response = self.client.get(f"{self.base_path}/statistics/")
         self.assertEqual(response.status_code, 200)
         ... # Additional assertions

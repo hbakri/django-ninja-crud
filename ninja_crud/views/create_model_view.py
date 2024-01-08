@@ -113,6 +113,7 @@ class CreateModelView(AbstractModelView):
             filter_schema=None,
             payload_schema=payload_schema,
             response_schema=response_schema,
+            response_status=HTTPStatus.CREATED,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -124,14 +125,15 @@ class CreateModelView(AbstractModelView):
         self.pre_save = pre_save
         self.post_save = post_save
 
-    def build_view(self, model_class: Type[Model]) -> Callable:
+    def build_view(self) -> Callable:
+        model_class = self.get_model_viewset_class().model
         if "{id}" in self.path:
             return self._build_detail_view(model_class)
         else:
             return self._build_collection_view(model_class)
 
     def _build_detail_view(self, model_class: Type[Model]) -> Callable:
-        payload_schema = self.payload_schema
+        payload_schema = self.request_body
 
         def detail_view(
             request: HttpRequest,
@@ -150,7 +152,7 @@ class CreateModelView(AbstractModelView):
         return detail_view
 
     def _build_collection_view(self, model_class: Type[Model]) -> Callable:
-        payload_schema = self.payload_schema
+        payload_schema = self.request_body
 
         def collection_view(request: HttpRequest, payload: payload_schema):
             return HTTPStatus.CREATED, self.create_model(
@@ -191,21 +193,6 @@ class CreateModelView(AbstractModelView):
             self.post_save(*args)
 
         return instance
-
-    def get_response(self) -> dict:
-        """
-        Provides a mapping of HTTP status codes to response schemas for the create view.
-
-        This response schema is used in API documentation to describe the response body for this view.
-        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
-        will be ignored.
-
-        Returns:
-            dict: A mapping of HTTP status codes to response schemas for the create view.
-                Defaults to {201: self.response_schema}. For example, for a model "Department", the response
-                schema would be {201: DepartmentOut}.
-        """
-        return {HTTPStatus.CREATED: self.response_schema}
 
     def bind_to_viewset(
         self, viewset_class: Type["ModelViewSet"], model_view_name: str
