@@ -1,3 +1,5 @@
+from typing import List
+
 from django.contrib.auth.models import User
 from ninja import Router
 
@@ -11,7 +13,7 @@ router = Router()
 class UserViewSet(ModelViewSet):
     model = User
 
-    list_users = views.ListModelView(response_schema=UserOut, pagination_class=None)
+    list_users = views.ListModelView(response_body=List[UserOut], pagination_class=None)
     create_user = views.CreateModelView(payload_schema=UserIn, response_schema=UserOut)
     retrieve_user = views.RetrieveModelView(response_schema=UserOut)
     update_user = views.UpdateModelView(payload_schema=UserIn, response_schema=UserOut)

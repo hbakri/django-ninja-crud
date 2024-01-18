@@ -1,4 +1,5 @@
 from functools import wraps
+from typing import List
 
 from django.core.exceptions import PermissionDenied
 from ninja import Router
@@ -39,7 +40,7 @@ class CollectionViewSet(ModelViewSet):
     model = Collection
 
     list_collections = ListModelView(
-        response_schema=CollectionOut, filter_schema=CollectionFilter
+        response_body=List[CollectionOut], query_parameters=CollectionFilter
     )
     create_collection = CreateModelView(
         payload_schema=CollectionIn,
@@ -65,7 +66,7 @@ class CollectionViewSet(ModelViewSet):
     list_collection_items = ListModelView(
         path="/{id}/items/",
         queryset_getter=lambda id: Item.objects.filter(collection_id=id),
-        response_schema=ItemOut,
+        response_body=List[ItemOut],
         decorators=[user_is_creator],
     )
     create_collection_item = CreateModelView(

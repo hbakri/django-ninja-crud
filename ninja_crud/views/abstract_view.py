@@ -2,13 +2,13 @@ import abc
 import functools
 import http
 import logging
-from typing import Callable, List, Optional, Type
+from typing import Callable, Dict, List, Optional, Type, Union, get_args, get_origin
 
 import django.http
 import ninja
 
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.validators.http_method_validator import HTTPMethodValidator
+from ninja_crud.views.validators.view_validator import ViewValidator
 
 logger = logging.getLogger(__name__)
 
@@ -34,16 +34,17 @@ class AbstractView(abc.ABC):
             response. Defaults to http.HTTPStatus.OK.
         decorators (Optional[List[Callable]], optional): List of decorators to
             apply to the view. Defaults to [].
-        router_kwargs (Optional[dict], optional): Additional arguments to pass
+        router_kwargs (Optional[Dict], optional): Additional arguments to pass
             to the router. Defaults to {}. Overrides are allowed for most
             arguments except 'path', 'methods', and 'response'. If any of these
             arguments are provided, a warning will be logged and the override
             will be ignored.
 
-    Example:
+    Examples:
     ```python
     # examples/abstract_views.py
     from typing import Type, Callable
+
     import django.http
     import ninja
 
@@ -73,14 +74,13 @@ class AbstractView(abc.ABC):
         path: str,
         query_parameters: Optional[Type[ninja.Schema]] = None,
         request_body: Optional[Type[ninja.Schema]] = None,
-        response_body: Optional[Type[ninja.Schema]] = None,
+        response_body: Union[Type[ninja.Schema], Type[List[ninja.Schema]], None] = None,
         response_status: http.HTTPStatus = http.HTTPStatus.OK,
         decorators: Optional[List[Callable]] = None,
-        router_kwargs: Optional[dict] = None,
+        router_kwargs: Optional[Dict] = None,
     ) -> None:
         """
-        Initializes the AbstractView with the given decorators and optional
-        router keyword arguments.
+        Initializes the AbstractView.
 
         Args:
             method (HTTPMethod): The HTTP method for the view.
@@ -95,24 +95,68 @@ class AbstractView(abc.ABC):
                 the response. Defaults to http.HTTPStatus.OK.
             decorators (Optional[List[Callable]], optional): A list of decorators
                 to apply to the view. Defaults to [].
-            router_kwargs (Optional[dict], optional): Additional arguments to pass
+            router_kwargs (Optional[Dict], optional): Additional arguments to pass
                 to the router. Defaults to {}. Overrides are allowed for most
                 arguments except 'path', 'methods', and 'response'. If any of these
                 arguments are provided, a warning will be logged and the override
                 will be ignored.
-
-        Raises:
-            ValueError: If the provided HTTP method is not supported.
         """
-        HTTPMethodValidator.validate(method=method)
+        validator = ViewValidator()
+        validator.validate("method", method, expected_type=HTTPMethod)
+        validator.validate("path", path, expected_type=str)
+
         self.method = method
         self.path = path
         self.query_parameters = query_parameters
+        if self.query_parameters is not None:
+            self._validate_subclass("query_parameters", expected_type=ninja.Schema)
         self.request_body = request_body
+        if self.request_body is not None:
+            self._validate_subclass("request_body", expected_type=ninja.Schema)
         self.response_body = response_body
+        self._validate_response_body(response_body)
         self.response_status = response_status
+        self._validate_instance("response_status", expected_type=http.HTTPStatus)
         self.decorators = decorators or []
+        self._validate_instance("decorators", expected_type=list)
         self.router_kwargs = router_kwargs or {}
+        self._validate_instance("router_kwargs", expected_type=dict)
+
+    def _validate_instance(self, attr_name: str, expected_type: Type):
+        attr = getattr(self, attr_name, None)
+        if not isinstance(attr, expected_type):
+            raise TypeError(
+                f"Expected '{attr_name}' to be an instance of "
+                f"{expected_type.__name__}, but found type {type(attr)}."
+            )
+
+    def _validate_subclass(self, attr_name: str, expected_type: Type):
+        attr = getattr(self, attr_name, None)
+        if not isinstance(attr, type) or not issubclass(attr, expected_type):
+            raise TypeError(
+                f"Expected '{attr_name}' to be a subclass of "
+                f"{expected_type.__name__}, but found type {type(attr)}."
+            )
+
+    @staticmethod
+    def _validate_response_body(
+        response_body: Union[Type[ninja.Schema], Type[List[ninja.Schema]], None],
+    ) -> None:
+        if response_body is not None:
+            is_valid_schema = isinstance(response_body, type) and issubclass(
+                response_body, ninja.Schema
+            )
+            is_valid_list_of_schema = (
+                get_origin(response_body) is list
+                and len(get_args(response_body)) == 1
+                and issubclass(get_args(response_body)[0], ninja.Schema)
+            )
+            if not is_valid_schema and not is_valid_list_of_schema:
+                raise TypeError(
+                    f"Expected 'response_body' to be a subclass of ninja.Schema "
+                    f"or a list of a single subclass of ninja.Schema, but found "
+                    f"type {type(response_body)}."
+                )
 
     @abc.abstractmethod
     def build_view(self) -> Callable:
@@ -144,6 +188,7 @@ class AbstractView(abc.ABC):
         Example:
         ```python
         import ninja
+
         from examples.abstract_views import HelloWorldView
 
         router = ninja.Router()
@@ -157,8 +202,10 @@ class AbstractView(abc.ABC):
 
     def _build_route_decorator(self, router: ninja.Router) -> Callable:
         def route_decorator(view: Callable):
+            for decorator in reversed(self.decorators):
+                view = decorator(view)
+
             @router.api_operation(**self._get_router_kwargs(view.__name__))
-            @self.merge_decorators(self.decorators)
             @functools.wraps(view)
             def wrapped_view(request: django.http.HttpRequest, *args, **kwargs):
                 return view(request, *args, **kwargs)
@@ -179,21 +226,10 @@ class AbstractView(abc.ABC):
     @staticmethod
     def _clean_router_kwargs(router_kwargs: dict) -> dict:
         locked_keys = ["methods", "path", "response"]
-        sanitized_kwargs = router_kwargs.copy()
+        cleaned_kwargs = router_kwargs.copy()
         for locked_key in locked_keys:
-            if locked_key in sanitized_kwargs:
+            if locked_key in cleaned_kwargs:
                 logger.warning(f"Cannot override '{locked_key}' in 'router_kwargs'.")
-                sanitized_kwargs.pop(locked_key)
+                cleaned_kwargs.pop(locked_key)
 
-        return sanitized_kwargs
-
-    # TODO: Update it in order to directly use self.decorators without passing it as an argument
-    # And remove the need to call @functools.wraps(view) in _build_route_decorator
-    @staticmethod
-    def merge_decorators(decorators):
-        def merged_decorator(func):
-            for decorator in reversed(decorators):
-                func = decorator(func)
-            return func
-
-        return merged_decorator
+        return cleaned_kwargs

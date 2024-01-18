@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
+from typing import Any, Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -13,9 +13,6 @@ from ninja_crud.views.validators.path_validator import PathValidator
 from ninja_crud.views.validators.queryset_getter_validator import (
     QuerySetGetterValidator,
 )
-
-if TYPE_CHECKING:  # pragma: no cover
-    from ninja_crud.viewsets import ModelViewSet
 
 
 class RetrieveModelView(AbstractModelView):
@@ -56,7 +53,7 @@ class RetrieveModelView(AbstractModelView):
 
         Args:
             response_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved object.
-                Defaults to None. If not provided, the `default_response_schema` of the `ModelViewSet` will be used.
+                Defaults to None. If not provided, the `default_response_body` of the `ModelViewSet` will be used.
             queryset_getter (Optional[DetailQuerySetGetter], optional): A function to customize the queryset used
                 for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet[Model].
 
@@ -70,9 +67,9 @@ class RetrieveModelView(AbstractModelView):
         super().__init__(
             method=HTTPMethod.GET,
             path=path,
-            filter_schema=None,
-            payload_schema=None,
-            response_schema=response_schema,
+            query_parameters=None,
+            request_body=None,
+            response_body=response_schema,
             response_status=HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
@@ -84,7 +81,7 @@ class RetrieveModelView(AbstractModelView):
         self.queryset_getter = queryset_getter
 
     def build_view(self) -> Callable:
-        model_class = self.get_model_viewset_class().model
+        model_class = self.model_viewset_class.model
 
         def view(request: HttpRequest, id: utils.get_id_type(model_class)):
             return HTTPStatus.OK, self.retrieve_model(
@@ -101,8 +98,6 @@ class RetrieveModelView(AbstractModelView):
 
         return queryset.get(pk=id)
 
-    def bind_to_viewset(
-        self, viewset_class: Type["ModelViewSet"], model_view_name: str
-    ) -> None:
-        super().bind_to_viewset(viewset_class, model_view_name)
-        self.bind_default_response_schema(viewset_class, model_view_name)
+    def _inherit_model_viewset_class_attributes(self) -> None:
+        if self.response_body is None:
+            self.response_body = self.model_viewset_class.default_response_body

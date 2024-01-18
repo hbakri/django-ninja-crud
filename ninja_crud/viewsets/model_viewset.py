@@ -18,9 +18,9 @@ class ModelViewSet:
 
     Attributes:
         model (Type[Model]): The Django model class for CRUD operations.
-        default_payload_schema (Optional[Type[Schema]], optional): The default schema to use for
+        default_request_body (Optional[Type[Schema]], optional): The default schema to use for
             deserializing the request payload. Defaults to None.
-        default_response_schema (Optional[Type[Schema]], optional): The default schema to use for
+        default_response_body (Optional[Type[Schema]], optional): The default schema to use for
             serializing the response payload. Defaults to None.
 
     Example:
@@ -71,8 +71,8 @@ class ModelViewSet:
     """
 
     model: Type[Model]
-    default_payload_schema: Optional[Type[Schema]]
-    default_response_schema: Optional[Type[Schema]]
+    default_request_body: Optional[Type[Schema]]
+    default_response_body: Optional[Type[Schema]]
 
     def __init_subclass__(cls, **kwargs):
         """
@@ -96,15 +96,15 @@ class ModelViewSet:
 
         This allows the views to access the ModelViewSet subclass via the
         `model_viewset_class` attribute, and access default schemas via the
-        `default_payload_schema` and `default_response_schema` attributes.
+        `default_request_body` and `default_response_body` attributes.
 
         Note:
             This method is called automatically during the subclass initialization of
             `ModelViewSet`. It should not be called directly.
         """
-        for attr_name, attr_value in inspect.getmembers(cls):
-            if isinstance(attr_value, AbstractModelView):
-                attr_value.bind_to_viewset(cls, model_view_name=attr_name)
+        for _, view_model in inspect.getmembers(cls):
+            if isinstance(view_model, AbstractModelView):
+                view_model.model_viewset_class = cls
 
     @classmethod
     def register_routes(cls, router: Router) -> None:
@@ -144,7 +144,7 @@ class ModelViewSet:
     @classmethod
     def _validate_payload_schema_class(cls, optional: bool = True) -> None:
         """
-        Validates that the `default_payload_schema` attribute is a subclass of `Schema`.
+        Validates that the `default_request_body` attribute is a subclass of `Schema`.
 
         Parameters:
             - optional (bool, optional): Whether the attribute is optional. Defaults to `True`.
@@ -154,13 +154,13 @@ class ModelViewSet:
             - TypeError: If the attribute is not a subclass of `Schema`.
         """
         utils.validate_class_attribute_type(
-            cls, "default_payload_schema", expected_type=Type[Schema], optional=optional
+            cls, "default_request_body", expected_type=Type[Schema], optional=optional
         )
 
     @classmethod
     def _validate_response_schema_class(cls, optional: bool = True) -> None:
         """
-        Validates that the `default_response_schema` attribute is a subclass of `Schema`.
+        Validates that the `default_response_body` attribute is a subclass of `Schema`.
 
         Parameters:
             - optional (bool, optional): Whether the attribute is optional. Defaults to `True`.
@@ -171,7 +171,7 @@ class ModelViewSet:
         """
         utils.validate_class_attribute_type(
             cls,
-            "default_response_schema",
+            "default_response_body",
             expected_type=Type[Schema],
             optional=optional,
         )

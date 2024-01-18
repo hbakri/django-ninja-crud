@@ -1,3 +1,4 @@
+from typing import List
 from unittest.mock import MagicMock
 
 from django.test import TestCase
@@ -15,7 +16,7 @@ class TestListModelView(TestCase):
             model = Item
 
             list_items = views.ListModelView(
-                response_schema=ItemOut,
+                response_body=List[ItemOut],
                 router_kwargs={"exclude_unset": True},
             )
 
@@ -31,7 +32,7 @@ class TestListModelView(TestCase):
             views.ListModelView(
                 path="/{id}/items/",
                 queryset_getter="not callable",
-                response_schema=ItemOut,
+                response_body=List[ItemOut],
             )
 
         # queryset_getter must have the correct number of arguments
@@ -39,11 +40,20 @@ class TestListModelView(TestCase):
             views.ListModelView(
                 path="/{id}/items/",
                 queryset_getter=lambda: Item.objects.get_queryset(),
-                response_schema=ItemOut,
+                response_body=List[ItemOut],
             )
 
         with self.assertRaises(ValueError):
             views.ListModelView(
                 queryset_getter=lambda id: Item.objects.get_queryset(),
-                response_schema=ItemOut,
+                response_body=List[ItemOut],
             )
+
+    def test_bind_to_viewset_without_response_schema_error(self):
+        model_view = views.ListModelView()
+
+        class ItemModelViewSet(viewsets.ModelViewSet):
+            model = Item
+
+        with self.assertRaises(AttributeError):
+            model_view.model_viewset_class = ItemModelViewSet

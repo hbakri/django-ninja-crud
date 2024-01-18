@@ -1,4 +1,5 @@
 from functools import wraps
+from typing import List
 
 from django.core.exceptions import PermissionDenied
 from ninja import Router
@@ -31,11 +32,11 @@ def user_is_collection_creator(func):
 
 class ItemViewSet(ModelViewSet):
     model = Item
-    default_payload_schema = ItemIn
-    default_response_schema = ItemOut
+    default_request_body = ItemIn
+    default_response_body = ItemOut
 
     list_items = ListModelView(
-        filter_schema=OrderByFilterSchema,
+        query_parameters=OrderByFilterSchema,
         queryset_getter=lambda: Item.objects.get_queryset(),
     )
     retrieve_item = RetrieveModelView(
@@ -52,7 +53,7 @@ class ItemViewSet(ModelViewSet):
     list_tags = ListModelView(
         path="/{id}/tags/",
         queryset_getter=lambda id: Tag.objects.filter(items__id=id),
-        response_schema=TagOut,
+        response_body=List[TagOut],
     )
 
 

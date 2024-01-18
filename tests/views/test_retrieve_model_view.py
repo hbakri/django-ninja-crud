@@ -46,28 +46,26 @@ class TestRetrieveModelView(TestCase):
 
         class ItemModelViewSet(ModelViewSet):
             model = Item
-            default_payload_schema = None
-            default_response_schema = None
+            default_request_body = None
+            default_response_body = None
 
-        model_view.bind_to_viewset(ItemModelViewSet, model_view_name="retrieve")
+        model_view.model_viewset_class = ItemModelViewSet
 
     def test_bind_to_viewset_without_response_schema(self):
         model_view = views.RetrieveModelView()
 
         class ItemModelViewSet(ModelViewSet):
             model = Item
-            default_payload_schema = None
-            default_response_schema = ItemOut
+            default_request_body = None
+            default_response_body = ItemOut
 
-        model_view.bind_to_viewset(ItemModelViewSet, model_view_name="retrieve")
+        model_view.model_viewset_class = ItemModelViewSet
 
     def test_bind_to_viewset_without_response_schema_error(self):
         model_view = views.RetrieveModelView()
 
         class ItemModelViewSet(ModelViewSet):
             model = Item
-            default_payload_schema = None
-            default_response_schema = None
 
-        with self.assertRaises(ValueError):
-            model_view.bind_to_viewset(ItemModelViewSet, model_view_name="retrieve")
+        with self.assertRaises(AttributeError):
+            model_view.model_viewset_class = ItemModelViewSet

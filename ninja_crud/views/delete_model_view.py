@@ -70,9 +70,9 @@ class DeleteModelView(AbstractModelView):
         super().__init__(
             method=HTTPMethod.DELETE,
             path=path,
-            filter_schema=None,
-            payload_schema=None,
-            response_schema=None,
+            query_parameters=None,
+            request_body=None,
+            response_body=None,
             response_status=HTTPStatus.NO_CONTENT,
             decorators=decorators,
             router_kwargs=router_kwargs,
@@ -84,7 +84,7 @@ class DeleteModelView(AbstractModelView):
         self.post_delete = post_delete
 
     def build_view(self) -> Callable:
-        model_class = self.get_model_viewset_class().model
+        model_class = self.model_viewset_class.model
 
         def view(request: HttpRequest, id: utils.get_id_type(model_class)):
             return HTTPStatus.NO_CONTENT, self.delete_model(

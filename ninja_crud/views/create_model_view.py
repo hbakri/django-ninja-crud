@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
+from typing import Any, Callable, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -14,9 +14,6 @@ from ninja_crud.views.helpers.types import (
 )
 from ninja_crud.views.validators.model_factory_validator import ModelFactoryValidator
 from ninja_crud.views.validators.path_validator import PathValidator
-
-if TYPE_CHECKING:  # pragma: no cover
-    from ninja_crud.viewsets import ModelViewSet
 
 
 class CreateModelView(AbstractModelView):
@@ -73,9 +70,9 @@ class CreateModelView(AbstractModelView):
 
         Args:
             payload_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
-                Defaults to None. If not provided, the `default_payload_schema` of the `ModelViewSet` will be used.
+                Defaults to None. If not provided, the `default_request_body` of the `ModelViewSet` will be used.
             response_schema (Optional[Type[Schema]], optional): The schema used to serialize the created instance.
-                Defaults to None. If not provided, the `default_response_schema` of the `ModelViewSet` will be used.
+                Defaults to None. If not provided, the `default_response_body` of the `ModelViewSet` will be used.
             model_factory (Optional[ModelFactory], optional): A function that returns a new instance of a model.
                 Defaults to None.
 
@@ -110,9 +107,9 @@ class CreateModelView(AbstractModelView):
         super().__init__(
             method=HTTPMethod.POST,
             path=path,
-            filter_schema=None,
-            payload_schema=payload_schema,
-            response_schema=response_schema,
+            query_parameters=None,
+            request_body=payload_schema,
+            response_body=response_schema,
             response_status=HTTPStatus.CREATED,
             decorators=decorators,
             router_kwargs=router_kwargs,
@@ -126,7 +123,7 @@ class CreateModelView(AbstractModelView):
         self.post_save = post_save
 
     def build_view(self) -> Callable:
-        model_class = self.get_model_viewset_class().model
+        model_class = self.model_viewset_class.model
         if "{id}" in self.path:
             return self._build_detail_view(model_class)
         else:
@@ -194,9 +191,8 @@ class CreateModelView(AbstractModelView):
 
         return instance
 
-    def bind_to_viewset(
-        self, viewset_class: Type["ModelViewSet"], model_view_name: str
-    ) -> None:
-        super().bind_to_viewset(viewset_class, model_view_name)
-        self.bind_default_payload_schema(viewset_class, model_view_name)
-        self.bind_default_response_schema(viewset_class, model_view_name)
+    def _inherit_model_viewset_class_attributes(self) -> None:
+        if self.request_body is None:
+            self.request_body = self.model_viewset_class.default_request_body
+        if self.response_body is None:
+            self.response_body = self.model_viewset_class.default_response_body
