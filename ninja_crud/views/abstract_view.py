@@ -2,13 +2,12 @@ import abc
 import functools
 import http
 import logging
-from typing import Callable, Dict, List, Optional, Type, Union, get_args, get_origin
+from typing import Callable, Dict, List, Optional, Type, Union
 
 import django.http
 import ninja
 
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.validators.view_validator import ViewValidator
 
 logger = logging.getLogger(__name__)
 
@@ -101,62 +100,14 @@ class AbstractView(abc.ABC):
                 arguments are provided, a warning will be logged and the override
                 will be ignored.
         """
-        validator = ViewValidator()
-        validator.validate("method", method, expected_type=HTTPMethod)
-        validator.validate("path", path, expected_type=str)
-
         self.method = method
         self.path = path
         self.query_parameters = query_parameters
-        if self.query_parameters is not None:
-            self._validate_subclass("query_parameters", expected_type=ninja.Schema)
         self.request_body = request_body
-        if self.request_body is not None:
-            self._validate_subclass("request_body", expected_type=ninja.Schema)
         self.response_body = response_body
-        self._validate_response_body(response_body)
         self.response_status = response_status
-        self._validate_instance("response_status", expected_type=http.HTTPStatus)
         self.decorators = decorators or []
-        self._validate_instance("decorators", expected_type=list)
         self.router_kwargs = router_kwargs or {}
-        self._validate_instance("router_kwargs", expected_type=dict)
-
-    def _validate_instance(self, attr_name: str, expected_type: Type):
-        attr = getattr(self, attr_name, None)
-        if not isinstance(attr, expected_type):
-            raise TypeError(
-                f"Expected '{attr_name}' to be an instance of "
-                f"{expected_type.__name__}, but found type {type(attr)}."
-            )
-
-    def _validate_subclass(self, attr_name: str, expected_type: Type):
-        attr = getattr(self, attr_name, None)
-        if not isinstance(attr, type) or not issubclass(attr, expected_type):
-            raise TypeError(
-                f"Expected '{attr_name}' to be a subclass of "
-                f"{expected_type.__name__}, but found type {type(attr)}."
-            )
-
-    @staticmethod
-    def _validate_response_body(
-        response_body: Union[Type[ninja.Schema], Type[List[ninja.Schema]], None],
-    ) -> None:
-        if response_body is not None:
-            is_valid_schema = isinstance(response_body, type) and issubclass(
-                response_body, ninja.Schema
-            )
-            is_valid_list_of_schema = (
-                get_origin(response_body) is list
-                and len(get_args(response_body)) == 1
-                and issubclass(get_args(response_body)[0], ninja.Schema)
-            )
-            if not is_valid_schema and not is_valid_list_of_schema:
-                raise TypeError(
-                    f"Expected 'response_body' to be a subclass of ninja.Schema "
-                    f"or a list of a single subclass of ninja.Schema, but found "
-                    f"type {type(response_body)}."
-                )
 
     @abc.abstractmethod
     def build_view(self) -> Callable:

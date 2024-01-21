@@ -1,14 +1,13 @@
 from http import HTTPStatus
 from typing import Any, Callable, List, Optional, Type
 
-from django.db.models import Model
+from django.db.models import Model, QuerySet
 from django.http import HttpRequest
 from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.helpers import utils
-from ninja_crud.views.helpers.types import DetailQuerySetGetter
 from ninja_crud.views.validators.path_validator import PathValidator
 from ninja_crud.views.validators.queryset_getter_validator import (
     QuerySetGetterValidator,
@@ -43,7 +42,7 @@ class RetrieveModelView(AbstractModelView):
     def __init__(
         self,
         response_schema: Optional[Type[Schema]] = None,
-        queryset_getter: Optional[DetailQuerySetGetter] = None,
+        queryset_getter: Optional[Callable[[Any], QuerySet]] = None,
         path: str = "/{id}",
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
@@ -55,7 +54,7 @@ class RetrieveModelView(AbstractModelView):
             response_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved object.
                 Defaults to None. If not provided, the `default_response_body` of the `ModelViewSet` will be used.
             queryset_getter (Optional[DetailQuerySetGetter], optional): A function to customize the queryset used
-                for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet[Model].
+                for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet.
 
                 If not provided, the default manager of the `model` specified in the `ModelViewSet` will be used.
             path (str, optional): The path to use for the view. Defaults to "/{id}". Must include a "{id}" parameter.

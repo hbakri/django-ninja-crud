@@ -1,39 +1,12 @@
 from typing import Any, Callable, TypeVar, Union
 
-from django.db.models import Model, QuerySet
+from django.db.models import Model
 from django.http import HttpRequest
 
 ModelType = TypeVar("ModelType", bound=Model)
 """
 Type alias for any instance of a Django Model.
 This generic type is bound to Django's base Model class.
-"""
-
-DetailQuerySetGetter = Callable[[Any], QuerySet[ModelType]]
-"""
-Alias for a callable expected to retrieve a QuerySet for a detail view.
-
-Parameters:
-    id (Any): The identifier of the detail instance.
-
-Returns:
-    QuerySet[ModelType]: The QuerySet of model instances.
-"""
-
-CollectionQuerySetGetter = Callable[[], QuerySet[ModelType]]
-"""
-Alias for a callable expected to retrieve a QuerySet for a collection view.
-
-Parameters:
-    None
-
-Returns:
-    QuerySet[ModelType]: The QuerySet of model instances.
-"""
-
-QuerySetGetter = Union[DetailQuerySetGetter, CollectionQuerySetGetter]
-"""
-Alias for a callable expected to retrieve a QuerySet for a detail or collection view.
 """
 
 DetailModelFactory = Callable[[Any], ModelType]

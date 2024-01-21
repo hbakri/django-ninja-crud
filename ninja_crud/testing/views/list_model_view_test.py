@@ -6,7 +6,6 @@ from typing import Optional, get_args
 import django.db.models
 import django.http
 import django.test
-import ninja
 from ninja.pagination import LimitOffsetPagination
 
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
@@ -179,13 +178,12 @@ class ListModelViewTest(AbstractModelViewTest):
         if self.model_view.query_parameters is not None:
             filters = self.model_view.query_parameters(**query_parameters)
         else:
-            filters = ninja.FilterSchema()
+            filters = None
 
         return self.model_view.list_models(
             request=response.wsgi_request,  # type: ignore
             id=path_parameters["id"] if "{id}" in self.model_view.path else None,
-            filters=filters,
-            model_class=self.model_viewset_test_case.model_viewset_class.model,
+            query_parameters=filters,
         )
 
     def _validate_response_items(

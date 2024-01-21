@@ -1,12 +1,15 @@
 from inspect import signature
 from types import MappingProxyType
+from typing import Callable, Optional
 
-from ninja_crud.views.helpers.types import QuerySetGetter
+from django.db.models import QuerySet
 
 
 class QuerySetGetterValidator:
     @classmethod
-    def validate(cls, queryset_getter: QuerySetGetter, path: str) -> None:
+    def validate(
+        cls, queryset_getter: Optional[Callable[..., QuerySet]], path: str
+    ) -> None:
         if queryset_getter is None:
             return
 
