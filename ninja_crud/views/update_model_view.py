@@ -31,7 +31,7 @@ class UpdateModelView(AbstractModelView):
 
         # Usage: Update a department by id
         # PUT /{id}/
-        update_department = views.UpdateModelView(payload_schema=DepartmentIn, response_schema=DepartmentOut)
+        update_department = views.UpdateModelView(request_body=DepartmentIn, response_body=DepartmentOut)
     ```
 
     Note:

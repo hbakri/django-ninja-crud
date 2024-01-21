@@ -43,8 +43,8 @@ class CollectionViewSet(ModelViewSet):
         response_body=List[CollectionOut], query_parameters=CollectionFilter
     )
     create_collection = CreateModelView(
-        payload_schema=CollectionIn,
-        response_schema=CollectionOut,
+        request_body=CollectionIn,
+        response_body=CollectionOut,
         model_factory=lambda: Collection(),
         pre_save=lambda request, instance: setattr(
             instance, "created_by", request.auth
@@ -72,10 +72,10 @@ class CollectionViewSet(ModelViewSet):
     create_collection_item = CreateModelView(
         path="/{id}/items/",
         model_factory=lambda id: Item(collection_id=id),
-        payload_schema=ItemIn,
-        response_schema=ItemOut,
-        pre_save=lambda request, id, instance: None,
-        post_save=lambda request, id, instance: None,
+        request_body=ItemIn,
+        response_body=ItemOut,
+        pre_save=lambda request, instance: None,
+        post_save=lambda request, instance: None,
         decorators=[user_is_creator],
     )
 

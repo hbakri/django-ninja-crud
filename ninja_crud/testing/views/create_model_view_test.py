@@ -45,8 +45,8 @@ class CreateModelViewTest(AbstractModelViewTest):
         model = Department
 
         create_department_view = views.CreateModelView(
-            payload_schema=DepartmentIn,
-            response_schema=DepartmentOut
+            request_body=DepartmentIn,
+            response_body=DepartmentOut
         )
     ```
     2. You can test the `create_department_view` like this:

@@ -45,8 +45,8 @@ class UpdateModelViewTest(AbstractModelViewTest):
         model = Department
 
         update_department_view = views.UpdateModelView(
-            payload_schema=DepartmentIn,
-            response_schema=DepartmentOut
+            request_body=DepartmentIn,
+            response_body=DepartmentOut
         )
     ```
     2. You can test the `update_department_view` like this:

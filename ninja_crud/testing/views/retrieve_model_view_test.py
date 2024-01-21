@@ -44,7 +44,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         model = Department
 
         retrieve_department_view = views.RetrieveModelView(
-            response_schema=DepartmentOut
+            response_body=DepartmentOut
         )
     ```
     2. You can test the `retrieve_department_view` like this:

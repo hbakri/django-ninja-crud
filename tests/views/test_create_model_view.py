@@ -15,8 +15,8 @@ class TestCreateModelView(TestCase):
             model = Item
 
             create_item = views.CreateModelView(
-                payload_schema=ItemIn,
-                response_schema=ItemOut,
+                request_body=ItemIn,
+                response_body=ItemOut,
                 router_kwargs={"exclude_unset": True},
             )
 
@@ -32,8 +32,8 @@ class TestCreateModelView(TestCase):
             views.CreateModelView(
                 path="/{id}/items/",
                 model_factory="not callable",
-                payload_schema=ItemIn,
-                response_schema=ItemOut,
+                request_body=ItemIn,
+                response_body=ItemOut,
             )
 
         # model_factory must have the correct number of arguments
@@ -41,13 +41,13 @@ class TestCreateModelView(TestCase):
             views.CreateModelView(
                 path="/{id}/items/",
                 model_factory=lambda: Item(),
-                payload_schema=ItemIn,
-                response_schema=ItemOut,
+                request_body=ItemIn,
+                response_body=ItemOut,
             )
 
         with self.assertRaises(ValueError):
             views.CreateModelView(
                 model_factory=lambda id: Collection(),
-                payload_schema=ItemIn,
-                response_schema=ItemOut,
+                request_body=ItemIn,
+                response_body=ItemOut,
             )

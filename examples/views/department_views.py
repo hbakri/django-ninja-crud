@@ -28,8 +28,8 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     create_employee = views.CreateModelView(
         path="/{id}/employees/",
         model_factory=lambda id: Employee(department_id=id),
-        payload_schema=EmployeeIn,
-        response_schema=EmployeeOut,
+        request_body=EmployeeIn,
+        response_body=EmployeeOut,
     )
 
 

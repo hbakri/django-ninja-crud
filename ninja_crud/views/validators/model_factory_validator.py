@@ -1,12 +1,17 @@
 from inspect import signature
 from types import MappingProxyType
+from typing import Any, Callable, Union
 
-from ninja_crud.views.helpers.types import ModelFactory
+from django.db.models import Model
 
 
 class ModelFactoryValidator:
     @classmethod
-    def validate(cls, model_factory: ModelFactory, path: str) -> None:
+    def validate(
+        cls,
+        model_factory: Union[Callable[[], Model], Callable[[Any], Model], None],
+        path: str,
+    ) -> None:
         if model_factory is None:
             return
 

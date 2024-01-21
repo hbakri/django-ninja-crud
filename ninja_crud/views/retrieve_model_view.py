@@ -31,7 +31,7 @@ class RetrieveModelView(AbstractModelView):
 
         # Usage: Retrieve a department by id
         # GET /{id}
-        retrieve_department = views.RetrieveModelView(response_schema=DepartmentOut)
+        retrieve_department = views.RetrieveModelView(response_body=DepartmentOut)
     ```
 
     Note:

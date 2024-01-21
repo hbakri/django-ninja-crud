@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from django.db.models import QuerySet
 from django.http import HttpRequest
@@ -27,12 +27,11 @@ class ListModelView(AbstractModelView):
             deserializing query parameters. Defaults to None.
         response_body (Optional[Type[List[ninja.Schema]]], optional): Schema for
             serializing the response body. Defaults to None. If not provided,
-            inherits from `ModelViewSet`s `default_response_body`, wrapped in a
-            List.
-        queryset_getter (Optional[Callable[..., models.QuerySet]], optional):
-            Customizes queryset. Defaults to None. If `path` has no parameters,
-            should have the signature () -> models.QuerySet. If `path` has a "{id}"
-            parameter, should have the signature (id: Any) -> models.QuerySet.
+            inherits from `ModelViewSet`s `default_response_body`, wrapped in a List.
+        queryset_getter (Union[Callable[[], models.QuerySet],
+            Callable[[Any], models.QuerySet], None], optional): Customizes queryset.
+            Defaults to None. If `path` has no parameters, should have the signature
+            () -> QuerySet. If `path` has a "{id}" parameter, (id: Any) -> QuerySet.
             If not provided, the default manager of the `ModelViewSet`s `model`
             will be used.
         pagination_class (Optional[Type[ninja.pagination.PaginationBase]], optional):
@@ -69,14 +68,14 @@ class ListModelView(AbstractModelView):
         # Endpoint: GET /{id}/employees/
         list_department_employees = views.ListModelView(
             path="/{id}/employees/",
-            queryset_getter=lambda id: Employee.objects.filter(department_id=id),
             response_body=List[EmployeeOut],
+            queryset_getter=lambda id: Employee.objects.filter(department_id=id),
         )
     ```
 
     Note:
-        The attribute name (e.g., `list_departments`, `list_employees`) is flexible
-        and serves as the route name and operation id in the OpenAPI schema.
+        The attribute name (e.g., `list_departments`) is flexible and customizable.
+        It serves as the name of the route and the operation id in the OpenAPI schema.
     """
 
     def __init__(
@@ -84,7 +83,9 @@ class ListModelView(AbstractModelView):
         path: str = "/",
         query_parameters: Optional[Type[FilterSchema]] = None,
         response_body: Optional[Type[List[Schema]]] = None,
-        queryset_getter: Optional[Callable[..., QuerySet]] = None,
+        queryset_getter: Union[
+            Callable[[], QuerySet], Callable[[Any], QuerySet], None
+        ] = None,
         pagination_class: Optional[Type[PaginationBase]] = LimitOffsetPagination,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
@@ -116,12 +117,12 @@ class ListModelView(AbstractModelView):
 
     def _build_detail_view(self) -> Callable:
         model_class = self.model_viewset_class.model
-        query_parameters_class = self.query_parameters
+        query_parameters_schema_class = self.query_parameters
 
         def detail_view(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
-            query_parameters: query_parameters_class = Query(
+            query_parameters: query_parameters_schema_class = Query(
                 default=None, include_in_schema=False
             ),
         ):
@@ -137,11 +138,11 @@ class ListModelView(AbstractModelView):
         return detail_view
 
     def _build_collection_view(self) -> Callable:
-        query_parameters_class = self.query_parameters
+        query_parameters_schema_class = self.query_parameters
 
         def collection_view(
             request: HttpRequest,
-            query_parameters: query_parameters_class = Query(
+            query_parameters: query_parameters_schema_class = Query(
                 default=None, include_in_schema=False
             ),
         ):

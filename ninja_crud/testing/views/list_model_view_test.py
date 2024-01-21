@@ -50,7 +50,7 @@ class ListModelViewTest(AbstractModelViewTest):
         model = Department
 
         list_departments_view = views.ListModelView(
-            response_schema=DepartmentOut
+            response_body=DepartmentOut
         )
     ```
     2. You can test the `list_departments_view` like this:

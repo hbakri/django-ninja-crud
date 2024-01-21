@@ -1,4 +1,4 @@
-from typing import Any, Callable, TypeVar, Union
+from typing import Any, Callable, TypeVar
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -7,57 +7,6 @@ ModelType = TypeVar("ModelType", bound=Model)
 """
 Type alias for any instance of a Django Model.
 This generic type is bound to Django's base Model class.
-"""
-
-DetailModelFactory = Callable[[Any], ModelType]
-"""
-Alias for a callable that returns a new instance for a detail view.
-
-Parameters:
-    id (Any): The identifier of the detail instance.
-
-Returns:
-    ModelType: The instance of the model that was created.
-"""
-
-CollectionModelFactory = Callable[[], ModelType]
-"""
-Alias for a callable that returns a new instance for a collection view.
-
-Parameters:
-    None
-
-Returns:
-    ModelType: The instance of the model that was created.
-"""
-
-ModelFactory = Union[DetailModelFactory, CollectionModelFactory]
-"""
-Alias for a callable that returns a new instance for a detail or collection view.
-"""
-
-DetailCreateHook = Callable[[HttpRequest, Any, ModelType], None]
-"""
-Alias for a callback/hook executed during a create operation on a detail view.
-
-Parameters:
-    request (HttpRequest): The request object associated with the create operation.
-    id (Any): The identifier of the detail instance.
-    instance (ModelType): The instance of the model that was created.
-"""
-
-CollectionCreateHook = Callable[[HttpRequest, ModelType], None]
-"""
-Alias for a callback/hook executed during a create operation on a collection view.
-
-Parameters:
-    request (HttpRequest): The request object associated with the create operation.
-    instance (ModelType): The instance of the model that was created.
-"""
-
-CreateHook = Union[DetailCreateHook, CollectionCreateHook]
-"""
-Alias for a callback/hook executed during a create operation.
 """
 
 UpdateHook = Callable[[HttpRequest, ModelType, ModelType], None]

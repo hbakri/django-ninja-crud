@@ -1,6 +1,6 @@
 from inspect import signature
 from types import MappingProxyType
-from typing import Callable, Optional
+from typing import Any, Callable, Union
 
 from django.db.models import QuerySet
 
@@ -8,7 +8,9 @@ from django.db.models import QuerySet
 class QuerySetGetterValidator:
     @classmethod
     def validate(
-        cls, queryset_getter: Optional[Callable[..., QuerySet]], path: str
+        cls,
+        queryset_getter: Union[Callable[[], QuerySet], Callable[[Any], QuerySet], None],
+        path: str,
     ) -> None:
         if queryset_getter is None:
             return

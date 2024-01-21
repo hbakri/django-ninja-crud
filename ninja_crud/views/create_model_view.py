@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type
+from typing import Any, Callable, List, Optional, Type, Union
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -8,108 +8,96 @@ from ninja import Schema
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
 from ninja_crud.views.helpers import utils
-from ninja_crud.views.helpers.types import (
-    CreateHook,
-    ModelFactory,
-)
 from ninja_crud.views.validators.model_factory_validator import ModelFactoryValidator
 from ninja_crud.views.validators.path_validator import PathValidator
 
 
 class CreateModelView(AbstractModelView):
     """
-    A view class that handles creating instances of a model.
-    It allows customization through an model factory, pre- and post-save hooks,
-    and also supports decorators.
+    A view class for creating instances of a model, allowing customization through
+    a model factory and supporting decorators.
+
+    Args:
+        path (str, optional): Path for the view. Defaults to "/". Can include a
+            "{id}" parameter for a specific model instance.
+        request_body (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing the request body. Defaults to None. If not provided,
+            inherits from `ModelViewSet`s `default_request_body`.
+        response_body (Optional[Type[ninja.Schema]], optional): Schema for
+            serializing the response body. Defaults to None. If not provided,
+            inherits from `ModelViewSet`s `default_response_body`.
+        model_factory (Union[Callable[[], models.Model],
+            Callable[[Any], models.Model], None], optional): Factory function for
+            creating the model instance. Defaults to None. If `path` has no
+            parameters, should have the signature () -> Model. If `path` has a "{id}"
+            parameter, (id: Any) -> Model. If not provided, the `model` of the
+            `ModelViewSet` will be used.
+        pre_save (Optional[Callable[[HttpRequest, Model], None]], optional): Function
+            to execute before saving the model instance. Defaults to None.
+        post_save (Optional[Callable[[HttpRequest, Model], None]], optional): Function
+            to execute after saving the model instance. Defaults to None.
+        decorators (Optional[List[Callable]], optional): Decorators for the view.
+            Defaults to [].
+        router_kwargs (Optional[Dict], optional): Additional router arguments.
+            Defaults to {}. Overrides are ignored for 'path', 'methods', and
+            'response'.
 
     Example:
     ```python
     from ninja_crud import views, viewsets
 
-    from examples.models import Department, Employee
-    from examples.schemas import DepartmentIn, DepartmentOut, EmployeeIn, EmployeeOut
+    from examples.models import Department
+    from examples.schemas import DepartmentIn, DepartmentOut
+
 
     class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
+        default_request_body = DepartmentIn # Optional
+        default_response_body = DepartmentOut # Optional
 
         # Basic usage: Create a department
-        # POST /
+        # Endpoint: POST /
         create_department = views.CreateModelView(
-            payload_schema=DepartmentIn,
-            response_schema=DepartmentOut
+            request_body=DepartmentIn,
+            response_body=DepartmentOut,
         )
 
-        # Advanced usage: Create an employee for a specific department
-        # POST /{id}/employees/
-        create_employee = views.CreateModelView(
+        # Simplified usage: Inherit default request/response bodies from ModelViewSet
+        # Endpoint: POST /
+        create_department_simplified = views.CreateModelView()
+
+        # Advanced usage: Create an employee for a department
+        # Endpoint: POST /{id}/employees/
+        create_department_employee = views.CreateModelView(
             path="/{id}/employees/",
+            request_body=EmployeeIn,
+            response_body=EmployeeOut,
             model_factory=lambda id: Employee(department_id=id),
-            payload_schema=EmployeeIn,
-            response_schema=EmployeeOut,
         )
     ```
 
     Note:
-        The attribute name (e.g., `create_department`, `create_employee`) is flexible and customizable.
+        The attribute name (e.g., `create_department`) is flexible and customizable.
         It serves as the name of the route and the operation id in the OpenAPI schema.
     """
 
     def __init__(
         self,
-        payload_schema: Optional[Type[Schema]] = None,
-        response_schema: Optional[Type[Schema]] = None,
-        model_factory: Optional[ModelFactory] = None,
-        pre_save: Optional[CreateHook] = None,
-        post_save: Optional[CreateHook] = None,
         path: str = "/",
+        request_body: Optional[Type[Schema]] = None,
+        response_body: Optional[Type[Schema]] = None,
+        model_factory: Union[Callable[[], Model], Callable[[Any], Model], None] = None,
+        pre_save: Optional[Callable[[HttpRequest, Model], None]] = None,
+        post_save: Optional[Callable[[HttpRequest, Model], None]] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
-        """
-        Initializes the CreateModelView.
-
-        Args:
-            payload_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
-                Defaults to None. If not provided, the `default_request_body` of the `ModelViewSet` will be used.
-            response_schema (Optional[Type[Schema]], optional): The schema used to serialize the created instance.
-                Defaults to None. If not provided, the `default_response_body` of the `ModelViewSet` will be used.
-            model_factory (Optional[ModelFactory], optional): A function that returns a new instance of a model.
-                Defaults to None.
-
-                The function should have one of the following signatures:
-                - If `path` has no parameters: () -> Model
-                - If `path` has a "{id}" parameter: (id: Any) -> Model
-
-                If not provided, the `model` specified in the `ModelViewSet` will be used.
-            pre_save (Optional[CreateHook], optional): A function that is called before saving the instance.
-                Defaults to None.
-
-                The function should have one of the following signatures:
-                - If `path` has no parameters: (request: HttpRequest, instance: Model) -> None
-                - If `path` has a "{id}" parameter: (request: HttpRequest, id: Any, instance: Model) -> None
-
-                If not provided, the function will be a no-op.
-            post_save (Optional[CreateHook], optional): A function that is called after saving the instance.
-                Defaults to None.
-
-                The function should have one of the following signatures:
-                - If `path` has no parameters: (request: HttpRequest, instance: Model) -> None
-                - If `path` has a "{id}" parameter: (request: HttpRequest, id: Any, instance: Model) -> None
-
-                If not provided, the function will be a no-op.
-            path (str, optional): The path to use for the view. Defaults to "/". The path may include a "{id}"
-                parameter to indicate that the view is for a specific instance of the model.
-            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
-                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
-                arguments are provided, a warning will be logged and the override will be ignored.
-        """
         super().__init__(
             method=HTTPMethod.POST,
             path=path,
             query_parameters=None,
-            request_body=payload_schema,
-            response_body=response_schema,
+            request_body=request_body,
+            response_body=response_body,
             response_status=HTTPStatus.CREATED,
             decorators=decorators,
             router_kwargs=router_kwargs,
@@ -123,37 +111,39 @@ class CreateModelView(AbstractModelView):
         self.post_save = post_save
 
     def build_view(self) -> Callable:
-        model_class = self.model_viewset_class.model
         if "{id}" in self.path:
-            return self._build_detail_view(model_class)
+            return self._build_detail_view()
         else:
-            return self._build_collection_view(model_class)
+            return self._build_collection_view()
 
-    def _build_detail_view(self, model_class: Type[Model]) -> Callable:
-        payload_schema = self.request_body
+    def _build_detail_view(self) -> Callable:
+        model_class = self.model_viewset_class.model
+        request_body_schema_class = self.request_body
 
         def detail_view(
             request: HttpRequest,
             id: utils.get_id_type(model_class),
-            payload: payload_schema,
+            request_body: request_body_schema_class,
         ):
             if not model_class.objects.filter(pk=id).exists():
                 raise model_class.DoesNotExist(
                     f"{model_class.__name__} with pk '{id}' does not exist."
                 )
 
-            return HTTPStatus.CREATED, self.create_model(
-                request=request, id=id, payload=payload, model_class=model_class
+            return self.response_status, self.create_model(
+                request=request, id=id, request_body=request_body
             )
 
         return detail_view
 
-    def _build_collection_view(self, model_class: Type[Model]) -> Callable:
-        payload_schema = self.request_body
+    def _build_collection_view(self) -> Callable:
+        request_body_schema_class = self.request_body
 
-        def collection_view(request: HttpRequest, payload: payload_schema):
-            return HTTPStatus.CREATED, self.create_model(
-                request=request, id=None, payload=payload, model_class=model_class
+        def collection_view(
+            request: HttpRequest, request_body: request_body_schema_class
+        ):
+            return self.response_status, self.create_model(
+                request=request, id=None, request_body=request_body
             )
 
         return collection_view
@@ -162,32 +152,25 @@ class CreateModelView(AbstractModelView):
         self,
         request: HttpRequest,
         id: Optional[Any],
-        payload: Schema,
-        model_class: Type[Model],
+        request_body: Schema,
     ) -> Model:
         if self.model_factory:
             args = [id] if "{id}" in self.path else []
             instance = self.model_factory(*args)
         else:
-            instance = model_class()
+            instance = self.model_viewset_class.model()
 
-        for field, value in payload.dict(exclude_unset=True).items():
+        for field, value in request_body.dict(exclude_unset=True).items():
             setattr(instance, field, value)
 
         if self.pre_save:
-            args = (
-                (request, id, instance) if "{id}" in self.path else (request, instance)
-            )
-            self.pre_save(*args)
+            self.pre_save(request, instance)
 
         instance.full_clean()
         instance.save()
 
         if self.post_save:
-            args = (
-                (request, id, instance) if "{id}" in self.path else (request, instance)
-            )
-            self.post_save(*args)
+            self.post_save(request, instance)
 
         return instance
 

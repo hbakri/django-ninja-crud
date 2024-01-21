@@ -39,10 +39,10 @@ class ModelViewSet:
     class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
-        list_departments = views.ListModelView(response_schema=DepartmentOut)
-        create_department = views.CreateModelView(payload_schema=DepartmentIn, response_schema=DepartmentOut)
-        retrieve_department = views.RetrieveModelView(response_schema=DepartmentOut)
-        update_department = views.UpdateModelView(payload_schema=DepartmentIn, response_schema=DepartmentOut)
+        list_departments = views.ListModelView(response_body=DepartmentOut)
+        create_department = views.CreateModelView(request_body=DepartmentIn, response_body=DepartmentOut)
+        retrieve_department = views.RetrieveModelView(response_body=DepartmentOut)
+        update_department = views.UpdateModelView(request_body=DepartmentIn, response_body=DepartmentOut)
         delete_department = views.DeleteModelView()
 
     # The register_routes method must be called to register the routes
