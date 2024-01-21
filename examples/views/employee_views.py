@@ -10,7 +10,7 @@ router = Router()
 class EmployeeViewSet(viewsets.ModelViewSet):
     model = Employee
 
-    retrieve_employee = views.RetrieveModelView(response_schema=EmployeeOut)
+    retrieve_employee = views.RetrieveModelView(response_body=EmployeeOut)
     update_employee = views.UpdateModelView(
         payload_schema=EmployeeIn, response_schema=EmployeeOut
     )

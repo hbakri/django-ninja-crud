@@ -62,11 +62,11 @@ class ListModelView(AbstractModelView):
 
         # Simplified usage: Inherit default response body from ModelViewSet
         # Endpoint: GET /
-        list_departments_simplified = views.ListModelView()
+        list_departments = views.ListModelView()
 
         # Advanced usage: List employees by department
         # Endpoint: GET /{id}/employees/
-        list_department_employees = views.ListModelView(
+        list_employees = views.ListModelView(
             path="/{id}/employees/",
             response_body=List[EmployeeOut],
             queryset_getter=lambda id: Employee.objects.filter(department_id=id),

@@ -15,7 +15,7 @@ class UserViewSet(ModelViewSet):
 
     list_users = views.ListModelView(response_body=List[UserOut], pagination_class=None)
     create_user = views.CreateModelView(request_body=UserIn, response_body=UserOut)
-    retrieve_user = views.RetrieveModelView(response_schema=UserOut)
+    retrieve_user = views.RetrieveModelView(response_body=UserOut)
     update_user = views.UpdateModelView(payload_schema=UserIn, response_schema=UserOut)
     delete_user = views.DeleteModelView()
 

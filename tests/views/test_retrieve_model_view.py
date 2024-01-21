@@ -16,7 +16,7 @@ class TestRetrieveModelView(TestCase):
             model = Item
 
             retrieve_item = views.RetrieveModelView(
-                response_schema=ItemOut,
+                response_body=ItemOut,
                 router_kwargs={"exclude_unset": True},
             )
 
@@ -31,18 +31,18 @@ class TestRetrieveModelView(TestCase):
         with self.assertRaises(TypeError):
             views.RetrieveModelView(
                 queryset_getter="not callable",
-                response_schema=ItemOut,
+                response_body=ItemOut,
             )
 
         # queryset_getter must have the correct number of arguments
         with self.assertRaises(ValueError):
             views.RetrieveModelView(
                 queryset_getter=lambda: Item.objects.get_queryset(),
-                response_schema=ItemOut,
+                response_body=ItemOut,
             )
 
     def test_bind_to_viewset_with_response_schema(self):
-        model_view = views.RetrieveModelView(response_schema=ItemOut)
+        model_view = views.RetrieveModelView(response_body=ItemOut)
 
         class ItemModelViewSet(ModelViewSet):
             model = Item

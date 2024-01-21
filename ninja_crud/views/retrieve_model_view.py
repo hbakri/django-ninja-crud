@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import Any, Callable, List, Optional, Type
 
-from django.db.models import Model, QuerySet
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from ninja import Schema
 
@@ -16,22 +16,56 @@ from ninja_crud.views.validators.queryset_getter_validator import (
 
 class RetrieveModelView(AbstractModelView):
     """
-    A view class that handles retrieving a specific instance of a model.
-    It allows customization through a queryset getter and also supports decorators.
+    A view class that handles retrieving a specific model instance, allowing
+    customization through a queryset getter and supporting decorators.
+
+    Args:
+        path (str, optional): Path for the view. Defaults to "/{id}". Should
+            include a "{id}" parameter for a specific model instance.
+        response_body (Optional[Type[ninja.Schema]], optional): Schema for
+            serializing the response body. Defaults to None. If not provided,
+            inherits from `ModelViewSet`s `default_response_body`.
+        queryset_getter (Optional[Callable[[Any], QuerySet]], optional): Customizes
+            queryset. Defaults to None. Should have the signature (id: Any) ->
+            QuerySet. If not provided, the default manager of the `ModelViewSet`s
+            `model` will be used.
+        decorators (Optional[List[Callable]], optional): Decorators for the view.
+            Defaults to [].
+        router_kwargs (Optional[Dict], optional): Additional router arguments.
+            Defaults to {}. Overrides are ignored for 'path', 'methods', and
+            'response'.
 
     Example:
     ```python
+    from django.db.models import Count
     from ninja_crud import views, viewsets
 
     from examples.models import Department
     from examples.schemas import DepartmentOut
 
+
     class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
+        default_response_body = DepartmentOut # Optional
 
-        # Usage: Retrieve a department by id
-        # GET /{id}
-        retrieve_department = views.RetrieveModelView(response_body=DepartmentOut)
+        # Basic usage: Retrieve a department by id
+        # Endpoint: GET /{id}/
+        retrieve_department = views.RetrieveModelView(
+            response_body=DepartmentOut
+        )
+
+        # Simplified usage: Inherit from the viewset's default response body
+        # Endpoint: GET /{id}/
+        retrieve_department = views.RetrieveModelView()
+
+        # Advanced usage: With a custom queryset getter
+        # Endpoint: GET /{id}/
+        retrieve_department = views.RetrieveModelView(
+            response_body=DepartmentOut,
+            queryset_getter=lambda id: Department.objects.annotate(
+                num_employees=Count("employees")
+            ),
+        )
     ```
 
     Note:
@@ -41,34 +75,18 @@ class RetrieveModelView(AbstractModelView):
 
     def __init__(
         self,
-        response_schema: Optional[Type[Schema]] = None,
-        queryset_getter: Optional[Callable[[Any], QuerySet]] = None,
         path: str = "/{id}",
+        response_body: Optional[Type[Schema]] = None,
+        queryset_getter: Optional[Callable[[Any], QuerySet]] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[dict] = None,
     ) -> None:
-        """
-        Initializes the RetrieveModelView.
-
-        Args:
-            response_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved object.
-                Defaults to None. If not provided, the `default_response_body` of the `ModelViewSet` will be used.
-            queryset_getter (Optional[DetailQuerySetGetter], optional): A function to customize the queryset used
-                for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet.
-
-                If not provided, the default manager of the `model` specified in the `ModelViewSet` will be used.
-            path (str, optional): The path to use for the view. Defaults to "/{id}". Must include a "{id}" parameter.
-            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
-                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
-                arguments are provided, a warning will be logged and the override will be ignored.
-        """
         super().__init__(
             method=HTTPMethod.GET,
             path=path,
             query_parameters=None,
             request_body=None,
-            response_body=response_schema,
+            response_body=response_body,
             response_status=HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
@@ -83,17 +101,15 @@ class RetrieveModelView(AbstractModelView):
         model_class = self.model_viewset_class.model
 
         def view(request: HttpRequest, id: utils.get_id_type(model_class)):
-            return HTTPStatus.OK, self.retrieve_model(
-                request=request, id=id, model_class=model_class
-            )
+            return self.response_status, self.retrieve_model(request=request, id=id)
 
         return view
 
-    def retrieve_model(self, request: HttpRequest, id: Any, model_class: Type[Model]):
+    def retrieve_model(self, request: HttpRequest, id: Any):
         if self.queryset_getter:
             queryset = self.queryset_getter(id)
         else:
-            queryset = model_class.objects.get_queryset()
+            queryset = self.model_viewset_class.model.objects.get_queryset()
 
         return queryset.get(pk=id)
 

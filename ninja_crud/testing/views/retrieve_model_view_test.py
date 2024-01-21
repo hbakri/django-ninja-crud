@@ -142,7 +142,6 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         model = self.model_view.retrieve_model(
             request=response.wsgi_request,  # type: ignore
             id=path_parameters["id"],
-            model_class=self.model_viewset_test_case.model_viewset_class.model,
         )
         schema = self.model_view.response_body.from_orm(model)
         return json.loads(schema.json())

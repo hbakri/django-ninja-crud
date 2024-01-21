@@ -51,7 +51,7 @@ class CollectionViewSet(ModelViewSet):
         ),
         post_save=lambda request, instance: None,
     )
-    retrieve_collection = RetrieveModelView(response_schema=CollectionOut)
+    retrieve_collection = RetrieveModelView(response_body=CollectionOut)
     update_collection = UpdateModelView(
         payload_schema=CollectionIn,
         response_schema=CollectionOut,

@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -14,8 +14,8 @@ from ninja_crud.views.validators.path_validator import PathValidator
 
 class CreateModelView(AbstractModelView):
     """
-    A view class for creating instances of a model, allowing customization through
-    a model factory and supporting decorators.
+    A view class that handles creating a model instance, allowing customization
+    through a model factory and pre- and post-save hooks and also supports decorators.
 
     Args:
         path (str, optional): Path for the view. Defaults to "/". Can include a
@@ -46,8 +46,8 @@ class CreateModelView(AbstractModelView):
     ```python
     from ninja_crud import views, viewsets
 
-    from examples.models import Department
-    from examples.schemas import DepartmentIn, DepartmentOut
+    from examples.models import Department, Employee
+    from examples.schemas import DepartmentIn, DepartmentOut, EmployeeIn, EmployeeOut
 
 
     class DepartmentViewSet(viewsets.ModelViewSet):
@@ -64,11 +64,11 @@ class CreateModelView(AbstractModelView):
 
         # Simplified usage: Inherit default request/response bodies from ModelViewSet
         # Endpoint: POST /
-        create_department_simplified = views.CreateModelView()
+        create_department = views.CreateModelView()
 
         # Advanced usage: Create an employee for a department
         # Endpoint: POST /{id}/employees/
-        create_department_employee = views.CreateModelView(
+        create_employee = views.CreateModelView(
             path="/{id}/employees/",
             request_body=EmployeeIn,
             response_body=EmployeeOut,
@@ -90,7 +90,7 @@ class CreateModelView(AbstractModelView):
         pre_save: Optional[Callable[[HttpRequest, Model], None]] = None,
         post_save: Optional[Callable[[HttpRequest, Model], None]] = None,
         decorators: Optional[List[Callable]] = None,
-        router_kwargs: Optional[dict] = None,
+        router_kwargs: Optional[Dict] = None,
     ) -> None:
         super().__init__(
             method=HTTPMethod.POST,
