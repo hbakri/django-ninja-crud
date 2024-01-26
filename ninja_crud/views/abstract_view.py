@@ -20,7 +20,7 @@ class AbstractView(abc.ABC):
     and response formation. Subclasses should implement the build_view method
     to define specific view logic.
 
-    Attributes:
+    Args:
         method (HTTPMethod): HTTP method for the route.
         path (str): Path for the route.
         query_parameters (Optional[Type[ninja.Schema]], optional): Schema for
@@ -31,13 +31,11 @@ class AbstractView(abc.ABC):
             serializing the response body. Defaults to None.
         response_status (http.HTTPStatus, optional): HTTP status code for the
             response. Defaults to http.HTTPStatus.OK.
-        decorators (Optional[List[Callable]], optional): List of decorators to
-            apply to the view. Defaults to [].
-        router_kwargs (Optional[Dict], optional): Additional arguments to pass
-            to the router. Defaults to {}. Overrides are allowed for most
-            arguments except 'path', 'methods', and 'response'. If any of these
-            arguments are provided, a warning will be logged and the override
-            will be ignored.
+        decorators (Optional[List[Callable]], optional): Decorators for the view.
+            Defaults to [].
+        router_kwargs (Optional[Dict], optional): Additional router arguments.
+            Defaults to {}. Overrides are ignored for 'path', 'methods', and
+            'response'.
 
     Examples:
     ```python
@@ -78,28 +76,6 @@ class AbstractView(abc.ABC):
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
     ) -> None:
-        """
-        Initializes the AbstractView.
-
-        Args:
-            method (HTTPMethod): The HTTP method for the view.
-            path (str): The path to use for the view.
-            query_parameters (Optional[Type[ninja.Schema]], optional): The schema
-                used to deserialize the query parameters. Defaults to None.
-            request_body (Optional[Type[ninja.Schema]], optional): The schema used
-                to deserialize the request body. Defaults to None.
-            response_body (Optional[Type[ninja.Schema]], optional): The schema
-                used to serialize the response body. Defaults to None.
-            response_status (http.HTTPStatus, optional): The HTTP status code for
-                the response. Defaults to http.HTTPStatus.OK.
-            decorators (Optional[List[Callable]], optional): A list of decorators
-                to apply to the view. Defaults to [].
-            router_kwargs (Optional[Dict], optional): Additional arguments to pass
-                to the router. Defaults to {}. Overrides are allowed for most
-                arguments except 'path', 'methods', and 'response'. If any of these
-                arguments are provided, a warning will be logged and the override
-                will be ignored.
-        """
         self.method = method
         self.path = path
         self.query_parameters = query_parameters

@@ -12,8 +12,6 @@ modules:
     output_path: "views/UpdateModelView.md"
   - input_path: "views/delete_model_view"
     output_path: "views/DeleteModelView.md"
-  - input_path: "views/helpers/types"
-    output_path: "views/helpers/Types.md"
 
   # -------------------- Viewsets ---------------------
   - input_path: "viewsets/model_viewset"

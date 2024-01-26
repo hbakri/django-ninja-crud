@@ -24,10 +24,10 @@ class RetrieveModelView(AbstractModelView):
         response_body (Optional[Type[ninja.Schema]], optional): Schema for
             serializing the response body. Defaults to None. If not provided,
             inherits from `ModelViewSet`s `default_response_body`.
-        queryset_getter (Optional[Callable[[Any], QuerySet]], optional): Customizes
-            queryset. Defaults to None. Should have the signature (id: Any) ->
-            QuerySet. If not provided, the default manager of the `ModelViewSet`s
-            `model` will be used.
+        queryset_getter (Optional[Callable[[Any], models.QuerySet]], optional):
+            Customizes queryset. Defaults to None. Should have the signature
+            (id: Any) -> QuerySet. If not provided, the default manager of the
+            `ModelViewSet`s `model` will be used.
         decorators (Optional[List[Callable]], optional): Decorators for the view.
             Defaults to [].
         router_kwargs (Optional[Dict], optional): Additional router arguments.
