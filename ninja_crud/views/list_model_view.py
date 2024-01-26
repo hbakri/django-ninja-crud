@@ -8,7 +8,6 @@ from ninja.pagination import LimitOffsetPagination, PaginationBase, paginate
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.helpers import utils
 from ninja_crud.views.validators.path_validator import PathValidator
 from ninja_crud.views.validators.queryset_getter_validator import (
     QuerySetGetterValidator,
@@ -117,11 +116,12 @@ class ListModelView(AbstractModelView):
 
     def _build_detail_view(self) -> Callable:
         model_class = self.model_viewset_class.model
+        id_field_type = self.infer_id_field_type()
         query_parameters_schema_class = self.query_parameters
 
         def detail_view(
             request: HttpRequest,
-            id: utils.get_id_type(model_class),
+            id: id_field_type,
             query_parameters: query_parameters_schema_class = Query(
                 default=None, include_in_schema=False
             ),

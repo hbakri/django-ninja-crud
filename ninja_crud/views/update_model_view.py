@@ -1,6 +1,6 @@
 import copy
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -8,30 +8,81 @@ from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.helpers import utils
-from ninja_crud.views.helpers.types import UpdateHook
 from ninja_crud.views.validators.http_method_validator import HTTPMethodValidator
 from ninja_crud.views.validators.path_validator import PathValidator
 
 
 class UpdateModelView(AbstractModelView):
     """
-    A view class that handles updating a specific instance of a model.
-    It allows customization through pre- and post-save hooks and also supports decorators.
+    A view class that handles updating a model instance, allowing customization
+    through pre- and post-save hooks and supporting decorators.
+
+    Args:
+        method (HTTPMethod, optional): HTTP method for the view. Defaults to
+            HTTPMethod.PUT. Can be HTTPMethod.PATCH.
+        path (str, optional): Path for the view. Defaults to "/{id}". Should
+            include a "{id}" parameter for a specific model instance.
+        request_body (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing the request body. Defaults to None. If not provided,
+            inherits from `ModelViewSet`s `default_request_body`.
+        response_body (Optional[Type[ninja.Schema]], optional): Schema for
+            serializing the response body. Defaults to None. If not provided,
+            inherits from `ModelViewSet`s `default_response_body`.
+        pre_save (Optional[Callable[[HttpRequest, Model, Model], None]], optional):
+            Function to execute before saving the model instance. Defaults to None.
+            Should have the signature (request: HttpRequest, old_instance: Model,
+            new_instance: Model) -> None.
+        post_save (Optional[Callable[[HttpRequest, Model, Model], None]], optional):
+            Function to execute after saving the model instance. Defaults to None.
+            Should have the signature (request: HttpRequest, old_instance: Model,
+            new_instance: Model) -> None.
+        decorators (Optional[List[Callable]], optional): Decorators for the view.
+            Defaults to [].
+        router_kwargs (Optional[Dict], optional): Additional router arguments.
+            Defaults to {}. Overrides are ignored for 'path', 'methods', and
+            'response'.
 
     Example:
     ```python
+    from django.http import HttpRequest
     from ninja_crud import views, viewsets
 
     from examples.models import Department
     from examples.schemas import DepartmentIn, DepartmentOut
 
+
     class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
+        default_request_body = DepartmentIn # Optional
+        default_response_body = DepartmentOut # Optional
 
-        # Usage: Update a department by id
-        # PUT /{id}/
-        update_department = views.UpdateModelView(request_body=DepartmentIn, response_body=DepartmentOut)
+        # Basic usage: Update a department
+        # Endpoint: PUT /{id}/
+        update_department = views.UpdateModelView(
+            request_body=DepartmentIn,
+            response_body=DepartmentOut,
+        )
+
+        # Simplified usage: Inherit from the viewset's default request/response bodies
+        # Endpoint: PUT /{id}/
+        update_department = views.UpdateModelView()
+
+        # Advanced usage: With pre- and post-save hooks
+        # Endpoint: PUT /{id}/
+        @staticmethod
+        def pre_save(request: HttpRequest, old_instance: Department, new_instance: Department):
+            pass
+
+        @staticmethod
+        def post_save(request: HttpRequest, old_instance: Department, new_instance: Department):
+            pass
+
+        update_department = views.UpdateModelView(
+            request_body=DepartmentIn,
+            response_body=DepartmentOut,
+            pre_save=pre_save,
+            post_save=post_save,
+        )
     ```
 
     Note:
@@ -41,50 +92,21 @@ class UpdateModelView(AbstractModelView):
 
     def __init__(
         self,
-        payload_schema: Optional[Type[Schema]] = None,
-        response_schema: Optional[Type[Schema]] = None,
-        pre_save: Optional[UpdateHook] = None,
-        post_save: Optional[UpdateHook] = None,
         method: HTTPMethod = HTTPMethod.PUT,
         path: str = "/{id}",
+        request_body: Optional[Type[Schema]] = None,
+        response_body: Optional[Type[Schema]] = None,
+        pre_save: Optional[Callable[[HttpRequest, Model, Model], None]] = None,
+        post_save: Optional[Callable[[HttpRequest, Model, Model], None]] = None,
         decorators: Optional[List[Callable]] = None,
-        router_kwargs: Optional[dict] = None,
+        router_kwargs: Optional[Dict] = None,
     ) -> None:
-        """
-        Initializes the UpdateModelView.
-
-        Args:
-            payload_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
-                Defaults to None. If not provided, the `default_request_body` of the `ModelViewSet` will be used.
-            response_schema (Optional[Type[Schema]], optional): The schema used to serialize the updated instance.
-                Defaults to None. If not provided, the `default_response_body` of the `ModelViewSet` will be used.
-            pre_save (Optional[UpdateHook], optional): A function that is called before saving the instance.
-                Defaults to None.
-
-                The function should have the signature:
-                - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
-
-                If not provided, the function will be a no-op.
-            post_save (Optional[UpdateHook], optional): A function that is called after saving the instance.
-                Defaults to None.
-
-                The function should have the signature:
-                - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
-
-                If not provided, the function will be a no-op.
-            method (HTTPMethod, optional): The HTTP method for the view. Defaults to HTTPMethod.PUT.
-            path (str, optional): The path to use for the view. Defaults to "/{id}". Must include a "{id}" parameter.
-            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
-                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
-                arguments are provided, a warning will be logged and the override will be ignored.
-        """
         super().__init__(
             method=method,
             path=path,
             query_parameters=None,
-            request_body=payload_schema,
-            response_body=response_schema,
+            request_body=request_body,
+            response_body=response_body,
             response_status=HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
@@ -99,30 +121,30 @@ class UpdateModelView(AbstractModelView):
         self.post_save = post_save
 
     def build_view(self) -> Callable:
-        model_class = self.model_viewset_class.model
-        payload_schema = self.request_body
+        id_field_type = self.infer_id_field_type()
+        request_body_schema_class = self.request_body
 
         def view(
             request: HttpRequest,
-            id: utils.get_id_type(model_class),
-            payload: payload_schema,
+            id: id_field_type,
+            request_body: request_body_schema_class,
         ):
-            return HTTPStatus.OK, self.update_model(
-                request=request, id=id, payload=payload, model_class=model_class
+            return self.response_status, self.update_model(
+                request=request, id=id, request_body=request_body
             )
 
         return view
 
     def update_model(
-        self, request: HttpRequest, id: Any, payload: Schema, model_class: Type[Model]
+        self, request: HttpRequest, id: Any, request_body: Schema
     ) -> Model:
-        new_instance = model_class.objects.get(pk=id)
+        new_instance = self.model_viewset_class.model.objects.get(pk=id)
 
         old_instance = None
         if self.pre_save is not None or self.post_save is not None:
             old_instance = copy.deepcopy(new_instance)
 
-        for field, value in payload.dict(exclude_unset=True).items():
+        for field, value in request_body.dict(exclude_unset=True).items():
             setattr(new_instance, field, value)
 
         if self.pre_save is not None:

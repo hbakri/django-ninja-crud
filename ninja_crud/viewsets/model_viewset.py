@@ -85,8 +85,8 @@ class ModelViewSet:
 
         if hasattr(cls, "model"):
             cls._validate_model_class()
-            cls._validate_payload_schema_class(optional=True)
-            cls._validate_response_schema_class(optional=True)
+            cls._validate_request_body_class(optional=True)
+            cls._validate_response_body_class(optional=True)
             cls._bind_model_views()
 
     @classmethod
@@ -142,7 +142,7 @@ class ModelViewSet:
         utils.validate_class_attribute_type(cls, "model", expected_type=Type[Model])
 
     @classmethod
-    def _validate_payload_schema_class(cls, optional: bool = True) -> None:
+    def _validate_request_body_class(cls, optional: bool = True) -> None:
         """
         Validates that the `default_request_body` attribute is a subclass of `Schema`.
 
@@ -158,7 +158,7 @@ class ModelViewSet:
         )
 
     @classmethod
-    def _validate_response_schema_class(cls, optional: bool = True) -> None:
+    def _validate_response_body_class(cls, optional: bool = True) -> None:
         """
         Validates that the `default_response_body` attribute is a subclass of `Schema`.
 

@@ -41,7 +41,7 @@ class TestRetrieveModelView(TestCase):
                 response_body=ItemOut,
             )
 
-    def test_bind_to_viewset_with_response_schema(self):
+    def test_bind_to_viewset_with_response_body(self):
         model_view = views.RetrieveModelView(response_body=ItemOut)
 
         class ItemModelViewSet(ModelViewSet):
@@ -51,7 +51,7 @@ class TestRetrieveModelView(TestCase):
 
         model_view.model_viewset_class = ItemModelViewSet
 
-    def test_bind_to_viewset_without_response_schema(self):
+    def test_bind_to_viewset_without_response_body(self):
         model_view = views.RetrieveModelView()
 
         class ItemModelViewSet(ModelViewSet):
@@ -61,7 +61,7 @@ class TestRetrieveModelView(TestCase):
 
         model_view.model_viewset_class = ItemModelViewSet
 
-    def test_bind_to_viewset_without_response_schema_error(self):
+    def test_bind_to_viewset_without_response_body_error(self):
         model_view = views.RetrieveModelView()
 
         class ItemModelViewSet(ModelViewSet):

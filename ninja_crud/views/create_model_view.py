@@ -7,7 +7,6 @@ from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.helpers import utils
 from ninja_crud.views.validators.model_factory_validator import ModelFactoryValidator
 from ninja_crud.views.validators.path_validator import PathValidator
 
@@ -62,7 +61,7 @@ class CreateModelView(AbstractModelView):
             response_body=DepartmentOut,
         )
 
-        # Simplified usage: Inherit default request/response bodies from ModelViewSet
+        # Simplified usage: Inherit from the viewset's default request/response bodies
         # Endpoint: POST /
         create_department = views.CreateModelView()
 
@@ -118,11 +117,12 @@ class CreateModelView(AbstractModelView):
 
     def _build_detail_view(self) -> Callable:
         model_class = self.model_viewset_class.model
+        id_field_type = self.infer_id_field_type()
         request_body_schema_class = self.request_body
 
         def detail_view(
             request: HttpRequest,
-            id: utils.get_id_type(model_class),
+            id: id_field_type,
             request_body: request_body_schema_class,
         ):
             if not model_class.objects.filter(pk=id).exists():

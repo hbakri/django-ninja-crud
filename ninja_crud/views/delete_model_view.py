@@ -1,72 +1,83 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional
 
 from django.db.models import Model
 from django.http import HttpRequest
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.helpers import utils
-from ninja_crud.views.helpers.types import PostDeleteHook, PreDeleteHook
 from ninja_crud.views.validators.path_validator import PathValidator
 
 
 class DeleteModelView(AbstractModelView):
     """
-    A view class that handles deleting a specific instance of a model.
-    It allows customization through pre- and post-delete hooks and also supports decorators.
+    A view class that handles deleting a model instance, allowing customization
+    through pre- and post-delete hooks and supporting decorators.
+
+    Args:
+        path (str, optional): Path for the view. Defaults to "/{id}". Should
+            include a "{id}" parameter for a specific model instance.
+        pre_delete (Optional[Callable[[HttpRequest, Any, Model], None]], optional):
+            Function to execute before deleting the model instance. Defaults to None.
+            Should have the signature (request: HttpRequest, id: Any, instance:
+            Model) -> None.
+        post_delete (Optional[Callable[[HttpRequest, Any, Model], None]], optional):
+            Function to execute after deleting the model instance. Defaults to None.
+            Should have the signature (request: HttpRequest, id: Any, instance:
+            Model) -> None. Be aware that the instance will no longer exist in the
+            database and will not have an id.
+        decorators (Optional[List[Callable]], optional): Decorators for the view.
+            Defaults to [].
+        router_kwargs (Optional[Dict], optional): Additional router arguments.
+            Defaults to {}. Overrides are ignored for 'path', 'methods', and
+            'response'.
 
     Example:
     ```python
+    from typing import Any
+
+    from django.http import HttpRequest
     from ninja_crud import views, viewsets
 
     from examples.models import Department
 
+
     class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
-        # Usage: Delete a department by id
-        # DELETE /{id}/
+        # Basic usage: Delete a department
+        # Endpoint: DELETE /{id}/
         delete_department = views.DeleteModelView()
+
+        # Advanced usage: With pre- and post-delete hooks
+        # Endpoint: DELETE /{id}/
+        @staticmethod
+        def pre_delete(request: HttpRequest, id: Any, instance: Department):
+            pass
+
+        @staticmethod
+        def post_delete(request: HttpRequest, id: Any, instance: Department):
+            pass
+
+        delete_department = views.DeleteModelView(
+            pre_delete=pre_delete,
+            post_delete=post_delete,
+        )
     ```
 
     Note:
-        The attribute name (e.g., `delete_department`) is flexible and customizable.
+        The attribute name (e.g. `delete_department`) is flexible and customizable.
         It serves as the name of the route and the operation id in the OpenAPI schema.
     """
 
     def __init__(
         self,
-        pre_delete: Optional[PreDeleteHook] = None,
-        post_delete: Optional[PostDeleteHook] = None,
         path: str = "/{id}",
+        pre_delete: Optional[Callable[[HttpRequest, Any, Model], None]] = None,
+        post_delete: Optional[Callable[[HttpRequest, Any, Model], None]] = None,
         decorators: Optional[List[Callable]] = None,
-        router_kwargs: Optional[dict] = None,
+        router_kwargs: Optional[Dict] = None,
     ) -> None:
-        """
-        Initializes the DeleteModelView.
-
-        Args:
-            pre_delete (Optional[PreDeleteHook], optional): A function that is called before deleting the instance.
-                Defaults to None.
-
-                The function should have the signature:
-                - (request: HttpRequest, instance: Model) -> None.
-
-                If not provided, the function will be a no-op.
-            post_delete (Optional[PostDeleteHook], optional): A function that is called after deleting the instance.
-                Defaults to None.
-
-                The function should have the signature:
-                - (request: HttpRequest, id: Any, deleted_instance: Model) -> None.
-
-                If not provided, the function will be a no-op.
-            path (str, optional): The path to use for the view. Defaults to "/{id}". Must include a "{id}" parameter.
-            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
-                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
-                arguments are provided, a warning will be logged and the override will be ignored.
-        """
         super().__init__(
             method=HTTPMethod.DELETE,
             path=path,
@@ -84,22 +95,18 @@ class DeleteModelView(AbstractModelView):
         self.post_delete = post_delete
 
     def build_view(self) -> Callable:
-        model_class = self.model_viewset_class.model
+        id_field_type = self.infer_id_field_type()
 
-        def view(request: HttpRequest, id: utils.get_id_type(model_class)):
-            return HTTPStatus.NO_CONTENT, self.delete_model(
-                request=request, id=id, model_class=model_class
-            )
+        def view(request: HttpRequest, id: id_field_type):
+            return self.response_status, self.delete_model(request=request, id=id)
 
         return view
 
-    def delete_model(
-        self, request: HttpRequest, id: Any, model_class: Type[Model]
-    ) -> None:
-        instance = model_class.objects.get(pk=id)
+    def delete_model(self, request: HttpRequest, id: Any) -> None:
+        instance = self.model_viewset_class.model.objects.get(pk=id)
 
         if self.pre_delete is not None:
-            self.pre_delete(request, instance)
+            self.pre_delete(request, id, instance)
 
         instance.delete()
 

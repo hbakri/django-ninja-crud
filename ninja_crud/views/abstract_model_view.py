@@ -1,8 +1,10 @@
 import abc
 import http
+import uuid
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Type, Union
 
 import ninja
+from django.db.models import Field
 
 from ninja_crud.views.abstract_view import AbstractView
 from ninja_crud.views.enums import HTTPMethod
@@ -19,7 +21,7 @@ class AbstractModelView(AbstractView, abc.ABC):
     and response formation. Subclasses should implement the build_view method
     to define specific view logic.
 
-    Attributes:
+    Args:
         method (HTTPMethod): HTTP method for the route.
         path (str): Path for the route.
         query_parameters (Optional[Type[ninja.Schema]], optional): Schema for
@@ -82,3 +84,31 @@ class AbstractModelView(AbstractView, abc.ABC):
 
     def _inherit_model_viewset_class_attributes(self) -> None:
         pass
+
+    def infer_id_field_type(self) -> Type:
+        id_field: Field = self.model_viewset_class.model._meta.pk
+
+        type_mapping = {
+            "AutoField": int,
+            "SmallAutoField": int,
+            "BigAutoField": int,
+            "IntegerField": int,
+            "SmallIntegerField": int,
+            "BigIntegerField": int,
+            "PositiveIntegerField": int,
+            "PositiveSmallIntegerField": int,
+            "PositiveBigIntegerField": int,
+            "UUIDField": uuid.UUID,
+            "CharField": str,
+            "SlugField": str,
+            "TextField": str,
+            "BinaryField": bytes,
+        }
+
+        id_field_type = type_mapping.get(id_field.get_internal_type())
+        if id_field_type is None:
+            raise ValueError(
+                f"Unsupported id field type: {id_field.get_internal_type()}"
+            )
+
+        return id_field_type

@@ -49,7 +49,7 @@ class TestListModelView(TestCase):
                 response_body=List[ItemOut],
             )
 
-    def test_bind_to_viewset_without_response_schema_error(self):
+    def test_bind_to_viewset_without_response_body_error(self):
         model_view = views.ListModelView()
 
         class ItemModelViewSet(viewsets.ModelViewSet):

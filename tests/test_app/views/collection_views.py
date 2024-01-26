@@ -53,13 +53,13 @@ class CollectionViewSet(ModelViewSet):
     )
     retrieve_collection = RetrieveModelView(response_body=CollectionOut)
     update_collection = UpdateModelView(
-        payload_schema=CollectionIn,
-        response_schema=CollectionOut,
+        request_body=CollectionIn,
+        response_body=CollectionOut,
         decorators=[user_is_creator],
     )
     delete_collection = DeleteModelView(
-        pre_delete=lambda request, instance: None,
-        post_delete=lambda request, id, deleted_instance: None,
+        pre_delete=lambda request, id, instance: None,
+        post_delete=lambda request, id, instance: None,
         decorators=[user_is_creator],
     )
 

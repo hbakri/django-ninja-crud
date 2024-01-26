@@ -16,8 +16,8 @@ class TestUpdateModelView(TestCase):
             model = Item
 
             update_item = views.UpdateModelView(
-                payload_schema=ItemIn,
-                response_schema=ItemOut,
+                request_body=ItemIn,
+                response_body=ItemOut,
                 router_kwargs={"exclude_unset": True},
             )
 
@@ -31,13 +31,13 @@ class TestUpdateModelView(TestCase):
             # noinspection PyTypeChecker
             views.UpdateModelView(
                 method=1,
-                payload_schema=ItemIn,
-                response_schema=ItemOut,
+                request_body=ItemIn,
+                response_body=ItemOut,
             )
 
         with self.assertRaises(ValueError):
             views.UpdateModelView(
-                payload_schema=ItemIn,
-                response_schema=ItemOut,
+                request_body=ItemIn,
+                response_body=ItemOut,
                 method=HTTPMethod.GET,
             )

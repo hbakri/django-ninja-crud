@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from django.db.models import QuerySet
 from django.http import HttpRequest
@@ -7,7 +7,6 @@ from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.helpers import utils
 from ninja_crud.views.validators.path_validator import PathValidator
 from ninja_crud.views.validators.queryset_getter_validator import (
     QuerySetGetterValidator,
@@ -16,8 +15,8 @@ from ninja_crud.views.validators.queryset_getter_validator import (
 
 class RetrieveModelView(AbstractModelView):
     """
-    A view class that handles retrieving a specific model instance, allowing
-    customization through a queryset getter and supporting decorators.
+    A view class that handles retrieving a model instance, allowing customization
+    through a queryset getter and supporting decorators.
 
     Args:
         path (str, optional): Path for the view. Defaults to "/{id}". Should
@@ -79,7 +78,7 @@ class RetrieveModelView(AbstractModelView):
         response_body: Optional[Type[Schema]] = None,
         queryset_getter: Optional[Callable[[Any], QuerySet]] = None,
         decorators: Optional[List[Callable]] = None,
-        router_kwargs: Optional[dict] = None,
+        router_kwargs: Optional[Dict] = None,
     ) -> None:
         super().__init__(
             method=HTTPMethod.GET,
@@ -98,9 +97,9 @@ class RetrieveModelView(AbstractModelView):
         self.queryset_getter = queryset_getter
 
     def build_view(self) -> Callable:
-        model_class = self.model_viewset_class.model
+        id_field_type = self.infer_id_field_type()
 
-        def view(request: HttpRequest, id: utils.get_id_type(model_class)):
+        def view(request: HttpRequest, id: id_field_type):
             return self.response_status, self.retrieve_model(request=request, id=id)
 
         return view

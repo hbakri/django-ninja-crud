@@ -192,10 +192,10 @@ class ListModelViewTest(AbstractModelViewTest):
         for item in items:
             self.model_viewset_test_case.assertIsInstance(item, dict)
             model = queryset.get(id=item["id"])
-            response_schema_class = get_args(self.model_view.response_body)[0]
-            response_schema = response_schema_class.from_orm(model)
+            response_body_class = get_args(self.model_view.response_body)[0]
+            response_body = response_body_class.from_orm(model)
             self.model_viewset_test_case.assertDictEqual(
-                item, json.loads(response_schema.json())
+                item, json.loads(response_body.json())
             )
 
     def on_failed_request(
