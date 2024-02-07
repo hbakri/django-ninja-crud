@@ -4,6 +4,7 @@ from typing import Optional
 
 import django.http
 import django.test
+import django.utils.http
 
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters
@@ -103,7 +104,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         """
         super().__init__(model_view_class=RetrieveModelView)
         self.view_test_manager = ViewTestManager(
-            handle_request=self.handle_request,
+            simulate_request=self.handle_request,
             path_parameters=path_parameters,
             headers=headers,
         )
@@ -132,16 +133,33 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         """
         actual_output = json.loads(response.content)
         expected_output = self._get_expected_output(
-            response=response, path_parameters=path_parameters
+            response=response,
+            path_parameters=path_parameters,
+            query_parameters=query_parameters,
         )
         self.model_viewset_test_case.assertDictEqual(actual_output, expected_output)
 
     def _get_expected_output(
-        self, response: django.http.HttpResponse, path_parameters: dict
+        self,
+        response: django.http.HttpResponse,
+        path_parameters: dict,
+        query_parameters: dict,
     ) -> dict:
-        model = self.model_view.retrieve_model(
+        path_parameters = (
+            self.model_view.path_parameters(**path_parameters)
+            if self.model_view.path_parameters
+            else None
+        )
+        query_parameters = (
+            self.model_view.query_parameters(**query_parameters)
+            if self.model_view.query_parameters
+            else None
+        )
+        model = self.model_view.handle_request(
             request=response.wsgi_request,  # type: ignore
-            id=path_parameters["id"],
+            path_parameters=path_parameters,
+            query_parameters=query_parameters,
+            request_body=None,
         )
         schema = self.model_view.response_body.from_orm(model)
         return json.loads(schema.json())

@@ -2,7 +2,7 @@ import abc
 import functools
 import http
 import logging
-from typing import Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import django.http
 import ninja
@@ -14,15 +14,17 @@ logger = logging.getLogger(__name__)
 
 class AbstractView(abc.ABC):
     """
-    Abstract base class for creating views for Django Ninja APIs.
+    Abstract base class for creating standard HTTP views using Django Ninja.
 
-    This class provides a template for defining HTTP routes, request handling,
-    and response formation. Subclasses should implement the build_view method
-    to define specific view logic.
+    This class abstracts common patterns and functionality, providing a streamlined
+    approach to implementing consistent API endpoints across Django Ninja applications.
+    It handles HTTP route definition, request handling, and response formatting.
 
     Args:
         method (HTTPMethod): HTTP method for the route.
         path (str): Path for the route.
+        path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing path parameters. Defaults to None.
         query_parameters (Optional[Type[ninja.Schema]], optional): Schema for
             deserializing query parameters. Defaults to None.
         request_body (Optional[Type[ninja.Schema]], optional): Schema for
@@ -40,7 +42,8 @@ class AbstractView(abc.ABC):
     Examples:
     ```python
     # examples/abstract_views.py
-    from typing import Type, Callable
+    import http
+    from typing import Union, Any, Optional, Tuple
 
     import django.http
     import ninja
@@ -58,17 +61,25 @@ class AbstractView(abc.ABC):
                 response_body=HelloWorldSchema,
             )
 
-        def build_view(self) -> Callable:
-            def view(request: django.http.HttpRequest):
-                return {"message": "Hello, world!"}
-            return view
+        def handle_request(
+            self,
+            request: django.http.HttpRequest,
+            path_parameters: Optional[ninja.Schema],
+            query_parameters: Optional[ninja.Schema],
+            request_body: Optional[ninja.Schema]
+        ) -> Union[Any, Tuple[http.HTTPStatus, Any]]:
+            return {"message": "Hello, world!"}
     ```
+
+    Note:
+        Subclasses should implement the `handle_request` method to define the view's
     """
 
     def __init__(
         self,
         method: HTTPMethod,
         path: str,
+        path_parameters: Optional[Type[ninja.Schema]] = None,
         query_parameters: Optional[Type[ninja.Schema]] = None,
         request_body: Optional[Type[ninja.Schema]] = None,
         response_body: Union[Type[ninja.Schema], Type[List[ninja.Schema]], None] = None,
@@ -78,6 +89,7 @@ class AbstractView(abc.ABC):
     ) -> None:
         self.method = method
         self.path = path
+        self.path_parameters = path_parameters
         self.query_parameters = query_parameters
         self.request_body = request_body
         self.response_body = response_body
@@ -86,22 +98,66 @@ class AbstractView(abc.ABC):
         self.router_kwargs = router_kwargs or {}
 
     @abc.abstractmethod
-    def build_view(self) -> Callable:
+    def handle_request(
+        self,
+        request: django.http.HttpRequest,
+        path_parameters: Optional[ninja.Schema],
+        query_parameters: Optional[ninja.Schema],
+        request_body: Optional[ninja.Schema],
+    ) -> Union[Any, Tuple[http.HTTPStatus, Any]]:  # pragma: no cover
         """
-        Abstract method to build the view function.
+        Handles the request and returns the response.
 
-        Subclasses should implement this method to define the view logic.
+        Subclasses should implement this method to define the view's request
+        handling logic. This method should take the request and any deserialized
+        parameters and return the response body. If the response status is not
+        the default (200 OK), then the method should return a tuple with the
+        status and the response body.
+
+        Args:
+            request (django.http.HttpRequest): The request object.
+            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
+            query_parameters (Optional[ninja.Schema]): Deserialized query parameters.
+            request_body (Optional[ninja.Schema]): Deserialized request body.
 
         Returns:
-            Callable: The constructed view function.
+            Union[Any, Tuple[http.HTTPStatus, Any]]: The response body. If the
+                response status is not the default (200 OK), then the method
+                should return a tuple with the status and the response body.
         """
-        pass
+        raise NotImplementedError
+
+    def create_view_handler(self) -> Callable:
+        path_parameters_schema_class = self.path_parameters
+        query_parameters_schema_class = self.query_parameters
+        request_body_schema_class = self.request_body
+
+        def view_handler(
+            request: django.http.HttpRequest,
+            path_parameters: path_parameters_schema_class = ninja.Path(
+                default=None, include_in_schema=False
+            ),
+            query_parameters: query_parameters_schema_class = ninja.Query(
+                default=None, include_in_schema=False
+            ),
+            request_body: request_body_schema_class = ninja.Body(
+                default=None, include_in_schema=False
+            ),
+        ):
+            return self.handle_request(
+                request=request,
+                path_parameters=path_parameters,
+                query_parameters=query_parameters,
+                request_body=request_body,
+            )
+
+        return view_handler
 
     def register_route(self, router: ninja.Router, route_name: str) -> None:
         """
         Registers a view with the specified router under the given route name.
 
-        This method builds the view function using build_view, sets its name to
+        This method builds the view function using create_view_handler, sets its name to
         the provided route_name, and then registers it with the router. It uses
         the route configuration specified in the constructor (HTTP method, path,
         response structure, etc.) to set up the route.
@@ -123,11 +179,11 @@ class AbstractView(abc.ABC):
         view.register_route(router, route_name="hello_world")
         ```
         """
-        view = self.build_view()
+        view = self.create_view_handler()
         view.__name__ = route_name
-        self._build_route_decorator(router=router)(view)
+        self.configure_view_routing(router=router)(view)
 
-    def _build_route_decorator(self, router: ninja.Router) -> Callable:
+    def configure_view_routing(self, router: ninja.Router) -> Callable:
         def route_decorator(view: Callable):
             for decorator in reversed(self.decorators):
                 view = decorator(view)
@@ -141,7 +197,7 @@ class AbstractView(abc.ABC):
 
         return route_decorator
 
-    def _get_router_kwargs(self, operation_id: str) -> dict:
+    def _get_router_kwargs(self, operation_id: str) -> Dict[str, Any]:
         return {
             "methods": [self.method.value],
             "path": self.path,

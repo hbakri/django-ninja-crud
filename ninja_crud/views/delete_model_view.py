@@ -1,8 +1,9 @@
 from http import HTTPStatus
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from django.db.models import Model
 from django.http import HttpRequest
+from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
@@ -73,8 +74,12 @@ class DeleteModelView(AbstractModelView):
     def __init__(
         self,
         path: str = "/{id}",
-        pre_delete: Optional[Callable[[HttpRequest, Any, Model], None]] = None,
-        post_delete: Optional[Callable[[HttpRequest, Any, Model], None]] = None,
+        pre_delete: Optional[
+            Callable[[HttpRequest, Optional[Schema], Model], None]
+        ] = None,
+        post_delete: Optional[
+            Callable[[HttpRequest, Optional[Schema], Model], None]
+        ] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
     ) -> None:
@@ -94,21 +99,19 @@ class DeleteModelView(AbstractModelView):
         self.pre_delete = pre_delete
         self.post_delete = post_delete
 
-    def build_view(self) -> Callable:
-        id_field_type = self.infer_id_field_type()
-
-        def view(request: HttpRequest, id: id_field_type):
-            return self.response_status, self.delete_model(request=request, id=id)
-
-        return view
-
-    def delete_model(self, request: HttpRequest, id: Any) -> None:
-        instance = self.model_viewset_class.model.objects.get(pk=id)
+    def handle_request(
+        self,
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
+    ) -> None:
+        model = self.model_viewset_class.model.objects.get(**path_parameters.dict())
 
         if self.pre_delete is not None:
-            self.pre_delete(request, id, instance)
+            self.pre_delete(request, path_parameters, model)
 
-        instance.delete()
+        model.delete()
 
         if self.post_delete is not None:
-            self.post_delete(request, id, instance)
+            self.post_delete(request, path_parameters, model)

@@ -1,10 +1,12 @@
 import abc
 import http
+import re
 import uuid
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Type, Union
 
+import django.db.models
 import ninja
-from django.db.models import Field
+import pydantic
 
 from ninja_crud.views.abstract_view import AbstractView
 from ninja_crud.views.enums import HTTPMethod
@@ -18,8 +20,7 @@ class AbstractModelView(AbstractView, abc.ABC):
     Abstract base class for creating model views for Django Ninja APIs.
 
     This class provides a template for defining HTTP routes, request handling,
-    and response formation. Subclasses should implement the build_view method
-    to define specific view logic.
+    and response formation.
 
     Args:
         method (HTTPMethod): HTTP method for the route.
@@ -45,6 +46,7 @@ class AbstractModelView(AbstractView, abc.ABC):
         self,
         method: HTTPMethod,
         path: str,
+        path_parameters: Optional[Type[ninja.Schema]] = None,
         query_parameters: Optional[Type[ninja.Schema]] = None,
         request_body: Optional[Type[ninja.Schema]] = None,
         response_body: Union[Type[ninja.Schema], Type[List[ninja.Schema]], None] = None,
@@ -55,6 +57,7 @@ class AbstractModelView(AbstractView, abc.ABC):
         super().__init__(
             method=method,
             path=path,
+            path_parameters=path_parameters,
             query_parameters=query_parameters,
             request_body=request_body,
             response_body=response_body,
@@ -82,11 +85,45 @@ class AbstractModelView(AbstractView, abc.ABC):
         self._model_viewset_class = model_viewset_class
         self._inherit_model_viewset_class_attributes()
 
+        if not self.path_parameters:
+            self._infer_path_parameters_schema_class()
+
     def _inherit_model_viewset_class_attributes(self) -> None:
         pass
 
-    def infer_id_field_type(self) -> Type:
-        id_field: Field = self.model_viewset_class.model._meta.pk
+    def _infer_path_parameters_schema_class(self):
+        path_parameter_field_names = re.findall(r"{(\w+)}", self.path)
+        if not path_parameter_field_names:
+            return
+
+        path_parameter_field_definitions = {
+            path_parameter_field_name: (
+                self._infer_field_type(
+                    model_class=self.model_viewset_class.model,
+                    field_name=path_parameter_field_name,
+                ),
+                ...,
+            )
+            for path_parameter_field_name in path_parameter_field_names
+        }
+        self.path_parameters = pydantic.create_model(
+            __model_name="PathParametersSchema", **path_parameter_field_definitions
+        )
+
+    @classmethod
+    def _infer_field_type(
+        cls, model_class: Type[django.db.models.Model], field_name: str
+    ) -> Type:
+        field: django.db.models.Field = model_class._meta.get_field(field_name)
+
+        if (
+            isinstance(field, django.db.models.ForeignKey)
+            and field_name == field.attname
+        ):
+            return cls._infer_field_type(
+                model_class=field.related_model,
+                field_name=field.related_model._meta.pk.name,
+            )
 
         type_mapping = {
             "AutoField": int,
@@ -105,10 +142,11 @@ class AbstractModelView(AbstractView, abc.ABC):
             "BinaryField": bytes,
         }
 
-        id_field_type = type_mapping.get(id_field.get_internal_type())
-        if id_field_type is None:
+        field_type = type_mapping.get(field.get_internal_type())
+        if field_type is None:
             raise ValueError(
-                f"Unsupported id field type: {id_field.get_internal_type()}"
+                f"Field {field_name} of model {model_class.__name__} has an "
+                f"unsupported type: {field.get_internal_type()}."
             )
 
-        return id_field_type
+        return field_type

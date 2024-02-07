@@ -109,59 +109,25 @@ class CreateModelView(AbstractModelView):
         self.pre_save = pre_save
         self.post_save = post_save
 
-    def build_view(self) -> Callable:
-        if "{id}" in self.path:
-            return self._build_detail_view()
-        else:
-            return self._build_collection_view()
-
-    def _build_detail_view(self) -> Callable:
-        model_class = self.model_viewset_class.model
-        id_field_type = self.infer_id_field_type()
-        request_body_schema_class = self.request_body
-
-        def detail_view(
-            request: HttpRequest,
-            id: id_field_type,
-            request_body: request_body_schema_class,
-        ):
-            if not model_class.objects.filter(pk=id).exists():
-                raise model_class.DoesNotExist(
-                    f"{model_class.__name__} with pk '{id}' does not exist."
-                )
-
-            return self.response_status, self.create_model(
-                request=request, id=id, request_body=request_body
-            )
-
-        return detail_view
-
-    def _build_collection_view(self) -> Callable:
-        request_body_schema_class = self.request_body
-
-        def collection_view(
-            request: HttpRequest, request_body: request_body_schema_class
-        ):
-            return self.response_status, self.create_model(
-                request=request, id=None, request_body=request_body
-            )
-
-        return collection_view
-
-    def create_model(
+    def handle_request(
         self,
         request: HttpRequest,
-        id: Optional[Any],
-        request_body: Schema,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
     ) -> Model:
+        if path_parameters:
+            self.model_viewset_class.model.objects.get(**path_parameters.dict())
+
         if self.model_factory:
-            args = [id] if "{id}" in self.path else []
-            instance = self.model_factory(*args)
+            model_factory_kwargs = path_parameters.dict() if path_parameters else {}
+            instance = self.model_factory(**model_factory_kwargs)
         else:
             instance = self.model_viewset_class.model()
 
-        for field, value in request_body.dict(exclude_unset=True).items():
-            setattr(instance, field, value)
+        if request_body:
+            for field, value in request_body.dict().items():
+                setattr(instance, field, value)
 
         if self.pre_save:
             self.pre_save(request, instance)

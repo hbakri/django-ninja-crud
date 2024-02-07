@@ -27,7 +27,7 @@ router = Router()
 def user_is_creator(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        collection_id = kwargs.get("id")
+        collection_id = kwargs.get("path_parameters").id
         collection = Collection.objects.get(id=collection_id)
         if collection.created_by != request.auth:
             raise PermissionDenied()

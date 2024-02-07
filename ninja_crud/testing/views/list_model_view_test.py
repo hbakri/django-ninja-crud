@@ -6,7 +6,7 @@ from typing import Optional, get_args
 import django.db.models
 import django.http
 import django.test
-from ninja.pagination import LimitOffsetPagination
+import ninja.pagination
 
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters, QueryParameters
@@ -105,7 +105,7 @@ class ListModelViewTest(AbstractModelViewTest):
         """
         super().__init__(model_view_class=ListModelView)
         self.view_test_manager = ViewTestManager(
-            handle_request=self.handle_request,
+            simulate_request=self.handle_request,
             path_parameters=path_parameters,
             query_parameters=query_parameters,
             headers=headers,
@@ -145,7 +145,7 @@ class ListModelViewTest(AbstractModelViewTest):
             self.model_viewset_test_case.assertEqual(len(content), queryset.count())
             self._validate_response_items(items=content, queryset=queryset)
 
-        elif self.model_view.pagination_class == LimitOffsetPagination:
+        elif self.model_view.pagination_class == ninja.pagination.LimitOffsetPagination:
             self.model_viewset_test_case.assertIsInstance(content, dict)
             self.model_viewset_test_case.assertIn("count", content)
             self.model_viewset_test_case.assertIsInstance(content["count"], int)
@@ -175,15 +175,21 @@ class ListModelViewTest(AbstractModelViewTest):
         path_parameters: dict,
         query_parameters: dict,
     ) -> django.db.models.QuerySet:
-        if self.model_view.query_parameters is not None:
-            filters = self.model_view.query_parameters(**query_parameters)
-        else:
-            filters = None
-
-        return self.model_view.list_models(
+        path_parameters = (
+            self.model_view.path_parameters(**path_parameters)
+            if self.model_view.path_parameters
+            else None
+        )
+        query_parameters = (
+            self.model_view.query_parameters(**query_parameters)
+            if self.model_view.query_parameters
+            else None
+        )
+        return self.model_view.handle_request(
             request=response.wsgi_request,  # type: ignore
-            id=path_parameters["id"] if "{id}" in self.model_view.path else None,
-            query_parameters=filters,
+            path_parameters=path_parameters,
+            query_parameters=query_parameters,
+            request_body=None,
         )
 
     def _validate_response_items(

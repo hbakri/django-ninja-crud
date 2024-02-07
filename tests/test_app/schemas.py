@@ -39,13 +39,17 @@ class TagOut(Identifiable, Representable):
     pass
 
 
-class UserIn(Schema):
+class UserRequestBody(Schema):
     username: str
     email: str
     password: str
 
 
-class UserOut(Schema):
+class UserResponseBody(Schema):
     id: int
     username: str
     email: str
+
+
+class UserQueryParameters(Schema):
+    username__contains: Optional[str] = None

@@ -1,6 +1,6 @@
 import copy
 from http import HTTPStatus
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Callable, Dict, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -70,11 +70,15 @@ class UpdateModelView(AbstractModelView):
         # Advanced usage: With pre- and post-save hooks
         # Endpoint: PUT /{id}/
         @staticmethod
-        def pre_save(request: HttpRequest, old_instance: Department, new_instance: Department):
+        def pre_save(
+            request: HttpRequest, old_instance: Department, new_instance: Department
+        ):
             pass
 
         @staticmethod
-        def post_save(request: HttpRequest, old_instance: Department, new_instance: Department):
+        def post_save(
+            request: HttpRequest, old_instance: Department, new_instance: Department
+        ):
             pass
 
         update_department = views.UpdateModelView(
@@ -120,32 +124,21 @@ class UpdateModelView(AbstractModelView):
         self.pre_save = pre_save
         self.post_save = post_save
 
-    def build_view(self) -> Callable:
-        id_field_type = self.infer_id_field_type()
-        request_body_schema_class = self.request_body
-
-        def view(
-            request: HttpRequest,
-            id: id_field_type,
-            request_body: request_body_schema_class,
-        ):
-            return self.response_status, self.update_model(
-                request=request, id=id, request_body=request_body
-            )
-
-        return view
-
-    def update_model(
-        self, request: HttpRequest, id: Any, request_body: Schema
+    def handle_request(
+        self,
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
     ) -> Model:
-        new_instance = self.model_viewset_class.model.objects.get(pk=id)
+        new_instance = self.model_viewset_class.model.objects.get(
+            **path_parameters.dict()
+        )
+        old_instance = copy.copy(new_instance)
 
-        old_instance = None
-        if self.pre_save is not None or self.post_save is not None:
-            old_instance = copy.deepcopy(new_instance)
-
-        for field, value in request_body.dict(exclude_unset=True).items():
-            setattr(new_instance, field, value)
+        if request_body:
+            for field, value in request_body.dict(exclude_unset=True).items():
+                setattr(new_instance, field, value)
 
         if self.pre_save is not None:
             self.pre_save(request, old_instance, new_instance)

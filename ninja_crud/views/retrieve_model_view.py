@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import Any, Callable, Dict, List, Optional, Type
 
-from django.db.models import QuerySet
+from django.db.models import Model, QuerySet
 from django.http import HttpRequest
 from ninja import Schema
 
@@ -96,21 +96,20 @@ class RetrieveModelView(AbstractModelView):
 
         self.queryset_getter = queryset_getter
 
-    def build_view(self) -> Callable:
-        id_field_type = self.infer_id_field_type()
-
-        def view(request: HttpRequest, id: id_field_type):
-            return self.response_status, self.retrieve_model(request=request, id=id)
-
-        return view
-
-    def retrieve_model(self, request: HttpRequest, id: Any):
+    def handle_request(
+        self,
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
+    ) -> Model:
+        path_parameters_dict = path_parameters.dict() if path_parameters else {}
         if self.queryset_getter:
-            queryset = self.queryset_getter(id)
+            queryset = self.queryset_getter(**path_parameters_dict)
         else:
             queryset = self.model_viewset_class.model.objects.get_queryset()
 
-        return queryset.get(pk=id)
+        return queryset.get(**path_parameters_dict)
 
     def _inherit_model_viewset_class_attributes(self) -> None:
         if self.response_body is None:

@@ -5,7 +5,11 @@ from ninja import Router
 
 from ninja_crud import views
 from ninja_crud.viewsets import ModelViewSet
-from tests.test_app.schemas import UserIn, UserOut
+from tests.test_app.schemas import (
+    UserQueryParameters,
+    UserRequestBody,
+    UserResponseBody,
+)
 
 router = Router()
 
@@ -13,10 +17,18 @@ router = Router()
 class UserViewSet(ModelViewSet):
     model = User
 
-    list_users = views.ListModelView(response_body=List[UserOut], pagination_class=None)
-    create_user = views.CreateModelView(request_body=UserIn, response_body=UserOut)
-    retrieve_user = views.RetrieveModelView(response_body=UserOut)
-    update_user = views.UpdateModelView(request_body=UserIn, response_body=UserOut)
+    list_users = views.ListModelView(
+        query_parameters=UserQueryParameters,
+        response_body=List[UserResponseBody],
+        pagination_class=None,
+    )
+    create_user = views.CreateModelView(
+        request_body=UserRequestBody, response_body=UserResponseBody
+    )
+    retrieve_user = views.RetrieveModelView(response_body=UserResponseBody)
+    update_user = views.UpdateModelView(
+        request_body=UserRequestBody, response_body=UserResponseBody
+    )
     delete_user = views.DeleteModelView()
 
 

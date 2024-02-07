@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from django.db.models import QuerySet
 from django.http import HttpRequest
-from ninja import FilterSchema, Query, Schema
+from ninja import FilterSchema, Schema
 from ninja.pagination import LimitOffsetPagination, PaginationBase, paginate
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
@@ -80,7 +80,7 @@ class ListModelView(AbstractModelView):
     def __init__(
         self,
         path: str = "/",
-        query_parameters: Optional[Type[FilterSchema]] = None,
+        query_parameters: Optional[Type[Schema]] = None,
         response_body: Optional[Type[List[Schema]]] = None,
         queryset_getter: Union[
             Callable[[], QuerySet], Callable[[Any], QuerySet], None
@@ -105,67 +105,30 @@ class ListModelView(AbstractModelView):
 
         self.queryset_getter = queryset_getter
         self.pagination_class = pagination_class
-        if self.pagination_class is not None:
+        if self.pagination_class:
             self.decorators.append(paginate(self.pagination_class))
 
-    def build_view(self) -> Callable:
-        if "{id}" in self.path:
-            return self._build_detail_view()
-        else:
-            return self._build_collection_view()
-
-    def _build_detail_view(self) -> Callable:
-        model_class = self.model_viewset_class.model
-        id_field_type = self.infer_id_field_type()
-        query_parameters_schema_class = self.query_parameters
-
-        def detail_view(
-            request: HttpRequest,
-            id: id_field_type,
-            query_parameters: query_parameters_schema_class = Query(
-                default=None, include_in_schema=False
-            ),
-        ):
-            if not model_class.objects.filter(pk=id).exists():
-                raise model_class.DoesNotExist(
-                    f"{model_class.__name__} with pk '{id}' does not exist."
-                )
-
-            return self.list_models(
-                request=request, id=id, query_parameters=query_parameters
-            )
-
-        return detail_view
-
-    def _build_collection_view(self) -> Callable:
-        query_parameters_schema_class = self.query_parameters
-
-        def collection_view(
-            request: HttpRequest,
-            query_parameters: query_parameters_schema_class = Query(
-                default=None, include_in_schema=False
-            ),
-        ):
-            return self.list_models(
-                request=request, id=None, query_parameters=query_parameters
-            )
-
-        return collection_view
-
-    def list_models(
+    def handle_request(
         self,
         request: HttpRequest,
-        id: Optional[Any],
-        query_parameters: Optional[FilterSchema],
-    ):
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
+    ) -> QuerySet:
+        if path_parameters:
+            self.model_viewset_class.model.objects.get(**path_parameters.dict())
+
         if self.queryset_getter:
-            args = [id] if "{id}" in self.path else []
-            queryset = self.queryset_getter(*args)
+            queryset_getter_kwargs = path_parameters.dict() if path_parameters else {}
+            queryset = self.queryset_getter(**queryset_getter_kwargs)
         else:
             queryset = self.model_viewset_class.model.objects.get_queryset()
 
         if query_parameters:
-            queryset = query_parameters.filter(queryset)
+            if isinstance(query_parameters, FilterSchema):
+                queryset = query_parameters.filter(queryset)
+            else:
+                queryset = queryset.filter(**query_parameters.dict(exclude_unset=True))
 
         return queryset
 
