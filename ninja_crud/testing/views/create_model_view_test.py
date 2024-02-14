@@ -128,22 +128,26 @@ class CreateModelViewTest(AbstractModelViewTest):
             headers (dict): The headers used in the request.
             payload (dict): The payload sent with the request.
         """
-        content = json.loads(response.content)
-        self.model_viewset_test_case.assertIsInstance(content, dict)
-        self.model_viewset_test_case.assertIn("id", content)
+        actual_output = json.loads(response.content)
+        expected_output = self._get_expected_output(
+            response=response,
+            path_parameters=path_parameters,
+        )
+        self.model_viewset_test_case.assertDictEqual(actual_output, expected_output)
 
-        if self.model_view.create_model is not None:
-            path_parameters = (
-                self.model_view.path_parameters(**path_parameters)
-                if self.model_view.path_parameters
-                else None
-            )
-            model_class = self.model_view.create_model(path_parameters).__class__
-        else:
-            model_class = self.model_viewset_test_case.model_viewset_class.model
+    def _get_expected_output(
+        self, response: django.http.HttpResponse, path_parameters: dict
+    ) -> dict:
+        content = json.loads(response.content)
+        path_parameters = (
+            self.model_view.path_parameters(**path_parameters)
+            if self.model_view.path_parameters
+            else None
+        )
+        model_class = self.model_view.create_model(path_parameters).__class__
         model = model_class.objects.get(id=content["id"])
         schema = self.model_view.response_body.from_orm(model)
-        self.model_viewset_test_case.assertDictEqual(content, json.loads(schema.json()))
+        return json.loads(schema.json())
 
     def on_failed_request(
         self,

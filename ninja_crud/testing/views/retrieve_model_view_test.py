@@ -135,7 +135,6 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         expected_output = self._get_expected_output(
             response=response,
             path_parameters=path_parameters,
-            query_parameters=query_parameters,
         )
         self.model_viewset_test_case.assertDictEqual(actual_output, expected_output)
 
@@ -143,7 +142,6 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         self,
         response: django.http.HttpResponse,
         path_parameters: dict,
-        query_parameters: dict,
     ) -> dict:
         path_parameters = (
             self.model_view.path_parameters(**path_parameters)
