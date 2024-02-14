@@ -3,7 +3,6 @@ from unittest.mock import MagicMock
 from django.test import TestCase
 
 from ninja_crud import views, viewsets
-from ninja_crud.views.enums import HTTPMethod
 from tests.test_app.models import Item
 from tests.test_app.schemas import ItemIn, ItemOut
 
@@ -25,19 +24,3 @@ class TestUpdateModelView(TestCase):
 
         router_mock.api_operation.assert_called_once()
         self.assertTrue(router_mock.api_operation.call_args[1]["exclude_unset"])
-
-    def test_method_validator(self):
-        with self.assertRaises(TypeError):
-            # noinspection PyTypeChecker
-            views.UpdateModelView(
-                method=1,
-                request_body=ItemIn,
-                response_body=ItemOut,
-            )
-
-        with self.assertRaises(ValueError):
-            views.UpdateModelView(
-                request_body=ItemIn,
-                response_body=ItemOut,
-                method=HTTPMethod.GET,
-            )

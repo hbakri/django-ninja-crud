@@ -1,129 +1,68 @@
-from http import HTTPStatus
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+import http
+from typing import Callable, Dict, List, Optional, Type
 
-from django.db.models import Model
+import django.db.models
+import ninja
 from django.http import HttpRequest
-from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.validators.model_factory_validator import ModelFactoryValidator
-from ninja_crud.views.validators.path_validator import PathValidator
 
 
 class CreateModelView(AbstractModelView):
-    """
-    A view class that handles creating a model instance, allowing customization
-    through a model factory and pre- and post-save hooks and also supports decorators.
-
-    Args:
-        path (str, optional): Path for the view. Defaults to "/". Can include a
-            "{id}" parameter for a specific model instance.
-        request_body (Optional[Type[ninja.Schema]], optional): Schema for
-            deserializing the request body. Defaults to None. If not provided,
-            inherits from `ModelViewSet`s `default_request_body`.
-        response_body (Optional[Type[ninja.Schema]], optional): Schema for
-            serializing the response body. Defaults to None. If not provided,
-            inherits from `ModelViewSet`s `default_response_body`.
-        model_factory (Union[Callable[[], models.Model],
-            Callable[[Any], models.Model], None], optional): Factory function for
-            creating the model instance. Defaults to None. If `path` has no
-            parameters, should have the signature () -> Model. If `path` has a "{id}"
-            parameter, (id: Any) -> Model. If not provided, the `model` of the
-            `ModelViewSet` will be used.
-        pre_save (Optional[Callable[[HttpRequest, Model], None]], optional): Function
-            to execute before saving the model instance. Defaults to None.
-        post_save (Optional[Callable[[HttpRequest, Model], None]], optional): Function
-            to execute after saving the model instance. Defaults to None.
-        decorators (Optional[List[Callable]], optional): Decorators for the view.
-            Defaults to [].
-        router_kwargs (Optional[Dict], optional): Additional router arguments.
-            Defaults to {}. Overrides are ignored for 'path', 'methods', and
-            'response'.
-
-    Example:
-    ```python
-    from ninja_crud import views, viewsets
-
-    from examples.models import Department, Employee
-    from examples.schemas import DepartmentIn, DepartmentOut, EmployeeIn, EmployeeOut
-
-
-    class DepartmentViewSet(viewsets.ModelViewSet):
-        model = Department
-        default_request_body = DepartmentIn # Optional
-        default_response_body = DepartmentOut # Optional
-
-        # Basic usage: Create a department
-        # Endpoint: POST /
-        create_department = views.CreateModelView(
-            request_body=DepartmentIn,
-            response_body=DepartmentOut,
-        )
-
-        # Simplified usage: Inherit from the viewset's default request/response bodies
-        # Endpoint: POST /
-        create_department = views.CreateModelView()
-
-        # Advanced usage: Create an employee for a department
-        # Endpoint: POST /{id}/employees/
-        create_employee = views.CreateModelView(
-            path="/{id}/employees/",
-            request_body=EmployeeIn,
-            response_body=EmployeeOut,
-            model_factory=lambda id: Employee(department_id=id),
-        )
-    ```
-
-    Note:
-        The attribute name (e.g., `create_department`) is flexible and customizable.
-        It serves as the name of the route and the operation id in the OpenAPI schema.
-    """
-
     def __init__(
         self,
         path: str = "/",
-        request_body: Optional[Type[Schema]] = None,
-        response_body: Optional[Type[Schema]] = None,
-        model_factory: Union[Callable[[], Model], Callable[[Any], Model], None] = None,
-        pre_save: Optional[Callable[[HttpRequest, Model], None]] = None,
-        post_save: Optional[Callable[[HttpRequest, Model], None]] = None,
+        path_parameters: Optional[ninja.Schema] = None,
+        request_body: Optional[Type[ninja.Schema]] = None,
+        response_body: Optional[Type[ninja.Schema]] = None,
+        create_model: Optional[
+            Callable[[Optional[ninja.Schema]], django.db.models.Model]
+        ] = None,
+        pre_save: Optional[
+            Callable[[HttpRequest, django.db.models.Model], None]
+        ] = None,
+        post_save: Optional[
+            Callable[[HttpRequest, django.db.models.Model], None]
+        ] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
     ) -> None:
         super().__init__(
             method=HTTPMethod.POST,
             path=path,
+            path_parameters=path_parameters,
             query_parameters=None,
             request_body=request_body,
             response_body=response_body,
-            response_status=HTTPStatus.CREATED,
+            response_status=http.HTTPStatus.CREATED,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
-
-        PathValidator.validate(path=path, allow_no_parameters=True)
-        ModelFactoryValidator.validate(model_factory=model_factory, path=path)
-
-        self.model_factory = model_factory
+        self.create_model = create_model or self.default_create_model
         self.pre_save = pre_save
         self.post_save = post_save
+
+    def default_create_model(
+        self,
+        path_parameters: Optional[ninja.Schema],
+    ) -> django.db.models.Model:
+        return self.model_viewset_class.model()
+
+    # TODO: add path_parameters to the signature of hooks and the same stuff as
+    # RUD views
 
     def handle_request(
         self,
         request: HttpRequest,
-        path_parameters: Optional[Schema],
-        query_parameters: Optional[Schema],
-        request_body: Optional[Schema],
-    ) -> Model:
+        path_parameters: Optional[ninja.Schema],
+        query_parameters: Optional[ninja.Schema],
+        request_body: Optional[ninja.Schema],
+    ) -> django.db.models.Model:
         if path_parameters:
             self.model_viewset_class.model.objects.get(**path_parameters.dict())
 
-        if self.model_factory:
-            model_factory_kwargs = path_parameters.dict() if path_parameters else {}
-            instance = self.model_factory(**model_factory_kwargs)
-        else:
-            instance = self.model_viewset_class.model()
+        instance = self.create_model(path_parameters)
 
         if request_body:
             for field, value in request_body.dict().items():

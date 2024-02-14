@@ -4,7 +4,6 @@ from typing import List
 from django.core.exceptions import PermissionDenied
 from ninja import Router
 
-from ninja_crud.schemas import OrderByFilterSchema
 from ninja_crud.views import (
     DeleteModelView,
     ListModelView,
@@ -13,7 +12,7 @@ from ninja_crud.views import (
 )
 from ninja_crud.viewsets import ModelViewSet
 from tests.test_app.models import Item, Tag
-from tests.test_app.schemas import ItemIn, ItemOut, TagOut
+from tests.test_app.schemas import ItemIn, ItemOut, OrderByFilterSchema, TagOut
 
 router = Router()
 
@@ -37,10 +36,10 @@ class ItemViewSet(ModelViewSet):
 
     list_items = ListModelView(
         query_parameters=OrderByFilterSchema,
-        queryset_getter=lambda: Item.objects.get_queryset(),
+        get_queryset=lambda path_parameters: Item.objects.get_queryset(),
     )
     retrieve_item = RetrieveModelView(
-        queryset_getter=lambda id: Item.objects.get_queryset(),
+        get_model=lambda path_parameters: Item.objects.get(id=path_parameters.id),
         decorators=[user_is_collection_creator],
     )
     update_item = UpdateModelView(
@@ -52,7 +51,9 @@ class ItemViewSet(ModelViewSet):
 
     list_tags = ListModelView(
         path="/{id}/tags/",
-        queryset_getter=lambda id: Tag.objects.filter(items__id=id),
+        get_queryset=lambda path_parameters: Tag.objects.filter(
+            items__id=path_parameters.id
+        ),
         response_body=List[TagOut],
     )
 

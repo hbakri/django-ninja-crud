@@ -120,9 +120,10 @@ class AbstractModelView(AbstractView, abc.ABC):
             isinstance(field, django.db.models.ForeignKey)
             and field_name == field.attname
         ):
+            related_model_class: Type[django.db.models.Model] = field.related_model
             return cls._infer_field_type(
-                model_class=field.related_model,
-                field_name=field.related_model._meta.pk.name,
+                model_class=related_model_class,
+                field_name=related_model_class._meta.pk.name,
             )
 
         type_mapping = {

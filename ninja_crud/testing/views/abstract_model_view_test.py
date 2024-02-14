@@ -39,7 +39,7 @@ class AbstractModelViewTest(ABC):
     def __init__(self, model_view_class: Type[AbstractModelView]) -> None:
         self.model_view_class = model_view_class
 
-    def handle_request(
+    def simulate_request(
         self,
         path_parameters: dict,
         query_parameters: dict,

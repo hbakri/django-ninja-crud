@@ -4,7 +4,6 @@ from typing import List, Type
 
 import django.test
 
-from ninja_crud import utils
 from ninja_crud.testing.views import AbstractModelViewTest
 from ninja_crud.views import AbstractModelView
 from ninja_crud.viewsets import ModelViewSet
@@ -119,8 +118,6 @@ class ModelViewSetTestCase(django.test.TestCase):
         super().__init_subclass__(**kwargs)
 
         if hasattr(cls, "model_viewset_class"):
-            cls._validate_model_viewset_class()
-            cls._validate_base_path()
             cls._bind_test_model_views()
             cls._register_test_methods()
 
@@ -239,29 +236,3 @@ class ModelViewSetTestCase(django.test.TestCase):
                 logger.warning(
                     f"Model view '{cls.model_viewset_class.__name__}.{attr_name}' is not associated with any test"
                 )
-
-    @classmethod
-    def _validate_model_viewset_class(cls) -> None:
-        """
-        Validates that the `model_viewset_class` attribute is a subclass of `ModelViewSet`.
-
-        Raises:
-            - ValueError: If the attribute is not set.
-            - TypeError: If the attribute is not a subclass of `ModelViewSet`.
-        """
-        utils.validate_class_attribute_type(
-            cls, attr_name="model_viewset_class", expected_type=Type[ModelViewSet]
-        )
-
-    @classmethod
-    def _validate_base_path(cls) -> None:
-        """
-        Validates that the `base_path` attribute is a string.
-
-        Raises:
-            - ValueError: If the attribute is not set.
-            - TypeError: If the attribute is not a string.
-        """
-        utils.validate_class_attribute_type(
-            cls, attr_name="base_path", expected_type=str
-        )

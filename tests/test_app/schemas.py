@@ -1,9 +1,8 @@
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
-from ninja import Schema
-
-from ninja_crud.schemas import OrderByFilterSchema
+from django.db.models import Q, QuerySet
+from ninja import FilterSchema, Schema
 
 
 class Identifiable(Schema):
@@ -13,6 +12,19 @@ class Identifiable(Schema):
 class Representable(Schema):
     name: str
     description: Optional[str] = None
+
+
+class OrderByFilterSchema(FilterSchema):
+    order_by: Optional[List[str]] = None
+
+    def filter_order_by(self, value) -> Q:
+        return Q()
+
+    def filter(self, queryset: QuerySet) -> QuerySet:
+        queryset = super().filter(queryset)
+        if self.order_by:
+            queryset = queryset.order_by(*self.order_by)
+        return queryset
 
 
 class CollectionFilter(OrderByFilterSchema):

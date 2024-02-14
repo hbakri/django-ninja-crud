@@ -105,7 +105,7 @@ class ListModelViewTest(AbstractModelViewTest):
         """
         super().__init__(model_view_class=ListModelView)
         self.view_test_manager = ViewTestManager(
-            simulate_request=self.handle_request,
+            simulate_request=self.simulate_request,
             path_parameters=path_parameters,
             query_parameters=query_parameters,
             headers=headers,

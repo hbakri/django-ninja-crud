@@ -25,22 +25,6 @@ class TestRetrieveModelView(TestCase):
         router_mock.api_operation.assert_called_once()
         self.assertTrue(router_mock.api_operation.call_args[1]["exclude_unset"])
 
-    # noinspection PyTypeChecker
-    def test_queryset_getter_validator(self):
-        # queryset_getter must be callable
-        with self.assertRaises(TypeError):
-            views.RetrieveModelView(
-                queryset_getter="not callable",
-                response_body=ItemOut,
-            )
-
-        # queryset_getter must have the correct number of arguments
-        with self.assertRaises(ValueError):
-            views.RetrieveModelView(
-                queryset_getter=lambda: Item.objects.get_queryset(),
-                response_body=ItemOut,
-            )
-
     def test_bind_to_viewset_with_response_body(self):
         model_view = views.RetrieveModelView(response_body=ItemOut)
 

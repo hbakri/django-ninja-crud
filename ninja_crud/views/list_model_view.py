@@ -1,134 +1,77 @@
-from http import HTTPStatus
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+import http
+from typing import Callable, Dict, List, Optional, Type
 
-from django.db.models import QuerySet
-from django.http import HttpRequest
-from ninja import FilterSchema, Schema
-from ninja.pagination import LimitOffsetPagination, PaginationBase, paginate
+import django.db.models
+import django.http
+import ninja
+import ninja.pagination
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.validators.path_validator import PathValidator
-from ninja_crud.views.validators.queryset_getter_validator import (
-    QuerySetGetterValidator,
-)
 
 
 class ListModelView(AbstractModelView):
-    """
-    A view class that handles listing instances of a model, allowing customization
-    through a queryset getter and supporting decorators.
-
-    Args:
-        path (str, optional): Path for the view. Defaults to "/". Can include a
-            "{id}" parameter for a specific model instance.
-        query_parameters (Optional[Type[ninja.FilterSchema]], optional): Schema for
-            deserializing query parameters. Defaults to None.
-        response_body (Optional[Type[List[ninja.Schema]]], optional): Schema for
-            serializing the response body. Defaults to None. If not provided,
-            inherits from `ModelViewSet`s `default_response_body`, wrapped in a List.
-        queryset_getter (Union[Callable[[], models.QuerySet],
-            Callable[[Any], models.QuerySet], None], optional): Customizes queryset.
-            Defaults to None. If `path` has no parameters, should have the signature
-            () -> QuerySet. If `path` has a "{id}" parameter, (id: Any) -> QuerySet.
-            If not provided, the default manager of the `ModelViewSet`s `model`
-            will be used.
-        pagination_class (Optional[Type[ninja.pagination.PaginationBase]], optional):
-            Pagination class from ninja.pagination. Defaults to LimitOffsetPagination.
-        decorators (Optional[List[Callable]], optional): Decorators for the view.
-            Defaults to [].
-        router_kwargs (Optional[Dict], optional): Additional router arguments.
-            Defaults to {}. Overrides are ignored for 'path', 'methods', and
-            'response'.
-
-    Example:
-    ```python
-    from typing import List
-
-    from ninja_crud import views, viewsets
-
-    from examples.models import Department, Employee
-    from examples.schemas import DepartmentOut, EmployeeOut
-
-
-    class DepartmentViewSet(viewsets.ModelViewSet):
-        model = Department
-        default_response_body = DepartmentOut # Optional
-
-        # Basic usage: List departments
-        # Endpoint: GET /
-        list_departments = views.ListModelView(response_body=List[DepartmentOut])
-
-        # Simplified usage: Inherit default response body from ModelViewSet
-        # Endpoint: GET /
-        list_departments = views.ListModelView()
-
-        # Advanced usage: List employees by department
-        # Endpoint: GET /{id}/employees/
-        list_employees = views.ListModelView(
-            path="/{id}/employees/",
-            response_body=List[EmployeeOut],
-            queryset_getter=lambda id: Employee.objects.filter(department_id=id),
-        )
-    ```
-
-    Note:
-        The attribute name (e.g., `list_departments`) is flexible and customizable.
-        It serves as the name of the route and the operation id in the OpenAPI schema.
-    """
-
     def __init__(
         self,
         path: str = "/",
-        query_parameters: Optional[Type[Schema]] = None,
-        response_body: Optional[Type[List[Schema]]] = None,
-        queryset_getter: Union[
-            Callable[[], QuerySet], Callable[[Any], QuerySet], None
+        path_parameters: Optional[Type[ninja.Schema]] = None,
+        query_parameters: Optional[Type[ninja.Schema]] = None,
+        response_body: Optional[Type[List[ninja.Schema]]] = None,
+        get_queryset: Optional[
+            Callable[[Optional[ninja.Schema]], django.db.models.QuerySet]
         ] = None,
-        pagination_class: Optional[Type[PaginationBase]] = LimitOffsetPagination,
+        pagination_class: Optional[
+            Type[ninja.pagination.PaginationBase]
+        ] = ninja.pagination.LimitOffsetPagination,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
     ) -> None:
         super().__init__(
             method=HTTPMethod.GET,
             path=path,
+            path_parameters=path_parameters,
             query_parameters=query_parameters,
             request_body=None,
             response_body=response_body,
-            response_status=HTTPStatus.OK,
+            response_status=http.HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
-
-        PathValidator.validate(path=path, allow_no_parameters=True)
-        QuerySetGetterValidator.validate(queryset_getter=queryset_getter, path=path)
-
-        self.queryset_getter = queryset_getter
+        self.get_queryset = get_queryset or self.default_get_queryset
         self.pagination_class = pagination_class
         if self.pagination_class:
-            self.decorators.append(paginate(self.pagination_class))
+            self.decorators.append(ninja.pagination.paginate(self.pagination_class))
 
-    def handle_request(
+    def default_get_queryset(
         self,
-        request: HttpRequest,
-        path_parameters: Optional[Schema],
-        query_parameters: Optional[Schema],
-        request_body: Optional[Schema],
-    ) -> QuerySet:
-        if path_parameters:
-            self.model_viewset_class.model.objects.get(**path_parameters.dict())
+        path_parameters: Optional[ninja.Schema],
+    ) -> django.db.models.QuerySet:
+        return self.model_viewset_class.model.objects.get_queryset()
 
-        if self.queryset_getter:
-            queryset_getter_kwargs = path_parameters.dict() if path_parameters else {}
-            queryset = self.queryset_getter(**queryset_getter_kwargs)
-        else:
-            queryset = self.model_viewset_class.model.objects.get_queryset()
-
+    @staticmethod
+    def filter_queryset(
+        queryset: django.db.models.QuerySet,
+        query_parameters: Optional[ninja.Schema],
+    ) -> django.db.models.QuerySet:
         if query_parameters:
-            if isinstance(query_parameters, FilterSchema):
+            if isinstance(query_parameters, ninja.FilterSchema):
                 queryset = query_parameters.filter(queryset)
             else:
                 queryset = queryset.filter(**query_parameters.dict(exclude_unset=True))
+        return queryset
+
+    def handle_request(
+        self,
+        request: django.http.HttpRequest,
+        path_parameters: Optional[ninja.Schema],
+        query_parameters: Optional[ninja.Schema],
+        request_body: Optional[ninja.Schema],
+    ) -> django.db.models.QuerySet:
+        if path_parameters:
+            self.model_viewset_class.model.objects.get(**path_parameters.dict())
+
+        queryset = self.get_queryset(path_parameters)
+        queryset = self.filter_queryset(queryset, query_parameters)
 
         return queryset
 

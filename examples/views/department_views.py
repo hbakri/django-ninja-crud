@@ -22,12 +22,14 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
     list_employees = views.ListModelView(
         path="/{id}/employees/",
-        queryset_getter=lambda id: Employee.objects.filter(department_id=id),
+        get_queryset=lambda path_parameters: Employee.objects.filter(
+            department_id=path_parameters.id
+        ),
         response_body=List[EmployeeOut],
     )
     create_employee = views.CreateModelView(
         path="/{id}/employees/",
-        model_factory=lambda id: Employee(department_id=id),
+        create_model=lambda path_parameters: Employee(department_id=path_parameters.id),
         request_body=EmployeeIn,
         response_body=EmployeeOut,
     )

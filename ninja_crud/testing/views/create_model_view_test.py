@@ -100,7 +100,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         """
         super().__init__(model_view_class=CreateModelView)
         self.view_test_manager = ViewTestManager(
-            simulate_request=self.handle_request,
+            simulate_request=self.simulate_request,
             path_parameters=path_parameters,
             headers=headers,
             payloads=payloads,
@@ -132,9 +132,13 @@ class CreateModelViewTest(AbstractModelViewTest):
         self.model_viewset_test_case.assertIsInstance(content, dict)
         self.model_viewset_test_case.assertIn("id", content)
 
-        if self.model_view.model_factory is not None:
-            args = [None] if "{id}" in self.model_view.path else []
-            model_class = self.model_view.model_factory(*args).__class__
+        if self.model_view.create_model is not None:
+            path_parameters = (
+                self.model_view.path_parameters(**path_parameters)
+                if self.model_view.path_parameters
+                else None
+            )
+            model_class = self.model_view.create_model(path_parameters).__class__
         else:
             model_class = self.model_viewset_test_case.model_viewset_class.model
         model = model_class.objects.get(id=content["id"])

@@ -4,7 +4,6 @@ from typing import Optional, Type
 from django.db.models import Model
 from ninja import Router, Schema
 
-from ninja_crud import utils
 from ninja_crud.views import AbstractModelView
 
 
@@ -84,9 +83,6 @@ class ModelViewSet:
         super().__init_subclass__(**kwargs)
 
         if hasattr(cls, "model"):
-            cls._validate_model_class()
-            cls._validate_request_body_class(optional=True)
-            cls._validate_response_body_class(optional=True)
             cls._bind_model_views()
 
     @classmethod
@@ -95,8 +91,7 @@ class ModelViewSet:
         Binds instances of `AbstractModelView` to the ModelViewSet subclass.
 
         This allows the views to access the ModelViewSet subclass via the
-        `model_viewset_class` attribute, and access default schemas via the
-        `default_request_body` and `default_response_body` attributes.
+        `model_viewset_class` attribute.
 
         Note:
             This method is called automatically during the subclass initialization of
@@ -129,49 +124,3 @@ class ModelViewSet:
         )
         for name, view in ordered_view_attributes:
             view.register_route(router, route_name=name)
-
-    @classmethod
-    def _validate_model_class(cls) -> None:
-        """
-        Validates that the `model` attribute is a subclass of `Model`.
-
-        Raises:
-            - ValueError: If the attribute is not set.
-            - TypeError: If the attribute is not a subclass of `Model`.
-        """
-        utils.validate_class_attribute_type(cls, "model", expected_type=Type[Model])
-
-    @classmethod
-    def _validate_request_body_class(cls, optional: bool = True) -> None:
-        """
-        Validates that the `default_request_body` attribute is a subclass of `Schema`.
-
-        Parameters:
-            - optional (bool, optional): Whether the attribute is optional. Defaults to `True`.
-
-        Raises:
-            - ValueError: If the attribute is not optional and is not set.
-            - TypeError: If the attribute is not a subclass of `Schema`.
-        """
-        utils.validate_class_attribute_type(
-            cls, "default_request_body", expected_type=Type[Schema], optional=optional
-        )
-
-    @classmethod
-    def _validate_response_body_class(cls, optional: bool = True) -> None:
-        """
-        Validates that the `default_response_body` attribute is a subclass of `Schema`.
-
-        Parameters:
-            - optional (bool, optional): Whether the attribute is optional. Defaults to `True`.
-
-        Raises:
-            - ValueError: If the attribute is not optional and is not set.
-            - TypeError: If the attribute is not a subclass of `Schema`.
-        """
-        utils.validate_class_attribute_type(
-            cls,
-            "default_response_body",
-            expected_type=Type[Schema],
-            optional=optional,
-        )

@@ -104,7 +104,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         """
         super().__init__(model_view_class=RetrieveModelView)
         self.view_test_manager = ViewTestManager(
-            simulate_request=self.handle_request,
+            simulate_request=self.simulate_request,
             path_parameters=path_parameters,
             headers=headers,
         )
@@ -150,15 +150,10 @@ class RetrieveModelViewTest(AbstractModelViewTest):
             if self.model_view.path_parameters
             else None
         )
-        query_parameters = (
-            self.model_view.query_parameters(**query_parameters)
-            if self.model_view.query_parameters
-            else None
-        )
         model = self.model_view.handle_request(
             request=response.wsgi_request,  # type: ignore
             path_parameters=path_parameters,
-            query_parameters=query_parameters,
+            query_parameters=None,
             request_body=None,
         )
         schema = self.model_view.response_body.from_orm(model)
