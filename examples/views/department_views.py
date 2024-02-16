@@ -29,9 +29,11 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     )
     create_employee = views.CreateModelView(
         path="/{id}/employees/",
-        create_model=lambda path_parameters: Employee(department_id=path_parameters.id),
         request_body=EmployeeIn,
         response_body=EmployeeOut,
+        create_model=lambda request, path_parameters: Employee(
+            department_id=path_parameters.id
+        ),
     )
 
 

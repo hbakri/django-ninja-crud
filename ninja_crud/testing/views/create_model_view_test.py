@@ -144,7 +144,10 @@ class CreateModelViewTest(AbstractModelViewTest):
             if self.model_view.path_parameters
             else None
         )
-        model_class = self.model_view.create_model(path_parameters).__class__
+        model_class = self.model_view.create_model(
+            response.wsgi_request,
+            path_parameters,  # type: ignore
+        ).__class__
         model = model_class.objects.get(id=content["id"])
         schema = self.model_view.response_body.from_orm(model)
         return json.loads(schema.json())

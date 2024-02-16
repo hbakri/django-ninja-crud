@@ -11,6 +11,58 @@ from ninja_crud.views.enums import HTTPMethod
 
 
 class ListModelView(AbstractModelView):
+    """
+    A view class that handles listing model instances.
+
+    Args:
+        path (str, optional): View path. Defaults to "/{id}".
+        path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing path parameters. Automatically inferred from the path
+            and the fields of the `ModelViewSet`'s associated model if not provided.
+            Defaults to None.
+        query_parameters (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing query parameters. Defaults to None.
+        response_body (Optional[Type[List[ninja.Schema]]], optional): Schema for
+            serializing the response body. Inherits `ModelViewSet`'s default if
+            unspecified. Defaults to None.
+        get_queryset (Optional[Callable[[Optional[ninja.Schema]],
+            django.db.models.QuerySet]], optional):
+            Function to retrieve the queryset. Defaults to `default_get_queryset`.
+            Should have the signature (path_parameters: Optional[Schema]) -> QuerySet.
+        pagination_class (Optional[Type[ninja.pagination.PaginationBase]], optional):
+            Pagination class. Defaults to `ninja.pagination.LimitOffsetPagination`.
+        decorators (Optional[List[Callable]], optional): Decorators for the view.
+            Defaults to [].
+        router_kwargs (Optional[Dict], optional): Additional router arguments, with
+            overrides for 'path', 'methods', and 'response' being ignored. Defaults
+            to {}.
+
+    Raises:
+        ninja.errors.ValidationError: For request components validation issues.
+
+    Important:
+        Exceptions above are not handled by this view. Please define exception handlers
+        in your Django Ninja app for appropriate error management, ensuring responses
+        fit your app's needs and conventions.
+
+    Example Usage:
+    ```python
+    list_departments = views.ListModelView(
+        response_body=List[DepartmentResponseBody],
+    )
+
+    # or with custom get_queryset logic
+    list_departments = views.ListModelView(
+        response_body=List[DepartmentResponseBody],
+        get_queryset=lambda path_parameters: Department.objects.all(),
+    )
+    ```
+
+    Note:
+        The attribute name (e.g., `list_departments`) determines the route's name
+        and operation ID in the OpenAPI schema, allowing easy API documentation.
+    """
+
     def __init__(
         self,
         path: str = "/",
@@ -46,6 +98,20 @@ class ListModelView(AbstractModelView):
         self,
         path_parameters: Optional[ninja.Schema],
     ) -> django.db.models.QuerySet:
+        """
+        Default function to retrieve the queryset.
+
+        This method can be overridden with custom logic to retrieve the queryset,
+        allowing for advanced retrieval logic, such as adding annotations, filtering
+        based on request specifics, or implementing permissions checks, to suit specific
+        requirements and potentially improve efficiency and security.
+
+        Args:
+            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
+
+        Returns:
+            django.db.models.QuerySet: The queryset to be retrieved.
+        """
         return self.model_viewset_class.model.objects.get_queryset()
 
     @staticmethod
@@ -71,9 +137,7 @@ class ListModelView(AbstractModelView):
             self.model_viewset_class.model.objects.get(**path_parameters.dict())
 
         queryset = self.get_queryset(path_parameters)
-        queryset = self.filter_queryset(queryset, query_parameters)
-
-        return queryset
+        return self.filter_queryset(queryset, query_parameters)
 
     def _inherit_model_viewset_class_attributes(self) -> None:
         if self.response_body is None:

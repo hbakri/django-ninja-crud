@@ -43,8 +43,8 @@ class ItemViewSet(ModelViewSet):
         decorators=[user_is_collection_creator],
     )
     update_item = UpdateModelView(
-        pre_save=lambda request, old_instance, new_instance: None,
-        post_save=lambda request, old_instance, new_instance: None,
+        pre_save=lambda request, path_parameters, instance: None,
+        post_save=lambda request, path_parameters, instance: None,
         decorators=[user_is_collection_creator],
     )
     delete_item = DeleteModelView(decorators=[user_is_collection_creator])

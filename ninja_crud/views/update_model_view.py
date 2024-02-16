@@ -1,4 +1,3 @@
-import copy
 import http
 from typing import Callable, Dict, List, Optional, Type
 
@@ -31,14 +30,14 @@ class UpdateModelView(AbstractModelView):
             django.db.models.Model]], optional):
             Function to retrieve the model instance. Defaults to `default_get_model`.
             Should have the signature (path_parameters: Optional[Schema]) -> Model.
-        pre_save (Optional[Callable[[django.http.HttpRequest, django.db.models.Model,
+        pre_save (Optional[Callable[[django.http.HttpRequest, Optional[ninja.Schema],
             django.db.models.Model], None]], optional):
             Hook executed before saving the updated instance. Should have the signature
-            (request: HttpRequest, old_instance: Model, new_instance: Model) -> None.
-        post_save (Optional[Callable[[django.http.HttpRequest, django.db.models.Model,
+            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model) -> None.
+        post_save (Optional[Callable[[django.http.HttpRequest, Optional[ninja.Schema],
             django.db.models.Model], None]], optional):
             Hook executed after saving the updated instance. Should have the signature
-            (request: HttpRequest, old_instance: Model, new_instance: Model) -> None.
+            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model) -> None.
         decorators (Optional[List[Callable]], optional): Decorators for the view.
             Defaults to [].
         router_kwargs (Optional[Dict], optional): Additional router arguments, with
@@ -72,8 +71,8 @@ class UpdateModelView(AbstractModelView):
         request_body=DepartmentRequestBody,
         response_body=DepartmentResponseBody,
         get_model=lambda path_parameters: Department.objects.get(id=path_parameters.id),
-        pre_save=lambda request, old_instance, new_instance: None,
-        post_save=lambda request, old_instance, new_instance: None,
+        pre_save=lambda request, path_parameters, instance: None,
+        post_save=lambda request, path_parameters, instance: None,
     )
     ```
 
@@ -96,7 +95,7 @@ class UpdateModelView(AbstractModelView):
             Callable[
                 [
                     django.http.HttpRequest,
-                    django.db.models.Model,
+                    Optional[ninja.Schema],
                     django.db.models.Model,
                 ],
                 None,
@@ -106,7 +105,7 @@ class UpdateModelView(AbstractModelView):
             Callable[
                 [
                     django.http.HttpRequest,
-                    django.db.models.Model,
+                    Optional[ninja.Schema],
                     django.db.models.Model,
                 ],
                 None,
@@ -157,32 +156,35 @@ class UpdateModelView(AbstractModelView):
             **(path_parameters.dict() if path_parameters else {})
         )
 
+    @staticmethod
     def default_pre_save(
-        self,
         request: django.http.HttpRequest,
-        old_instance: django.db.models.Model,
-        new_instance: django.db.models.Model,
+        path_parameters: Optional[ninja.Schema],
+        instance: django.db.models.Model,
     ) -> None:
         """
         Default pre-save hook that is called before the model instance is saved.
-        No-op by default.
+        Full model validation is performed by default with `instance.full_clean()`.
 
         This method can be overridden with custom pre-save logic, such as implementing
         additional checks, permissions, or side effects.
 
         Args:
             request (django.http.HttpRequest): The request object.
-            old_instance (django.db.models.Model): The original model instance.
-            new_instance (django.db.models.Model): The updated model instance, with
-                the changes already applied but not yet validated or saved.
-        """
-        pass
+            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
+            instance (django.db.models.Model): The model instance to be updated, with
+                the changes already applied but not yet saved.
 
+        Returns:
+            None
+        """
+        instance.full_clean()
+
+    @staticmethod
     def default_post_save(
-        self,
         request: django.http.HttpRequest,
-        old_instance: django.db.models.Model,
-        new_instance: django.db.models.Model,
+        path_parameters: Optional[ninja.Schema],
+        instance: django.db.models.Model,
     ) -> None:
         """
         Default post-save hook that is called after the model instance is saved.
@@ -193,9 +195,12 @@ class UpdateModelView(AbstractModelView):
 
         Args:
             request (django.http.HttpRequest): The request object.
-            old_instance (django.db.models.Model): The original model instance.
-            new_instance (django.db.models.Model): The updated model instance, with
+            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
+            instance (django.db.models.Model): The updated model instance, with
                 the changes already applied and saved.
+
+        Returns:
+            None
         """
         pass
 
@@ -206,21 +211,19 @@ class UpdateModelView(AbstractModelView):
         query_parameters: Optional[ninja.Schema],
         request_body: Optional[ninja.Schema],
     ) -> django.db.models.Model:
-        new_instance = self.get_model(path_parameters)
-        old_instance = copy.copy(new_instance)
+        instance = self.get_model(path_parameters)
 
         if request_body:
             for field, value in request_body.dict(exclude_unset=True).items():
-                setattr(new_instance, field, value)
+                setattr(instance, field, value)
 
-        self.pre_save(request, old_instance, new_instance)
+        self.pre_save(request, path_parameters, instance)
 
-        new_instance.full_clean()
-        new_instance.save()
+        instance.save()
 
-        self.post_save(request, old_instance, new_instance)
+        self.post_save(request, path_parameters, instance)
 
-        return new_instance
+        return instance
 
     def _inherit_model_viewset_class_attributes(self) -> None:
         if self.request_body is None:

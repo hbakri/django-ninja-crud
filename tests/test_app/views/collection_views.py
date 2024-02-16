@@ -45,11 +45,11 @@ class CollectionViewSet(ModelViewSet):
     create_collection = CreateModelView(
         request_body=CollectionIn,
         response_body=CollectionOut,
-        create_model=lambda path_parameters: Collection(),
-        pre_save=lambda request, instance: setattr(
-            instance, "created_by", request.auth
+        create_model=lambda request, path_parameters: Collection(
+            created_by=request.auth
         ),
-        post_save=lambda request, instance: None,
+        pre_save=lambda request, path_parameters, instance: instance.full_clean(),
+        post_save=lambda request, path_parameters, instance: None,
     )
     retrieve_collection = RetrieveModelView(response_body=CollectionOut)
     update_collection = UpdateModelView(
@@ -73,11 +73,13 @@ class CollectionViewSet(ModelViewSet):
     )
     create_collection_item = CreateModelView(
         path="/{id}/items/",
-        create_model=lambda path_parameters: Item(collection_id=path_parameters.id),
+        create_model=lambda request, path_parameters: Item(
+            collection_id=path_parameters.id
+        ),
         request_body=ItemIn,
         response_body=ItemOut,
-        pre_save=lambda request, instance: None,
-        post_save=lambda request, instance: None,
+        pre_save=lambda request, path_parameters, instance: instance.full_clean(),
+        post_save=lambda request, path_parameters, instance: None,
         decorators=[user_is_creator],
     )
 
