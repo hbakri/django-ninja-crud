@@ -1,9 +1,9 @@
-import http
+from http import HTTPStatus
 from typing import Callable, Dict, List, Optional, Type
 
-import django.db.models
-import django.http
-import ninja
+from django.db.models import Model
+from django.http import HttpRequest
+from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
@@ -81,34 +81,15 @@ class CreateModelView(AbstractModelView):
     def __init__(
         self,
         path: str = "/",
-        path_parameters: Optional[ninja.Schema] = None,
-        request_body: Optional[Type[ninja.Schema]] = None,
-        response_body: Optional[Type[ninja.Schema]] = None,
-        create_model: Optional[
-            Callable[
-                [django.http.HttpRequest, Optional[ninja.Schema]],
-                django.db.models.Model,
-            ]
-        ] = None,
+        path_parameters: Optional[Schema] = None,
+        request_body: Optional[Type[Schema]] = None,
+        response_body: Optional[Type[Schema]] = None,
+        create_model: Optional[Callable[[HttpRequest, Optional[Schema]], Model]] = None,
         pre_save: Optional[
-            Callable[
-                [
-                    django.http.HttpRequest,
-                    Optional[ninja.Schema],
-                    django.db.models.Model,
-                ],
-                None,
-            ]
+            Callable[[HttpRequest, Optional[Schema], Model], None]
         ] = None,
         post_save: Optional[
-            Callable[
-                [
-                    django.http.HttpRequest,
-                    Optional[ninja.Schema],
-                    django.db.models.Model,
-                ],
-                None,
-            ]
+            Callable[[HttpRequest, Optional[Schema], Model], None]
         ] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
@@ -120,7 +101,7 @@ class CreateModelView(AbstractModelView):
             query_parameters=None,
             request_body=request_body,
             response_body=response_body,
-            response_status=http.HTTPStatus.CREATED,
+            response_status=HTTPStatus.CREATED,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -130,9 +111,9 @@ class CreateModelView(AbstractModelView):
 
     def default_create_model(
         self,
-        request: django.http.HttpRequest,
-        path_parameters: Optional[ninja.Schema],
-    ) -> django.db.models.Model:
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+    ) -> Model:
         """
         Default function to create the model instance.
 
@@ -151,9 +132,9 @@ class CreateModelView(AbstractModelView):
 
     @staticmethod
     def default_pre_save(
-        request: django.http.HttpRequest,
-        path_parameters: Optional[ninja.Schema],
-        instance: django.db.models.Model,
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        instance: Model,
     ) -> None:
         """
         Default pre-save hook that is called before the model instance is created.
@@ -175,9 +156,9 @@ class CreateModelView(AbstractModelView):
 
     @staticmethod
     def default_post_save(
-        request: django.http.HttpRequest,
-        path_parameters: Optional[ninja.Schema],
-        instance: django.db.models.Model,
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        instance: Model,
     ) -> None:
         """
         Default post-save hook that is called after the model instance is created.
@@ -198,11 +179,11 @@ class CreateModelView(AbstractModelView):
 
     def handle_request(
         self,
-        request: django.http.HttpRequest,
-        path_parameters: Optional[ninja.Schema],
-        query_parameters: Optional[ninja.Schema],
-        request_body: Optional[ninja.Schema],
-    ) -> django.db.models.Model:
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
+    ) -> Model:
         if path_parameters:
             self.model_viewset_class.model.objects.get(**path_parameters.dict())
 

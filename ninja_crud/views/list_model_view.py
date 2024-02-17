@@ -1,10 +1,10 @@
-import http
+from http import HTTPStatus
 from typing import Callable, Dict, List, Optional, Type
 
-import django.db.models
-import django.http
-import ninja
-import ninja.pagination
+from django.db.models import QuerySet
+from django.http import HttpRequest
+from ninja import FilterSchema, Schema
+from ninja.pagination import LimitOffsetPagination, PaginationBase, paginate
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
@@ -66,15 +66,11 @@ class ListModelView(AbstractModelView):
     def __init__(
         self,
         path: str = "/",
-        path_parameters: Optional[Type[ninja.Schema]] = None,
-        query_parameters: Optional[Type[ninja.Schema]] = None,
-        response_body: Optional[Type[List[ninja.Schema]]] = None,
-        get_queryset: Optional[
-            Callable[[Optional[ninja.Schema]], django.db.models.QuerySet]
-        ] = None,
-        pagination_class: Optional[
-            Type[ninja.pagination.PaginationBase]
-        ] = ninja.pagination.LimitOffsetPagination,
+        path_parameters: Optional[Type[Schema]] = None,
+        query_parameters: Optional[Type[Schema]] = None,
+        response_body: Optional[Type[List[Schema]]] = None,
+        get_queryset: Optional[Callable[[Optional[Schema]], QuerySet]] = None,
+        pagination_class: Optional[Type[PaginationBase]] = LimitOffsetPagination,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
     ) -> None:
@@ -85,19 +81,19 @@ class ListModelView(AbstractModelView):
             query_parameters=query_parameters,
             request_body=None,
             response_body=response_body,
-            response_status=http.HTTPStatus.OK,
+            response_status=HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
         self.get_queryset = get_queryset or self.default_get_queryset
         self.pagination_class = pagination_class
         if self.pagination_class:
-            self.decorators.append(ninja.pagination.paginate(self.pagination_class))
+            self.decorators.append(paginate(self.pagination_class))
 
     def default_get_queryset(
         self,
-        path_parameters: Optional[ninja.Schema],
-    ) -> django.db.models.QuerySet:
+        path_parameters: Optional[Schema],
+    ) -> QuerySet:
         """
         Default function to retrieve the queryset.
 
@@ -116,11 +112,11 @@ class ListModelView(AbstractModelView):
 
     @staticmethod
     def filter_queryset(
-        queryset: django.db.models.QuerySet,
-        query_parameters: Optional[ninja.Schema],
-    ) -> django.db.models.QuerySet:
+        queryset: QuerySet,
+        query_parameters: Optional[Schema],
+    ) -> QuerySet:
         if query_parameters:
-            if isinstance(query_parameters, ninja.FilterSchema):
+            if isinstance(query_parameters, FilterSchema):
                 queryset = query_parameters.filter(queryset)
             else:
                 queryset = queryset.filter(**query_parameters.dict(exclude_unset=True))
@@ -128,11 +124,11 @@ class ListModelView(AbstractModelView):
 
     def handle_request(
         self,
-        request: django.http.HttpRequest,
-        path_parameters: Optional[ninja.Schema],
-        query_parameters: Optional[ninja.Schema],
-        request_body: Optional[ninja.Schema],
-    ) -> django.db.models.QuerySet:
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
+    ) -> QuerySet:
         if path_parameters:
             self.model_viewset_class.model.objects.get(**path_parameters.dict())
 
