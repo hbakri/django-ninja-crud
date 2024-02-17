@@ -1,9 +1,9 @@
-import http
+from http import HTTPStatus
 from typing import Callable, Dict, List, Optional
 
-import django.db.models
-import django.http
-import ninja
+from django.db.models import Model
+from django.http import HttpRequest
+from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
@@ -73,29 +73,13 @@ class DeleteModelView(AbstractModelView):
     def __init__(
         self,
         path: str = "/{id}",
-        path_parameters: Optional[ninja.Schema] = None,
-        get_model: Optional[
-            Callable[[Optional[ninja.Schema]], django.db.models.Model]
-        ] = None,
+        path_parameters: Optional[Schema] = None,
+        get_model: Optional[Callable[[Optional[Schema]], Model]] = None,
         pre_delete: Optional[
-            Callable[
-                [
-                    django.http.HttpRequest,
-                    Optional[ninja.Schema],
-                    django.db.models.Model,
-                ],
-                None,
-            ]
+            Callable[[HttpRequest, Optional[Schema], Model], None]
         ] = None,
         post_delete: Optional[
-            Callable[
-                [
-                    django.http.HttpRequest,
-                    Optional[ninja.Schema],
-                    django.db.models.Model,
-                ],
-                None,
-            ]
+            Callable[[HttpRequest, Optional[Schema], Model], None]
         ] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
@@ -107,7 +91,7 @@ class DeleteModelView(AbstractModelView):
             query_parameters=None,
             request_body=None,
             response_body=None,
-            response_status=http.HTTPStatus.NO_CONTENT,
+            response_status=HTTPStatus.NO_CONTENT,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
@@ -117,8 +101,8 @@ class DeleteModelView(AbstractModelView):
 
     def default_get_model(
         self,
-        path_parameters: Optional[ninja.Schema],
-    ) -> django.db.models.Model:
+        path_parameters: Optional[Schema],
+    ) -> Model:
         """
         Default function to retrieve the model instance to be deleted.
 
@@ -144,9 +128,9 @@ class DeleteModelView(AbstractModelView):
 
     @staticmethod
     def default_pre_delete(
-        request: django.http.HttpRequest,
-        path_parameters: Optional[ninja.Schema],
-        instance: django.db.models.Model,
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        instance: Model,
     ) -> None:
         """
         Default pre-delete hook that is called before the model instance is deleted.
@@ -167,9 +151,9 @@ class DeleteModelView(AbstractModelView):
 
     @staticmethod
     def default_post_delete(
-        request: django.http.HttpRequest,
-        path_parameters: Optional[ninja.Schema],
-        instance: django.db.models.Model,
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        instance: Model,
     ) -> None:
         """
         Default post-delete hook that is called after the model instance is deleted.
@@ -190,10 +174,10 @@ class DeleteModelView(AbstractModelView):
 
     def handle_request(
         self,
-        request: django.http.HttpRequest,
-        path_parameters: Optional[ninja.Schema],
-        query_parameters: Optional[ninja.Schema],
-        request_body: Optional[ninja.Schema],
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
     ) -> None:
         instance = self.get_model(path_parameters)
 
