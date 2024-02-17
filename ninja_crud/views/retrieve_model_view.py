@@ -1,9 +1,9 @@
 import http
 from typing import Callable, Dict, List, Optional, Type
 
-import django.db.models
-import django.http
-import ninja
+from django.db.models import Model
+from django.http import HttpRequest
+from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
@@ -63,11 +63,9 @@ class RetrieveModelView(AbstractModelView):
     def __init__(
         self,
         path: str = "/{id}",
-        path_parameters: Optional[Type[ninja.Schema]] = None,
-        response_body: Optional[Type[ninja.Schema]] = None,
-        get_model: Optional[
-            Callable[[Optional[ninja.Schema]], django.db.models.Model]
-        ] = None,
+        path_parameters: Optional[Type[Schema]] = None,
+        response_body: Optional[Type[Schema]] = None,
+        get_model: Optional[Callable[[Optional[Schema]], Model]] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
     ) -> None:
@@ -84,10 +82,7 @@ class RetrieveModelView(AbstractModelView):
         )
         self.get_model = get_model or self.default_get_model
 
-    def default_get_model(
-        self,
-        path_parameters: Optional[ninja.Schema],
-    ) -> django.db.models.Model:
+    def default_get_model(self, path_parameters: Optional[Schema]) -> Model:
         """
         Default function to retrieve the model instance.
 
@@ -113,11 +108,11 @@ class RetrieveModelView(AbstractModelView):
 
     def handle_request(
         self,
-        request: django.http.HttpRequest,
-        path_parameters: Optional[ninja.Schema],
-        query_parameters: Optional[ninja.Schema],
-        request_body: Optional[ninja.Schema],
-    ) -> django.db.models.Model:
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
+    ) -> Model:
         return self.get_model(path_parameters)
 
     def _inherit_model_viewset_class_attributes(self) -> None:
