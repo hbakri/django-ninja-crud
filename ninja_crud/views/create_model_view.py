@@ -58,13 +58,15 @@ class CreateModelView(AbstractModelView):
 
     Example Usage:
     ```python
+    # Basic usage using request and response schemas
     create_department = views.CreateModelView(
         request_body=DepartmentRequestBody,
         response_body=DepartmentResponseBody,
     )
 
-    # or with custom create_model, pre_save, and post_save logic
+    # Advanced usage with custom create_model, pre_save, and post_save logic
     create_department = views.CreateModelView(
+        path="/",
         request_body=DepartmentRequestBody,
         response_body=DepartmentResponseBody,
         create_model=lambda request, path_parameters: Department(),

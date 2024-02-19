@@ -38,18 +38,23 @@ class RetrieveModelView(AbstractModelView):
         ninja.errors.ValidationError: For request components validation issues.
 
     Important:
-        Exceptions above are not handled by this view. Please define exception handlers
-        in your Django Ninja app for appropriate error management, ensuring responses
-        fit your app's needs and conventions.
+        This view does not automatically handle exceptions. It's recommended to
+        implement appropriate
+        [Exception Handlers](https://django-ninja.dev/guides/errors/) in your project to
+        manage such cases effectively, according to your application's needs and
+        conventions. See the [Setup](https://django-ninja-crud.readme.io/docs/03-setup)
+        guide for more information.
 
     Example Usage:
     ```python
+    # Basic usage using response schema
     retrieve_department = views.RetrieveModelView(
         response_body=DepartmentResponseBody,
     )
 
-    # or with custom get_model logic
+    # Advanced usage with custom get_model logic
     retrieve_department = views.RetrieveModelView(
+        path="/{id}",
         response_body=DepartmentResponseBody,
         get_model=lambda path_parameters: Department.objects.get(id=path_parameters.id),
     )

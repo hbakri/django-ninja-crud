@@ -55,9 +55,10 @@ class DeleteModelView(AbstractModelView):
 
     Example Usage:
     ```python
+    # Basic usage
     delete_department = views.DeleteModelView()
 
-    # or with custom get_model, pre_delete, and post_delete logic
+    # Advanced usage with custom get_model, pre_delete, and post_delete logic
     delete_department = views.DeleteModelView(
         get_model=lambda path_parameters: Department.objects.get(id=path_parameters.id),
         pre_delete=lambda request, path_parameters, instance: None,

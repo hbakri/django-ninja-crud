@@ -41,17 +41,21 @@ class ListModelView(AbstractModelView):
         ninja.errors.ValidationError: For request components validation issues.
 
     Important:
-        Exceptions above are not handled by this view. Please define exception handlers
-        in your Django Ninja app for appropriate error management, ensuring responses
-        fit your app's needs and conventions.
+        This view does not automatically handle exceptions. It's recommended to
+        implement appropriate
+        [Exception Handlers](https://django-ninja.dev/guides/errors/) in your project to
+        manage such cases effectively, according to your application's needs and
+        conventions. See the [Setup](https://django-ninja-crud.readme.io/docs/03-setup)
+        guide for more information.
 
     Example Usage:
     ```python
+    # Basic usage using response schema
     list_departments = views.ListModelView(
         response_body=List[DepartmentResponseBody],
     )
 
-    # or with custom get_queryset logic
+    # Advanced usage with custom get_queryset logic
     list_departments = views.ListModelView(
         response_body=List[DepartmentResponseBody],
         get_queryset=lambda path_parameters: Department.objects.all(),

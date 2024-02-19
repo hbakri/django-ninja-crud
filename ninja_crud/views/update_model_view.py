@@ -61,12 +61,13 @@ class UpdateModelView(AbstractModelView):
 
     Example Usage:
     ```python
+    # Basic usage using request and response schemas
     update_department = UpdateModelView(
         request_body=DepartmentRequestBody,
         response_body=DepartmentResponseBody,
     )
 
-    # or with custom get_model, pre_save, and post_save logic
+    # Advanced usage with custom get_model, pre_save, and post_save logic
     update_department = UpdateModelView(
         request_body=DepartmentRequestBody,
         response_body=DepartmentResponseBody,
