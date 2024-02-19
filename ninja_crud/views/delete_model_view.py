@@ -1,4 +1,4 @@
-from http import HTTPStatus
+import http
 from typing import Callable, Dict, List, Optional
 
 from django.db.models import Model
@@ -92,7 +92,7 @@ class DeleteModelView(AbstractModelView):
             query_parameters=None,
             request_body=None,
             response_body=None,
-            response_status=HTTPStatus.NO_CONTENT,
+            response_status=http.HTTPStatus.NO_CONTENT,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )

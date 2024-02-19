@@ -14,30 +14,31 @@ logger = logging.getLogger(__name__)
 
 class AbstractView(abc.ABC):
     """
-    Abstract base class for creating standard HTTP views using Django Ninja.
+    An abstract view class that handles common patterns and functionality.
 
-    This class abstracts common patterns and functionality, providing a streamlined
-    approach to implementing consistent API endpoints across Django Ninja applications.
-    It handles HTTP route definition, request handling, and response formatting.
+    This class provides a base for creating views that handle HTTP requests and
+    responses. It includes methods for defining the view's request handling logic,
+    creating the view handler function, registering the view with a router, and
+    configuring the view's routing.
 
     Args:
-        method (HTTPMethod): HTTP method for the route.
-        path (str): Path for the route.
+        method (HTTPMethod): View HTTP method.
+        path (str): View path.
         path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
             deserializing path parameters. Defaults to None.
         query_parameters (Optional[Type[ninja.Schema]], optional): Schema for
             deserializing query parameters. Defaults to None.
-        request_body (Optional[Type[ninja.Schema]], optional): Schema for
-            deserializing the request body. Defaults to None.
-        response_body (Optional[Type[ninja.Schema]], optional): Schema for
-            serializing the response body. Defaults to None.
-        response_status (http.HTTPStatus, optional): HTTP status code for the
-            response. Defaults to http.HTTPStatus.OK.
+        request_body (Optional[Type[ninja.Schema]], optional): Schema for deserializing
+            the request body. Defaults to None.
+        response_body (Optional[Type[ninja.Schema]], optional): Schema for serializing
+            the response body. Defaults to None.
+        response_status (http.HTTPStatus, optional): HTTP status code for the response.
+            Defaults to http.HTTPStatus.OK.
         decorators (Optional[List[Callable]], optional): Decorators for the view.
             Defaults to [].
-        router_kwargs (Optional[Dict], optional): Additional router arguments.
-            Defaults to {}. Overrides are ignored for 'path', 'methods', and
-            'response'.
+        router_kwargs (Optional[Dict], optional): Additional router arguments, with
+            overrides for 'path', 'methods', and 'response' being ignored. Defaults
+            to {}.
 
     Examples:
     ```python

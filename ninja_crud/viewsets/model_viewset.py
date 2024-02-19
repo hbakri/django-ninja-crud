@@ -9,20 +9,25 @@ from ninja_crud.views import AbstractModelView
 
 class ModelViewSet:
     """
-    A viewset offering CRUD operations for a Django model.
-
-    Subclasses should specify the Django model via the `model` class attribute. You
-    can then attach various views (subclasses of `AbstractModelView`) to the subclass to
-    define the CRUD behavior.
+    A viewset offering CRUD (Create, Read, Update, Delete) operations for a Django
+    model. It serves as a foundational class for defining model-specific viewsets with
+    tailored CRUD behavior. By subclassing `ModelViewSet` and attaching
+    `AbstractModelView` subclasses, you create a cohesive API for interacting with a
+    model's data.
 
     Attributes:
-        model (Type[Model]): The Django model class for CRUD operations.
-        default_request_body (Optional[Type[Schema]], optional): The default schema to use for
-            deserializing the request payload. Defaults to None.
-        default_response_body (Optional[Type[Schema]], optional): The default schema to use for
-            serializing the response payload. Defaults to None.
+        model (Type[Model]): The Django model associated with the viewset.
+        default_request_body (Optional[Type[Schema]], optional): The default schema
+            for deserializing the request body. Defaults to None.
+        default_response_body (Optional[Type[Schema]], optional): The default schema
+            for serializing the response body. Defaults to None.
 
-    Example:
+    Usage:
+        Define a `ModelViewSet` subclass, specify the model, and attach CRUD view
+        instances. Finally, use `register_routes` to add the configured routes to a
+        Ninja router, integrating the viewset with your API.
+
+    Example Usage:
     1. Define your `ModelViewSet` and register its routes:
     ```python
     # examples/views/department_views.py
@@ -63,54 +68,41 @@ class ModelViewSet:
     api = NinjaAPI(...)
     api.add_router("departments", department_router)
     ```
-
-    Note:
-        The `register_routes` method must be called to register the CRUD endpoints
-        with a Ninja router. This should be done after defining the viewset.
     """
 
     model: Type[Model]
     default_request_body: Optional[Type[Schema]]
     default_response_body: Optional[Type[Schema]]
 
-    def __init_subclass__(cls, **kwargs):
-        """
-        Special method in Python that is automatically called when a class is subclassed.
-
-        For `ModelViewSet` subclasses, this method validates the class attributes and binds
-        the views to the subclass. It should not be called directly.
-        """
-        super().__init_subclass__(**kwargs)
+    def __init_subclass__(cls, *args, **kwargs) -> None:
+        super().__init_subclass__(*args, **kwargs)
 
         if hasattr(cls, "model"):
             cls._bind_model_views()
 
     @classmethod
-    def _bind_model_views(cls):
+    def _bind_model_views(cls) -> None:
         """
-        Binds instances of `AbstractModelView` to the ModelViewSet subclass.
-
-        This allows the views to access the ModelViewSet subclass via the
-        `model_viewset_class` attribute.
-
-        Note:
-            This method is called automatically during the subclass initialization of
-            `ModelViewSet`. It should not be called directly.
+        Automatically binds `AbstractModelView` instances to the subclass, enabling
+        them to access model and schema information defined in the `ModelViewSet`.
+        This method is internally called and should not be used directly.
         """
-        for _, view_model in inspect.getmembers(cls):
-            if isinstance(view_model, AbstractModelView):
-                view_model.model_viewset_class = cls
+        for _, model_view in inspect.getmembers(
+            cls, lambda member: isinstance(member, AbstractModelView)
+        ):
+            model_view.model_viewset_class = cls
 
     @classmethod
     def register_routes(cls, router: Router) -> None:
         """
-        Register the routes with the given Ninja Router in the order they were defined.
+        Registers the CRUD operation routes with a Ninja Router. This method organizes
+        the routes based on their definition order within the subclass, maintaining a
+        logical API structure. The route names and operation IDs are derived from the
+        attribute names of the `AbstractModelView` instances, ensuring consistent and
+        easily identifiable routes in the OpenAPI schema.
 
-        This method should be called after all the views have been attached to the
-        ModelViewSet subclass.
-
-        Parameters:
-            router (Router): The Ninja Router to register the routes with.
+        Args:
+            router (ninja.Router): The Ninja Router to which the routes will be added.
         """
         view_attributes = {
             name: view

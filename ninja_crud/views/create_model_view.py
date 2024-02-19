@@ -1,4 +1,4 @@
-from http import HTTPStatus
+import http
 from typing import Callable, Dict, List, Optional, Type
 
 from django.db.models import Model
@@ -25,18 +25,21 @@ class CreateModelView(AbstractModelView):
         response_body (Optional[Type[ninja.Schema]], optional): Schema for serializing
             the response body. Inherits `ModelViewSet`'s default if unspecified.
             Defaults to None.
-        create_model (Optional[Callable[[django.http.HttpRequest, Optional[ninja.Schema]],
-            django.db.models.Model]], optional): Function to create the model instance.
-            Defaults to `default_create_model`. Should have the signature
-            (request: HttpRequest, path_parameters: Optional[Schema]) -> Model.
+        create_model (Optional[Callable[[django.http.HttpRequest,
+            Optional[ninja.Schema]], django.db.models.Model]], optional): Function to
+            create the model instance. Defaults to `default_create_model`. Should have
+            the signature (request: HttpRequest, path_parameters: Optional[Schema])
+            -> Model.
         pre_save (Optional[Callable[[django.http.HttpRequest, Optional[ninja.Schema],
             django.db.models.Model], None]], optional):
             Hook executed before saving the instance. Should have the signature
-            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model) -> None.
+            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model)
+            -> None.
         post_save (Optional[Callable[[django.http.HttpRequest, Optional[ninja.Schema],
             django.db.models.Model], None]], optional):
             Hook executed after saving the instance. Should have the signature
-            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model) -> None.
+            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model)
+            -> None.
         decorators (Optional[List[Callable]], optional): Decorators for the view.
             Defaults to [].
         router_kwargs (Optional[Dict], optional): Additional router arguments, with
@@ -103,7 +106,7 @@ class CreateModelView(AbstractModelView):
             query_parameters=None,
             request_body=request_body,
             response_body=response_body,
-            response_status=HTTPStatus.CREATED,
+            response_status=http.HTTPStatus.CREATED,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )

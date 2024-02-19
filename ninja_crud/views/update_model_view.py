@@ -1,4 +1,4 @@
-from http import HTTPStatus
+import http
 from typing import Callable, Dict, List, Optional, Type
 
 from django.db.models import Model
@@ -14,7 +14,7 @@ class UpdateModelView(AbstractModelView):
     A view class that handles updating a model instance.
 
     Args:
-        method (HTTPMethod): View method. Defaults to HTTPMethod.PUT.
+        method (HTTPMethod): View HTTP method. Defaults to HTTPMethod.PUT.
         path (str, optional): View path. Defaults to "/{id}".
         path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
             deserializing path parameters. Automatically inferred from the path
@@ -106,7 +106,7 @@ class UpdateModelView(AbstractModelView):
             query_parameters=None,
             request_body=request_body,
             response_body=response_body,
-            response_status=HTTPStatus.OK,
+            response_status=http.HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )

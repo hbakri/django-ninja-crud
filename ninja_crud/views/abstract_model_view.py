@@ -4,9 +4,9 @@ import re
 import uuid
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Type, Union
 
-import django.db.models
 import ninja
 import pydantic
+from django.db.models import Field, ForeignKey, Model
 
 from ninja_crud.views.abstract_view import AbstractView
 from ninja_crud.views.enums import HTTPMethod
@@ -17,29 +17,26 @@ if TYPE_CHECKING:  # pragma: no cover
 
 class AbstractModelView(AbstractView, abc.ABC):
     """
-    Abstract base class for creating model views for Django Ninja APIs.
-
-    This class provides a template for defining HTTP routes, request handling,
-    and response formation.
+    An abstract view class that handles model operations.
 
     Args:
-        method (HTTPMethod): HTTP method for the route.
-        path (str): Path for the route.
+        method (HTTPMethod): View HTTP method.
+        path (str): View path.
+        path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing path parameters. Defaults to None.
         query_parameters (Optional[Type[ninja.Schema]], optional): Schema for
             deserializing query parameters. Defaults to None.
-        request_body (Optional[Type[ninja.Schema]], optional): Schema for
-            deserializing the request body. Defaults to None.
-        response_body (Optional[Type[ninja.Schema]], optional): Schema for
-            serializing the response body. Defaults to None.
-        response_status (http.HTTPStatus, optional): HTTP status code for the
-            response. Defaults to http.HTTPStatus.OK.
-        decorators (Optional[List[Callable]], optional): List of decorators to
-            apply to the view. Defaults to [].
-        router_kwargs (Optional[Dict], optional): Additional arguments to pass
-            to the router. Defaults to {}. Overrides are allowed for most
-            arguments except 'path', 'methods', and 'response'. If any of these
-            arguments are provided, a warning will be logged and the override
-            will be ignored.
+        request_body (Optional[Type[ninja.Schema]], optional): Schema for deserializing
+            the request body. Defaults to None.
+        response_body (Optional[Type[ninja.Schema]], optional): Schema for serializing
+            the response body. Defaults to None.
+        response_status (http.HTTPStatus, optional): HTTP status code for the response.
+            Defaults to http.HTTPStatus.OK.
+        decorators (Optional[List[Callable]], optional): Decorators for the view.
+            Defaults to [].
+        router_kwargs (Optional[Dict], optional): Additional router arguments, with
+            overrides for 'path', 'methods', and 'response' being ignored. Defaults
+            to {}.
     """
 
     def __init__(
@@ -111,16 +108,11 @@ class AbstractModelView(AbstractView, abc.ABC):
         )
 
     @classmethod
-    def _infer_field_type(
-        cls, model_class: Type[django.db.models.Model], field_name: str
-    ) -> Type:
-        field: django.db.models.Field = model_class._meta.get_field(field_name)
+    def _infer_field_type(cls, model_class: Type[Model], field_name: str) -> Type:
+        field: Field = model_class._meta.get_field(field_name)
 
-        if (
-            isinstance(field, django.db.models.ForeignKey)
-            and field_name == field.attname
-        ):
-            related_model_class: Type[django.db.models.Model] = field.related_model
+        if isinstance(field, ForeignKey) and field_name == field.attname:
+            related_model_class: Type[Model] = field.related_model
             return cls._infer_field_type(
                 model_class=related_model_class,
                 field_name=related_model_class._meta.pk.name,

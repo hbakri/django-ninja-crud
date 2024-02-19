@@ -1,4 +1,4 @@
-from http import HTTPStatus
+import http
 from typing import Callable, Dict, List, Optional, Type
 
 from django.db.models import QuerySet
@@ -85,7 +85,7 @@ class ListModelView(AbstractModelView):
             query_parameters=query_parameters,
             request_body=None,
             response_body=response_body,
-            response_status=HTTPStatus.OK,
+            response_status=http.HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
