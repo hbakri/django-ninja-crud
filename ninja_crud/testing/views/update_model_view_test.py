@@ -45,8 +45,8 @@ class UpdateModelViewTest(AbstractModelViewTest):
         model = Department
 
         update_department_view = views.UpdateModelView(
-            payload_schema=DepartmentIn,
-            response_schema=DepartmentOut
+            request_body=DepartmentIn,
+            response_body=DepartmentOut
         )
     ```
     2. You can test the `update_department_view` like this:
@@ -106,7 +106,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
         """
         super().__init__(model_view_class=UpdateModelView)
         self.view_test_manager = ViewTestManager(
-            handle_request=self.handle_request,
+            simulate_request=self.simulate_request,
             path_parameters=path_parameters,
             headers=headers,
             payloads=payloads,
@@ -145,7 +145,7 @@ class UpdateModelViewTest(AbstractModelViewTest):
     ) -> dict:
         model_class = self.model_viewset_test_case.model_viewset_class.model
         model = model_class.objects.get(id=path_parameters["id"])
-        schema = self.model_view.response_schema.from_orm(model)
+        schema = self.model_view.response_body.from_orm(model)
         return json.loads(schema.json())
 
     def on_failed_request(

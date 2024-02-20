@@ -1,5 +1,5 @@
-from http import HTTPStatus
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
+import http
+from typing import Callable, Dict, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -7,114 +7,119 @@ from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.helpers import utils
-from ninja_crud.views.helpers.types import DetailQuerySetGetter
-from ninja_crud.views.validators.path_validator import PathValidator
-from ninja_crud.views.validators.queryset_getter_validator import (
-    QuerySetGetterValidator,
-)
-
-if TYPE_CHECKING:  # pragma: no cover
-    from ninja_crud.viewsets import ModelViewSet
 
 
 class RetrieveModelView(AbstractModelView):
     """
-    A view class that handles retrieving a specific instance of a model.
-    It allows customization through a queryset getter and also supports decorators.
+    A view class that handles retrieving a model instance.
 
-    Example:
+    Args:
+        path (str, optional): View path. Defaults to "/{id}".
+        path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing path parameters. Automatically inferred from the path
+            and the fields of the `ModelViewSet`'s associated model if not provided.
+            Defaults to None.
+        response_body (Optional[Type[ninja.Schema]], optional): Schema for serializing
+            the response body. Inherits `ModelViewSet`'s default if unspecified.
+            Defaults to None.
+        get_model (Optional[Callable[[Optional[ninja.Schema]], django.db.models.Model]],
+            optional):
+            Function to retrieve the model instance. Defaults to `default_get_model`.
+            Should have the signature (path_parameters: Optional[Schema]) -> Model.
+        decorators (Optional[List[Callable]], optional): Decorators for the view.
+            Defaults to [].
+        router_kwargs (Optional[Dict], optional): Additional router arguments, with
+            overrides for 'path', 'methods', and 'response' being ignored. Defaults
+            to {}.
+
+    Raises:
+        django.db.models.ObjectDoesNotExist: If the instance is not found.
+        django.db.models.MultipleObjectsReturned: If multiple instances are found.
+        ninja.errors.ValidationError: For request components validation issues.
+
+    Important:
+        This view does not automatically handle exceptions. It's recommended to
+        implement appropriate
+        [Exception Handlers](https://django-ninja.dev/guides/errors/) in your project to
+        manage such cases effectively, according to your application's needs and
+        conventions. See the [Setup](https://django-ninja-crud.readme.io/docs/03-setup)
+        guide for more information.
+
+    Example Usage:
     ```python
-    from ninja_crud import views, viewsets
+    # Basic usage using response schema
+    retrieve_department = views.RetrieveModelView(
+        response_body=DepartmentResponseBody,
+    )
 
-    from examples.models import Department
-    from examples.schemas import DepartmentOut
-
-    class DepartmentViewSet(viewsets.ModelViewSet):
-        model = Department
-
-        # Usage: Retrieve a department by id
-        # GET /{id}
-        retrieve_department = views.RetrieveModelView(response_schema=DepartmentOut)
+    # Advanced usage with custom get_model logic
+    retrieve_department = views.RetrieveModelView(
+        path="/{id}",
+        response_body=DepartmentResponseBody,
+        get_model=lambda path_parameters: Department.objects.get(id=path_parameters.id),
+    )
     ```
 
     Note:
-        The attribute name (e.g., `retrieve_department`) is flexible and customizable.
-        It serves as the name of the route and the operation id in the OpenAPI schema.
+        The attribute name (e.g., `retrieve_department`) determines the route's name
+        and operation ID in the OpenAPI schema, allowing easy API documentation.
     """
 
     def __init__(
         self,
-        response_schema: Optional[Type[Schema]] = None,
-        queryset_getter: Optional[DetailQuerySetGetter] = None,
         path: str = "/{id}",
+        path_parameters: Optional[Type[Schema]] = None,
+        response_body: Optional[Type[Schema]] = None,
+        get_model: Optional[Callable[[Optional[Schema]], Model]] = None,
         decorators: Optional[List[Callable]] = None,
-        router_kwargs: Optional[dict] = None,
+        router_kwargs: Optional[Dict] = None,
     ) -> None:
-        """
-        Initializes the RetrieveModelView.
-
-        Args:
-            response_schema (Optional[Type[Schema]], optional): The schema used to serialize the retrieved object.
-                Defaults to None. If not provided, the `default_response_schema` of the `ModelViewSet` will be used.
-            queryset_getter (Optional[DetailQuerySetGetter], optional): A function to customize the queryset used
-                for retrieving the object. Defaults to None. Should have the signature (id: Any) -> QuerySet[Model].
-
-                If not provided, the default manager of the `model` specified in the `ModelViewSet` will be used.
-            path (str, optional): The path to use for the view. Defaults to "/{id}". Must include a "{id}" parameter.
-            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
-                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
-                arguments are provided, a warning will be logged and the override will be ignored.
-        """
         super().__init__(
             method=HTTPMethod.GET,
             path=path,
-            filter_schema=None,
-            payload_schema=None,
-            response_schema=response_schema,
+            path_parameters=path_parameters,
+            query_parameters=None,
+            request_body=None,
+            response_body=response_body,
+            response_status=http.HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
+        self.get_model = get_model or self.default_get_model
 
-        PathValidator.validate(path=path, allow_no_parameters=False)
-        QuerySetGetterValidator.validate(queryset_getter=queryset_getter, path=path)
-
-        self.queryset_getter = queryset_getter
-
-    def build_view(self, model_class: Type[Model]) -> Callable:
-        def view(request: HttpRequest, id: utils.get_id_type(model_class)):
-            return HTTPStatus.OK, self.retrieve_model(
-                request=request, id=id, model_class=model_class
-            )
-
-        return view
-
-    def retrieve_model(self, request: HttpRequest, id: Any, model_class: Type[Model]):
-        if self.queryset_getter:
-            queryset = self.queryset_getter(id)
-        else:
-            queryset = model_class.objects.get_queryset()
-
-        return queryset.get(pk=id)
-
-    def get_response(self) -> dict:
+    def default_get_model(self, path_parameters: Optional[Schema]) -> Model:
         """
-        Provides a mapping of HTTP status codes to response schemas for the retrieve view.
+        Default function to retrieve the model instance.
 
-        This response schema is used in API documentation to describe the response body for this view.
-        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
-        will be ignored.
+        This method can be overridden with custom logic to retrieve the model instance,
+        allowing for advanced retrieval logic, such as adding annotations, filtering
+        based on request specifics, or implementing permissions checks, to suit specific
+        requirements and potentially improve efficiency and security.
+
+        Args:
+            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
 
         Returns:
-            dict: A mapping of HTTP status codes to response schemas for the retrieve view.
-                Defaults to {200: self.response_schema}. For example, for a model "Department", the response
-                schema would be {200: DepartmentOut}.
-        """
-        return {HTTPStatus.OK: self.response_schema}
+            django.db.models.Model: The model instance to be retrieved.
 
-    def bind_to_viewset(
-        self, viewset_class: Type["ModelViewSet"], model_view_name: str
-    ) -> None:
-        super().bind_to_viewset(viewset_class, model_view_name)
-        self.bind_default_response_schema(viewset_class, model_view_name)
+        Raises:
+            django.db.models.ObjectDoesNotExist: If no model instance is found.
+            django.db.models.MultipleObjectsReturned: If multiple model instances
+                are found.
+        """
+        return self.model_viewset_class.model.objects.get(
+            **(path_parameters.dict() if path_parameters else {})
+        )
+
+    def handle_request(
+        self,
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
+    ) -> Model:
+        return self.get_model(path_parameters)
+
+    def _inherit_model_viewset_class_attributes(self) -> None:
+        if self.response_body is None:
+            self.response_body = self.model_viewset_class.default_response_body

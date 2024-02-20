@@ -39,7 +39,7 @@ class AbstractModelViewTest(ABC):
     def __init__(self, model_view_class: Type[AbstractModelView]) -> None:
         self.model_view_class = model_view_class
 
-    def handle_request(
+    def simulate_request(
         self,
         path_parameters: dict,
         query_parameters: dict,
@@ -67,7 +67,7 @@ class AbstractModelViewTest(ABC):
             method=self.model_view.method.value,
             path=path.format(**path_parameters),
             QUERY_STRING=django.utils.http.urlencode(query_parameters, doseq=True),
-            data=json.dumps(payload),
+            data=json.dumps(payload or None),
             content_type="application/json",
             **headers,
         )

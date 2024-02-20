@@ -69,13 +69,6 @@ docs:
     hidden: false
     order: 5
     path: "docs/reference/views/DeleteModelView.md"
-  - title: "Types"
-    slug: "types"
-    excerpt: "Understanding the different data types used in Django Ninja CRUD views"
-    categorySlug: "views"
-    hidden: false
-    order: 6
-    path: "docs/reference/views/helpers/Types.md"
 
   # -------------------- Viewsets ---------------------
   - title: "ModelViewSet"

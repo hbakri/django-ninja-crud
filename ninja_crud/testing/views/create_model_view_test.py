@@ -45,8 +45,8 @@ class CreateModelViewTest(AbstractModelViewTest):
         model = Department
 
         create_department_view = views.CreateModelView(
-            payload_schema=DepartmentIn,
-            response_schema=DepartmentOut
+            request_body=DepartmentIn,
+            response_body=DepartmentOut
         )
     ```
     2. You can test the `create_department_view` like this:
@@ -100,7 +100,7 @@ class CreateModelViewTest(AbstractModelViewTest):
         """
         super().__init__(model_view_class=CreateModelView)
         self.view_test_manager = ViewTestManager(
-            handle_request=self.handle_request,
+            simulate_request=self.simulate_request,
             path_parameters=path_parameters,
             headers=headers,
             payloads=payloads,
@@ -128,18 +128,29 @@ class CreateModelViewTest(AbstractModelViewTest):
             headers (dict): The headers used in the request.
             payload (dict): The payload sent with the request.
         """
-        content = json.loads(response.content)
-        self.model_viewset_test_case.assertIsInstance(content, dict)
-        self.model_viewset_test_case.assertIn("id", content)
+        actual_output = json.loads(response.content)
+        expected_output = self._get_expected_output(
+            response=response,
+            path_parameters=path_parameters,
+        )
+        self.model_viewset_test_case.assertDictEqual(actual_output, expected_output)
 
-        if self.model_view.model_factory is not None:
-            args = [None] if "{id}" in self.model_view.path else []
-            model_class = self.model_view.model_factory(*args).__class__
-        else:
-            model_class = self.model_viewset_test_case.model_viewset_class.model
+    def _get_expected_output(
+        self, response: django.http.HttpResponse, path_parameters: dict
+    ) -> dict:
+        content = json.loads(response.content)
+        path_parameters = (
+            self.model_view.path_parameters(**path_parameters)
+            if self.model_view.path_parameters
+            else None
+        )
+        model_class = self.model_view.create_model(
+            response.wsgi_request,
+            path_parameters,  # type: ignore
+        ).__class__
         model = model_class.objects.get(id=content["id"])
-        schema = self.model_view.response_schema.from_orm(model)
-        self.model_viewset_test_case.assertDictEqual(content, json.loads(schema.json()))
+        schema = self.model_view.response_body.from_orm(model)
+        return json.loads(schema.json())
 
     def on_failed_request(
         self,

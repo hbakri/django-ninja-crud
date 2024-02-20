@@ -1,174 +1,145 @@
-import functools
-import logging
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Callable, List, Optional, Type
+import abc
+import http
+import re
+import uuid
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Type, Union
 
-from django.db.models import Model
-from django.http import HttpRequest
-from ninja import FilterSchema, Router, Schema
+import ninja
+import pydantic
+from django.db.models import Field, ForeignKey, Model
 
+from ninja_crud.views.abstract_view import AbstractView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.helpers import utils
-from ninja_crud.views.validators.http_method_validator import HTTPMethodValidator
 
 if TYPE_CHECKING:  # pragma: no cover
     from ninja_crud.viewsets import ModelViewSet
 
-logger = logging.getLogger(__name__)
 
-
-class AbstractModelView(ABC):
+class AbstractModelView(AbstractView, abc.ABC):
     """
-    An abstract base class for all model views.
+    An abstract view class that handles model operations.
 
-    Subclasses must implement the `build_view` and `get_response` methods.
+    Args:
+        method (HTTPMethod): View HTTP method.
+        path (str): View path.
+        path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing path parameters. Defaults to None.
+        query_parameters (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing query parameters. Defaults to None.
+        request_body (Optional[Type[ninja.Schema]], optional): Schema for deserializing
+            the request body. Defaults to None.
+        response_body (Optional[Type[ninja.Schema]], optional): Schema for serializing
+            the response body. Defaults to None.
+        response_status (http.HTTPStatus, optional): HTTP status code for the response.
+            Defaults to http.HTTPStatus.OK.
+        decorators (Optional[List[Callable]], optional): Decorators for the view.
+            Defaults to [].
+        router_kwargs (Optional[Dict], optional): Additional router arguments, with
+            overrides for 'path', 'methods', and 'response' being ignored. Defaults
+            to {}.
     """
 
     def __init__(
         self,
         method: HTTPMethod,
         path: str,
-        filter_schema: Optional[Type[FilterSchema]] = None,
-        payload_schema: Optional[Type[Schema]] = None,
-        response_schema: Optional[Type[Schema]] = None,
+        path_parameters: Optional[Type[ninja.Schema]] = None,
+        query_parameters: Optional[Type[ninja.Schema]] = None,
+        request_body: Optional[Type[ninja.Schema]] = None,
+        response_body: Union[Type[ninja.Schema], Type[List[ninja.Schema]], None] = None,
+        response_status: http.HTTPStatus = http.HTTPStatus.OK,
         decorators: Optional[List[Callable]] = None,
-        router_kwargs: Optional[dict] = None,
+        router_kwargs: Optional[Dict] = None,
     ) -> None:
-        """
-        Initializes the AbstractModelView with the given decorators and optional router keyword arguments.
+        super().__init__(
+            method=method,
+            path=path,
+            path_parameters=path_parameters,
+            query_parameters=query_parameters,
+            request_body=request_body,
+            response_body=response_body,
+            response_status=response_status,
+            decorators=decorators,
+            router_kwargs=router_kwargs,
+        )
+        self._model_viewset_class: Optional[Type["ModelViewSet"]] = None
 
-        Args:
-            method (HTTPMethod): The HTTP method for the view.
-            path (str): The path to use for the view.
-            filter_schema (Optional[Type[FilterSchema]], optional): The schema used to deserialize the query parameters.
-                Defaults to None.
-            payload_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
-                Defaults to None.
-            response_schema (Optional[Type[Schema]], optional): The schema used to serialize the response body.
-                Defaults to None.
-            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
-                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
-                arguments are provided, a warning will be logged and the override will be ignored.
-        """
-        HTTPMethodValidator.validate(method=method)
-        self.method = method
-        self.path = path
-        self.filter_schema = filter_schema
-        self.payload_schema = payload_schema
-        self.response_schema = response_schema
-        self.decorators = decorators or []
-        self.router_kwargs = router_kwargs or {}
-        self.viewset_class: Optional[Type["ModelViewSet"]] = None
+    @property
+    def model_viewset_class(self) -> Type["ModelViewSet"]:
+        if self._model_viewset_class is None:
+            raise ValueError(
+                f"Viewset class not bound to {self.__class__.__name__}. "
+                "Please bind a viewset class before accessing this property."
+            )
+        return self._model_viewset_class
 
-    @abstractmethod
-    def build_view(self, model_class: Type[Model]) -> Callable:  # pragma: no cover
-        """
-        Builds the view function for the route.
+    @model_viewset_class.setter
+    def model_viewset_class(self, model_viewset_class: Type["ModelViewSet"]) -> None:
+        if self._model_viewset_class is not None:
+            raise ValueError(
+                f"{self.__class__.__name__} is already bound to a viewset."
+            )
+        self._model_viewset_class = model_viewset_class
+        self._inherit_model_viewset_class_attributes()
 
-        Args:
-            model_class (Type[Model]): The Django model class for which the route should be created.
+        if not self.path_parameters:
+            self._infer_path_parameters_schema_class()
 
-        Returns:
-            Callable: The view function for the route.
-
-        Raises:
-            NotImplementedError: This method must be implemented by a subclass.
-        """
+    def _inherit_model_viewset_class_attributes(self) -> None:
         pass
 
-    def register_route(
-        self, router: Router, view_name: str, model_class: Type[Model]
-    ) -> None:
-        view = self.build_view(model_class=model_class)
-        view.__name__ = view_name
-        self._create_route_decorator(router=router)(view)
+    def _infer_path_parameters_schema_class(self):
+        path_parameter_field_names = re.findall(r"{(\w+)}", self.path)
+        if not path_parameter_field_names:
+            return
 
-    def _create_route_decorator(self, router: Router):
-        def route_decorator(view: Callable):
-            @router.api_operation(**self._get_router_kwargs(view.__name__))
-            @utils.merge_decorators(self.decorators)
-            @functools.wraps(view)
-            def wrapped_view(request: HttpRequest, *args, **kwargs):
-                return view(request, *args, **kwargs)
+        path_parameter_field_definitions = {
+            path_parameter_field_name: (
+                self._infer_field_type(
+                    model_class=self.model_viewset_class.model,
+                    field_name=path_parameter_field_name,
+                ),
+                ...,
+            )
+            for path_parameter_field_name in path_parameter_field_names
+        }
+        self.path_parameters = pydantic.create_model(
+            __model_name="PathParametersSchema", **path_parameter_field_definitions
+        )
 
-            return wrapped_view
+    @classmethod
+    def _infer_field_type(cls, model_class: Type[Model], field_name: str) -> Type:
+        field: Field = model_class._meta.get_field(field_name)
 
-        return route_decorator
+        if isinstance(field, ForeignKey) and field_name == field.attname:
+            related_model_class: Type[Model] = field.related_model
+            return cls._infer_field_type(
+                model_class=related_model_class,
+                field_name=related_model_class._meta.pk.name,
+            )
 
-    def _get_router_kwargs(self, operation_id: str) -> dict:
-        return {
-            "methods": [self.method.value],
-            "path": self.path,
-            "response": self.get_response(),
-            "operation_id": operation_id,
-            **self._sanitize_router_kwargs(self.router_kwargs),
+        type_mapping = {
+            "AutoField": int,
+            "SmallAutoField": int,
+            "BigAutoField": int,
+            "IntegerField": int,
+            "SmallIntegerField": int,
+            "BigIntegerField": int,
+            "PositiveIntegerField": int,
+            "PositiveSmallIntegerField": int,
+            "PositiveBigIntegerField": int,
+            "UUIDField": uuid.UUID,
+            "CharField": str,
+            "SlugField": str,
+            "TextField": str,
+            "BinaryField": bytes,
         }
 
-    @staticmethod
-    def _sanitize_router_kwargs(router_kwargs: dict) -> dict:
-        locked_keys = ["methods", "path", "response"]
-        sanitized_kwargs = router_kwargs.copy()
-        for locked_key in locked_keys:
-            if locked_key in sanitized_kwargs:
-                logger.warning(f"Cannot override '{locked_key}' in 'router_kwargs'.")
-                sanitized_kwargs.pop(locked_key)
+        field_type = type_mapping.get(field.get_internal_type())
+        if field_type is None:
+            raise ValueError(
+                f"Field {field_name} of model {model_class.__name__} has an "
+                f"unsupported type: {field.get_internal_type()}."
+            )
 
-        return sanitized_kwargs
-
-    @abstractmethod
-    def get_response(self) -> dict:  # pragma: no cover
-        """
-        Provides a mapping of HTTP status codes to response schemas for the view.
-
-        This response schema is used in API documentation to describe the response body for this view.
-        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
-        will be ignored.
-
-        Returns:
-            dict: A mapping of HTTP status codes to response schemas for the view.
-
-        Raises:
-            NotImplementedError: This method must be implemented by a subclass.
-        """
-        pass
-
-    def bind_to_viewset(
-        self, viewset_class: Type["ModelViewSet"], model_view_name: str
-    ) -> None:
-        self.viewset_class = viewset_class
-
-    def bind_default_value(
-        self,
-        viewset_class: Type["ModelViewSet"],
-        model_view_name: str,
-        attribute_name: str,
-        default_attribute_name: str,
-    ):
-        if getattr(self, attribute_name, None) is None:
-            default_attribute = getattr(viewset_class, default_attribute_name, None)
-            if default_attribute is None:
-                raise ValueError(
-                    f"Could not determine '{attribute_name}' for {viewset_class.__name__}.{model_view_name}."
-                )
-            setattr(self, attribute_name, default_attribute)
-
-    def bind_default_payload_schema(
-        self, viewset_class: Type["ModelViewSet"], model_view_name: str
-    ) -> None:
-        self.bind_default_value(
-            viewset_class=viewset_class,
-            model_view_name=model_view_name,
-            attribute_name="payload_schema",
-            default_attribute_name="default_payload_schema",
-        )
-
-    def bind_default_response_schema(
-        self, viewset_class: Type["ModelViewSet"], model_view_name: str
-    ) -> None:
-        self.bind_default_value(
-            viewset_class=viewset_class,
-            model_view_name=model_view_name,
-            attribute_name="response_schema",
-            default_attribute_name="default_response_schema",
-        )
+        return field_type

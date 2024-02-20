@@ -1,118 +1,189 @@
-from http import HTTPStatus
-from typing import Any, Callable, List, Optional, Type
+import http
+from typing import Callable, Dict, List, Optional
 
 from django.db.models import Model
 from django.http import HttpRequest
+from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.helpers import utils
-from ninja_crud.views.helpers.types import PostDeleteHook, PreDeleteHook
-from ninja_crud.views.validators.path_validator import PathValidator
 
 
 class DeleteModelView(AbstractModelView):
     """
-    A view class that handles deleting a specific instance of a model.
-    It allows customization through pre- and post-delete hooks and also supports decorators.
+    A view class that handles deleting a model instance.
 
-    Example:
+    Args:
+        path (str, optional): View path. Defaults to "/{id}".
+        path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing path parameters. Automatically inferred from the path
+            and the fields of the `ModelViewSet`'s associated model if not provided.
+            Defaults to None.
+        get_model (Optional[Callable[[Optional[ninja.Schema]],
+            django.db.models.Model]], optional):
+            Function to retrieve the model instance. Should have the signature
+            (path_parameters: Optional[Schema]) -> Model.
+        pre_delete (Optional[Callable[[django.http.HttpRequest, Optional[ninja.Schema],
+            django.db.models.Model], None]], optional):
+            Hook executed before deleting the instance. Should have the signature
+            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model)
+            -> None.
+        post_delete (Optional[Callable[[django.http.HttpRequest, Optional[ninja.Schema],
+            django.db.models.Model], None]], optional):
+            Hook executed after deleting the instance. Should have the signature
+            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model)
+            -> None.
+        decorators (Optional[List[Callable]], optional): Decorators for the view.
+            Defaults to [].
+        router_kwargs (Optional[Dict], optional): Additional router arguments, with
+            overrides for 'path', 'methods', and 'response' being ignored. Defaults
+            to {}.
+
+    Raises:
+        django.db.models.ObjectDoesNotExist: If the instance is not found.
+        django.db.models.MultipleObjectsReturned: If multiple instances are found.
+        django.db.utils.IntegrityError: For database integrity violations on delete.
+        ninja.errors.ValidationError: For request components validation issues.
+
+    Important:
+        This view does not automatically handle exceptions. It's recommended to
+        implement appropriate
+        [Exception Handlers](https://django-ninja.dev/guides/errors/) in your project to
+        manage such cases effectively, according to your application's needs and
+        conventions. See the [Setup](https://django-ninja-crud.readme.io/docs/03-setup)
+        guide for more information.
+
+    Example Usage:
     ```python
-    from ninja_crud import views, viewsets
+    # Basic usage
+    delete_department = views.DeleteModelView()
 
-    from examples.models import Department
-
-    class DepartmentViewSet(viewsets.ModelViewSet):
-        model = Department
-
-        # Usage: Delete a department by id
-        # DELETE /{id}/
-        delete_department = views.DeleteModelView()
+    # Advanced usage with custom get_model, pre_delete, and post_delete logic
+    delete_department = views.DeleteModelView(
+        get_model=lambda path_parameters: Department.objects.get(id=path_parameters.id),
+        pre_delete=lambda request, path_parameters, instance: None,
+        post_delete=lambda request, path_parameters, instance: None,
+    )
     ```
 
     Note:
-        The attribute name (e.g., `delete_department`) is flexible and customizable.
-        It serves as the name of the route and the operation id in the OpenAPI schema.
+        The attribute name (e.g., `delete_department`) determines the route's name
+        and operation ID in the OpenAPI schema, allowing easy API documentation.
     """
 
     def __init__(
         self,
-        pre_delete: Optional[PreDeleteHook] = None,
-        post_delete: Optional[PostDeleteHook] = None,
         path: str = "/{id}",
+        path_parameters: Optional[Schema] = None,
+        get_model: Optional[Callable[[Optional[Schema]], Model]] = None,
+        pre_delete: Optional[
+            Callable[[HttpRequest, Optional[Schema], Model], None]
+        ] = None,
+        post_delete: Optional[
+            Callable[[HttpRequest, Optional[Schema], Model], None]
+        ] = None,
         decorators: Optional[List[Callable]] = None,
-        router_kwargs: Optional[dict] = None,
+        router_kwargs: Optional[Dict] = None,
     ) -> None:
-        """
-        Initializes the DeleteModelView.
-
-        Args:
-            pre_delete (Optional[PreDeleteHook], optional): A function that is called before deleting the instance.
-                Defaults to None.
-
-                The function should have the signature:
-                - (request: HttpRequest, instance: Model) -> None.
-
-                If not provided, the function will be a no-op.
-            post_delete (Optional[PostDeleteHook], optional): A function that is called after deleting the instance.
-                Defaults to None.
-
-                The function should have the signature:
-                - (request: HttpRequest, id: Any, deleted_instance: Model) -> None.
-
-                If not provided, the function will be a no-op.
-            path (str, optional): The path to use for the view. Defaults to "/{id}". Must include a "{id}" parameter.
-            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
-                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
-                arguments are provided, a warning will be logged and the override will be ignored.
-        """
         super().__init__(
             method=HTTPMethod.DELETE,
             path=path,
-            filter_schema=None,
-            payload_schema=None,
-            response_schema=None,
+            path_parameters=path_parameters,
+            query_parameters=None,
+            request_body=None,
+            response_body=None,
+            response_status=http.HTTPStatus.NO_CONTENT,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
+        self.get_model = get_model or self.default_get_model
+        self.pre_delete = pre_delete or self.default_pre_delete
+        self.post_delete = post_delete or self.default_post_delete
 
-        PathValidator.validate(path=path, allow_no_parameters=False)
+    def default_get_model(
+        self,
+        path_parameters: Optional[Schema],
+    ) -> Model:
+        """
+        Default function to retrieve the model instance to be deleted.
 
-        self.pre_delete = pre_delete
-        self.post_delete = post_delete
+        This method can be overridden with custom logic to retrieve the model instance,
+        allowing for advanced retrieval logic, such as adding annotations, filtering
+        based on request specifics, or implementing permissions checks, to suit specific
+        requirements and potentially improve efficiency and security.
 
-    def build_view(self, model_class: Type[Model]) -> Callable:
-        def view(request: HttpRequest, id: utils.get_id_type(model_class)):
-            return HTTPStatus.NO_CONTENT, self.delete_model(
-                request=request, id=id, model_class=model_class
-            )
+        Args:
+            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
 
-        return view
+        Returns:
+            django.db.models.Model: The model instance to be deleted.
 
-    def delete_model(
-        self, request: HttpRequest, id: Any, model_class: Type[Model]
+        Raises:
+            django.db.models.ObjectDoesNotExist: If no model instance is found.
+            django.db.models.MultipleObjectsReturned: If multiple model instances
+                are found.
+        """
+        return self.model_viewset_class.model.objects.get(
+            **(path_parameters.dict() if path_parameters else {})
+        )
+
+    @staticmethod
+    def default_pre_delete(
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        instance: Model,
     ) -> None:
-        instance = model_class.objects.get(pk=id)
+        """
+        Default pre-delete hook that is called before the model instance is deleted.
+        No-op by default.
 
-        if self.pre_delete is not None:
-            self.pre_delete(request, instance)
+        This method can be overridden with custom pre-delete logic, such as
+        implementing additional checks, permissions, or side effects.
+
+        Args:
+            request (django.http.HttpRequest): The request object.
+            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
+            instance (django.db.models.Model): The model instance to be deleted.
+
+        Returns:
+            None
+        """
+        pass
+
+    @staticmethod
+    def default_post_delete(
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        instance: Model,
+    ) -> None:
+        """
+        Default post-delete hook that is called after the model instance is deleted.
+        No-op by default.
+
+        This method can be overridden with custom post-delete logic, such as
+        implementing additional side effects, logging, or sending notifications.
+
+        Args:
+            request (django.http.HttpRequest): The request object.
+            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
+            instance (django.db.models.Model): The deleted model instance.
+
+        Returns:
+            None
+        """
+        pass
+
+    def handle_request(
+        self,
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
+    ) -> None:
+        instance = self.get_model(path_parameters)
+
+        self.pre_delete(request, path_parameters, instance)
 
         instance.delete()
 
-        if self.post_delete is not None:
-            self.post_delete(request, id, instance)
-
-    def get_response(self) -> dict:
-        """
-        Provides a mapping of HTTP status codes to response schemas for the delete view.
-
-        This response schema is used in API documentation to describe the response body for this view.
-        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
-        will be ignored.
-
-        Returns:
-            dict: A mapping of HTTP status codes to response schemas for the delete view.
-                Defaults to {204: None}.
-        """
-        return {HTTPStatus.NO_CONTENT: None}
+        self.post_delete(request, path_parameters, instance)

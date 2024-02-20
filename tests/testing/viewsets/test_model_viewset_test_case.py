@@ -1,4 +1,5 @@
 import unittest
+from typing import List
 from unittest.mock import patch
 
 from examples.models import Department
@@ -14,7 +15,7 @@ class TestModelViewSetTestCase(unittest.TestCase):
         class ExampleModelViewSet(ModelViewSet):
             model = Department
 
-            list_view = ListModelView(response_schema=DepartmentOut)
+            list_view = ListModelView(response_body=List[DepartmentOut])
 
         class TestExampleModelViewSet(ModelViewSetTestCase):
             test_list_view = ListModelViewTest()
@@ -42,7 +43,7 @@ class TestModelViewSetTestCase(unittest.TestCase):
         class ExampleModelViewSet(ModelViewSet):
             model = Department
 
-            list_view = ListModelView(response_schema=DepartmentOut)
+            list_view = ListModelView(response_body=List[DepartmentOut])
 
         class TestExampleModelViewSet(ModelViewSetTestCase):
             test_list_view = ListModelViewTest()
@@ -56,8 +57,8 @@ class TestModelViewSetTestCase(unittest.TestCase):
         class ExampleModelViewSet(ModelViewSet):
             model = Department
 
-            list_view = ListModelView(response_schema=DepartmentOut)
-            other_list_view = ListModelView(response_schema=DepartmentOut)
+            list_view = ListModelView(response_body=List[DepartmentOut])
+            other_list_view = ListModelView(response_body=List[DepartmentOut])
 
         class TestExampleModelViewSet(ModelViewSetTestCase):
             test_list_view = ListModelViewTest()
@@ -70,10 +71,3 @@ class TestModelViewSetTestCase(unittest.TestCase):
                 associated_model_views=[ExampleModelViewSet.list_view]
             )
             mock_logger.warning.assert_called_once()
-
-    def test_validate_base_path_wrong_type(self):
-        class TestExampleModelViewSet(ModelViewSetTestCase):
-            base_path = 0
-
-        with self.assertRaises(TypeError):
-            TestExampleModelViewSet._validate_base_path()

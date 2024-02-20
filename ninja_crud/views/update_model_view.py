@@ -1,6 +1,5 @@
-import copy
-from http import HTTPStatus
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
+import http
+from typing import Callable, Dict, List, Optional, Type
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -8,153 +7,211 @@ from ninja import Schema
 
 from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
-from ninja_crud.views.helpers import utils
-from ninja_crud.views.helpers.types import UpdateHook
-from ninja_crud.views.validators.http_method_validator import HTTPMethodValidator
-from ninja_crud.views.validators.path_validator import PathValidator
-
-if TYPE_CHECKING:  # pragma: no cover
-    from ninja_crud.viewsets import ModelViewSet
 
 
 class UpdateModelView(AbstractModelView):
     """
-    A view class that handles updating a specific instance of a model.
-    It allows customization through pre- and post-save hooks and also supports decorators.
+    A view class that handles updating a model instance.
 
-    Example:
+    Args:
+        method (HTTPMethod): View HTTP method. Defaults to HTTPMethod.PUT.
+        path (str, optional): View path. Defaults to "/{id}".
+        path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing path parameters. Automatically inferred from the path
+            and the fields of the `ModelViewSet`'s associated model if not provided.
+            Defaults to None.
+        request_body (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing the request body. Inherits `ModelViewSet`'s default if
+            unspecified. Defaults to None.
+        response_body (Optional[Type[ninja.Schema]], optional): Schema for serializing
+            the response body. Inherits `ModelViewSet`'s default if unspecified.
+            Defaults to None.
+        get_model (Optional[Callable[[Optional[ninja.Schema]],
+            django.db.models.Model]], optional):
+            Function to retrieve the model instance. Defaults to `default_get_model`.
+            Should have the signature (path_parameters: Optional[Schema]) -> Model.
+        pre_save (Optional[Callable[[django.http.HttpRequest, Optional[ninja.Schema],
+            django.db.models.Model], None]], optional):
+            Hook executed before saving the updated instance. Should have the signature
+            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model) -> None.
+        post_save (Optional[Callable[[django.http.HttpRequest, Optional[ninja.Schema],
+            django.db.models.Model], None]], optional):
+            Hook executed after saving the updated instance. Should have the signature
+            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model) -> None.
+        decorators (Optional[List[Callable]], optional): Decorators for the view.
+            Defaults to [].
+        router_kwargs (Optional[Dict], optional): Additional router arguments, with
+            overrides for 'path', 'methods', and 'response' being ignored. Defaults
+            to {}.
+
+    Raises:
+        django.db.models.ObjectDoesNotExist: If the instance is not found.
+        django.db.models.MultipleObjectsReturned: If multiple instances are found.
+        django.core.exceptions.ValidationError: For model validation issues on clean.
+        django.db.utils.IntegrityError: For database integrity violations on save.
+        ninja.errors.ValidationError: For request components validation issues.
+
+    Important:
+        This view does not automatically handle exceptions. It's recommended to
+        implement appropriate
+        [Exception Handlers](https://django-ninja.dev/guides/errors/) in your project to
+        manage such cases effectively, according to your application's needs and
+        conventions. See the [Setup](https://django-ninja-crud.readme.io/docs/03-setup)
+        guide for more information.
+
+    Example Usage:
     ```python
-    from ninja_crud import views, viewsets
+    # Basic usage using request and response schemas
+    update_department = UpdateModelView(
+        request_body=DepartmentRequestBody,
+        response_body=DepartmentResponseBody,
+    )
 
-    from examples.models import Department
-    from examples.schemas import DepartmentIn, DepartmentOut
-
-    class DepartmentViewSet(viewsets.ModelViewSet):
-        model = Department
-
-        # Usage: Update a department by id
-        # PUT /{id}/
-        update_department = views.UpdateModelView(payload_schema=DepartmentIn, response_schema=DepartmentOut)
+    # Advanced usage with custom get_model, pre_save, and post_save logic
+    update_department = UpdateModelView(
+        request_body=DepartmentRequestBody,
+        response_body=DepartmentResponseBody,
+        get_model=lambda path_parameters: Department.objects.get(id=path_parameters.id),
+        pre_save=lambda request, path_parameters, instance: None,
+        post_save=lambda request, path_parameters, instance: None,
+    )
     ```
 
     Note:
-        The attribute name (e.g., `update_department`) is flexible and customizable.
-        It serves as the name of the route and the operation id in the OpenAPI schema.
+        The attribute name (e.g., `update_department`) determines the route's name
+        and operation ID in the OpenAPI schema, allowing easy API documentation.
     """
 
     def __init__(
         self,
-        payload_schema: Optional[Type[Schema]] = None,
-        response_schema: Optional[Type[Schema]] = None,
-        pre_save: Optional[UpdateHook] = None,
-        post_save: Optional[UpdateHook] = None,
         method: HTTPMethod = HTTPMethod.PUT,
         path: str = "/{id}",
+        path_parameters: Optional[Schema] = None,
+        request_body: Optional[Type[Schema]] = None,
+        response_body: Optional[Type[Schema]] = None,
+        get_model: Optional[Callable[[Optional[Schema]], Model]] = None,
+        pre_save: Optional[
+            Callable[[HttpRequest, Optional[Schema], Model], None]
+        ] = None,
+        post_save: Optional[
+            Callable[[HttpRequest, Optional[Schema], Model], None]
+        ] = None,
         decorators: Optional[List[Callable]] = None,
-        router_kwargs: Optional[dict] = None,
+        router_kwargs: Optional[Dict] = None,
     ) -> None:
-        """
-        Initializes the UpdateModelView.
-
-        Args:
-            payload_schema (Optional[Type[Schema]], optional): The schema used to deserialize the payload.
-                Defaults to None. If not provided, the `default_payload_schema` of the `ModelViewSet` will be used.
-            response_schema (Optional[Type[Schema]], optional): The schema used to serialize the updated instance.
-                Defaults to None. If not provided, the `default_response_schema` of the `ModelViewSet` will be used.
-            pre_save (Optional[UpdateHook], optional): A function that is called before saving the instance.
-                Defaults to None.
-
-                The function should have the signature:
-                - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
-
-                If not provided, the function will be a no-op.
-            post_save (Optional[UpdateHook], optional): A function that is called after saving the instance.
-                Defaults to None.
-
-                The function should have the signature:
-                - (request: HttpRequest, old_instance: Model, new_instance: Model) -> None
-
-                If not provided, the function will be a no-op.
-            method (HTTPMethod, optional): The HTTP method for the view. Defaults to HTTPMethod.PUT.
-            path (str, optional): The path to use for the view. Defaults to "/{id}". Must include a "{id}" parameter.
-            decorators (Optional[List[Callable]], optional): A list of decorators to apply to the view. Defaults to [].
-            router_kwargs (Optional[dict], optional): Additional arguments to pass to the router. Defaults to {}.
-                Overrides are allowed for most arguments except 'path', 'methods', and 'response'. If any of these
-                arguments are provided, a warning will be logged and the override will be ignored.
-        """
         super().__init__(
             method=method,
             path=path,
-            filter_schema=None,
-            payload_schema=payload_schema,
-            response_schema=response_schema,
+            path_parameters=path_parameters,
+            query_parameters=None,
+            request_body=request_body,
+            response_body=response_body,
+            response_status=http.HTTPStatus.OK,
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
+        self.get_model = get_model or self.default_get_model
+        self.pre_save = pre_save or self.default_pre_save
+        self.post_save = post_save or self.default_post_save
 
-        HTTPMethodValidator.validate(
-            method=method, choices=[HTTPMethod.PUT, HTTPMethod.PATCH]
-        )
-        PathValidator.validate(path=path, allow_no_parameters=False)
-
-        self.pre_save = pre_save
-        self.post_save = post_save
-
-    def build_view(self, model_class: Type[Model]) -> Callable:
-        payload_schema = self.payload_schema
-
-        def view(
-            request: HttpRequest,
-            id: utils.get_id_type(model_class),
-            payload: payload_schema,
-        ):
-            return HTTPStatus.OK, self.update_model(
-                request=request, id=id, payload=payload, model_class=model_class
-            )
-
-        return view
-
-    def update_model(
-        self, request: HttpRequest, id: Any, payload: Schema, model_class: Type[Model]
+    def default_get_model(
+        self,
+        path_parameters: Optional[Schema],
     ) -> Model:
-        new_instance = model_class.objects.get(pk=id)
-
-        old_instance = None
-        if self.pre_save is not None or self.post_save is not None:
-            old_instance = copy.deepcopy(new_instance)
-
-        for field, value in payload.dict(exclude_unset=True).items():
-            setattr(new_instance, field, value)
-
-        if self.pre_save is not None:
-            self.pre_save(request, old_instance, new_instance)
-
-        new_instance.full_clean()
-        new_instance.save()
-
-        if self.post_save is not None:
-            self.post_save(request, old_instance, new_instance)
-
-        return new_instance
-
-    def get_response(self) -> dict:
         """
-        Provides a mapping of HTTP status codes to response schemas for the update view.
+        Default function to retrieve the model instance to be updated.
 
-        This response schema is used in API documentation to describe the response body for this view.
-        The response schema is critical and cannot be overridden using `router_kwargs`. Any overrides
-        will be ignored.
+        This method can be overridden with custom logic to retrieve the model instance,
+        allowing for advanced retrieval logic, such as adding annotations, filtering
+        based on request specifics, or implementing permissions checks, to suit specific
+        requirements and potentially improve efficiency and security.
+
+        Args:
+            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
 
         Returns:
-            dict: A mapping of HTTP status codes to response schemas for the update view.
-                Defaults to {200: self.response_schema}. For example, for a model "Department", the response
-                schema would be {200: DepartmentOut}.
-        """
-        return {HTTPStatus.OK: self.response_schema}
+            django.db.models.Model: The model instance to be updated.
 
-    def bind_to_viewset(
-        self, viewset_class: Type["ModelViewSet"], model_view_name: str
+        Raises:
+            django.db.models.ObjectDoesNotExist: If no model instance is found.
+            django.db.models.MultipleObjectsReturned: If multiple model instances
+                are found.
+        """
+        return self.model_viewset_class.model.objects.get(
+            **(path_parameters.dict() if path_parameters else {})
+        )
+
+    @staticmethod
+    def default_pre_save(
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        instance: Model,
     ) -> None:
-        super().bind_to_viewset(viewset_class, model_view_name)
-        self.bind_default_payload_schema(viewset_class, model_view_name)
-        self.bind_default_response_schema(viewset_class, model_view_name)
+        """
+        Default pre-save hook that is called before the model instance is saved.
+        Full model validation is performed by default with `instance.full_clean()`.
+
+        This method can be overridden with custom pre-save logic, such as implementing
+        additional checks, permissions, or side effects.
+
+        Args:
+            request (django.http.HttpRequest): The request object.
+            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
+            instance (django.db.models.Model): The model instance to be updated, with
+                the changes already applied but not yet saved.
+
+        Returns:
+            None
+        """
+        instance.full_clean()
+
+    @staticmethod
+    def default_post_save(
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        instance: Model,
+    ) -> None:
+        """
+        Default post-save hook that is called after the model instance is saved.
+        No-op by default.
+
+        This method can be overridden with custom post-save logic, such as
+        implementing additional side effects, logging, or sending notifications.
+
+        Args:
+            request (django.http.HttpRequest): The request object.
+            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
+            instance (django.db.models.Model): The updated model instance, with
+                the changes already applied and saved.
+
+        Returns:
+            None
+        """
+        pass
+
+    def handle_request(
+        self,
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+        request_body: Optional[Schema],
+    ) -> Model:
+        instance = self.get_model(path_parameters)
+
+        if request_body:
+            for field, value in request_body.dict(exclude_unset=True).items():
+                setattr(instance, field, value)
+
+        self.pre_save(request, path_parameters, instance)
+
+        instance.save()
+
+        self.post_save(request, path_parameters, instance)
+
+        return instance
+
+    def _inherit_model_viewset_class_attributes(self) -> None:
+        if self.request_body is None:
+            self.request_body = self.model_viewset_class.default_request_body
+        if self.response_body is None:
+            self.response_body = self.model_viewset_class.default_response_body

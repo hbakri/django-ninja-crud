@@ -1,9 +1,9 @@
 from functools import wraps
+from typing import List
 
 from django.core.exceptions import PermissionDenied
 from ninja import Router
 
-from ninja_crud.schemas import OrderByFilterSchema
 from ninja_crud.views import (
     DeleteModelView,
     ListModelView,
@@ -12,7 +12,7 @@ from ninja_crud.views import (
 )
 from ninja_crud.viewsets import ModelViewSet
 from tests.test_app.models import Item, Tag
-from tests.test_app.schemas import ItemIn, ItemOut, TagOut
+from tests.test_app.schemas import ItemIn, ItemOut, OrderByFilterSchema, TagOut
 
 router = Router()
 
@@ -20,7 +20,7 @@ router = Router()
 def user_is_collection_creator(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        item_id = kwargs.get("id")
+        item_id = kwargs.get("path_parameters").id
         item = Item.objects.get(id=item_id)
         if item.collection.created_by != request.auth:
             raise PermissionDenied()
@@ -31,28 +31,30 @@ def user_is_collection_creator(func):
 
 class ItemViewSet(ModelViewSet):
     model = Item
-    default_payload_schema = ItemIn
-    default_response_schema = ItemOut
+    default_request_body = ItemIn
+    default_response_body = ItemOut
 
     list_items = ListModelView(
-        filter_schema=OrderByFilterSchema,
-        queryset_getter=lambda: Item.objects.get_queryset(),
+        query_parameters=OrderByFilterSchema,
+        get_queryset=lambda path_parameters: Item.objects.get_queryset(),
     )
     retrieve_item = RetrieveModelView(
-        queryset_getter=lambda id: Item.objects.get_queryset(),
+        get_model=lambda path_parameters: Item.objects.get(id=path_parameters.id),
         decorators=[user_is_collection_creator],
     )
     update_item = UpdateModelView(
-        pre_save=lambda request, old_instance, new_instance: None,
-        post_save=lambda request, old_instance, new_instance: None,
+        pre_save=lambda request, path_parameters, instance: None,
+        post_save=lambda request, path_parameters, instance: None,
         decorators=[user_is_collection_creator],
     )
     delete_item = DeleteModelView(decorators=[user_is_collection_creator])
 
     list_tags = ListModelView(
         path="/{id}/tags/",
-        queryset_getter=lambda id: Tag.objects.filter(items__id=id),
-        response_schema=TagOut,
+        get_queryset=lambda path_parameters: Tag.objects.filter(
+            items__id=path_parameters.id
+        ),
+        response_body=List[TagOut],
     )
 
 

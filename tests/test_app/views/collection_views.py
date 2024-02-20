@@ -1,4 +1,5 @@
 from functools import wraps
+from typing import List
 
 from django.core.exceptions import PermissionDenied
 from ninja import Router
@@ -26,7 +27,7 @@ router = Router()
 def user_is_creator(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        collection_id = kwargs.get("id")
+        collection_id = kwargs.get("path_parameters").id
         collection = Collection.objects.get(id=collection_id)
         if collection.created_by != request.auth:
             raise PermissionDenied()
@@ -39,42 +40,46 @@ class CollectionViewSet(ModelViewSet):
     model = Collection
 
     list_collections = ListModelView(
-        response_schema=CollectionOut, filter_schema=CollectionFilter
+        response_body=List[CollectionOut], query_parameters=CollectionFilter
     )
     create_collection = CreateModelView(
-        payload_schema=CollectionIn,
-        response_schema=CollectionOut,
-        model_factory=lambda: Collection(),
-        pre_save=lambda request, instance: setattr(
-            instance, "created_by", request.auth
+        request_body=CollectionIn,
+        response_body=CollectionOut,
+        create_model=lambda request, path_parameters: Collection(
+            created_by=request.auth
         ),
-        post_save=lambda request, instance: None,
+        pre_save=lambda request, path_parameters, instance: instance.full_clean(),
+        post_save=lambda request, path_parameters, instance: None,
     )
-    retrieve_collection = RetrieveModelView(response_schema=CollectionOut)
+    retrieve_collection = RetrieveModelView(response_body=CollectionOut)
     update_collection = UpdateModelView(
-        payload_schema=CollectionIn,
-        response_schema=CollectionOut,
+        request_body=CollectionIn,
+        response_body=CollectionOut,
         decorators=[user_is_creator],
     )
     delete_collection = DeleteModelView(
-        pre_delete=lambda request, instance: None,
-        post_delete=lambda request, id, deleted_instance: None,
+        pre_delete=lambda request, path_parameters, instance: None,
+        post_delete=lambda request, path_parameters, instance: None,
         decorators=[user_is_creator],
     )
 
     list_collection_items = ListModelView(
         path="/{id}/items/",
-        queryset_getter=lambda id: Item.objects.filter(collection_id=id),
-        response_schema=ItemOut,
+        get_queryset=lambda path_parameters: Item.objects.filter(
+            collection_id=path_parameters.id
+        ),
+        response_body=List[ItemOut],
         decorators=[user_is_creator],
     )
     create_collection_item = CreateModelView(
         path="/{id}/items/",
-        model_factory=lambda id: Item(collection_id=id),
-        payload_schema=ItemIn,
-        response_schema=ItemOut,
-        pre_save=lambda request, id, instance: None,
-        post_save=lambda request, id, instance: None,
+        create_model=lambda request, path_parameters: Item(
+            collection_id=path_parameters.id
+        ),
+        request_body=ItemIn,
+        response_body=ItemOut,
+        pre_save=lambda request, path_parameters, instance: instance.full_clean(),
+        post_save=lambda request, path_parameters, instance: None,
         decorators=[user_is_creator],
     )
 
