@@ -27,7 +27,7 @@ router = Router()
 def user_is_creator(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        collection_id = kwargs.get("path_parameters").id
+        collection_id = getattr(kwargs.get("path_parameters"), "id", None)
         collection = Collection.objects.get(id=collection_id)
         if collection.created_by != request.auth:
             raise PermissionDenied()
@@ -66,7 +66,7 @@ class CollectionViewSet(ModelViewSet):
     list_collection_items = ListModelView(
         path="/{id}/items/",
         get_queryset=lambda path_parameters: Item.objects.filter(
-            collection_id=path_parameters.id
+            collection_id=getattr(path_parameters, "id", None)
         ),
         response_body=List[ItemOut],
         decorators=[user_is_creator],
@@ -74,7 +74,7 @@ class CollectionViewSet(ModelViewSet):
     create_collection_item = CreateModelView(
         path="/{id}/items/",
         create_model=lambda request, path_parameters: Item(
-            collection_id=path_parameters.id
+            collection_id=getattr(path_parameters, "id", None)
         ),
         request_body=ItemIn,
         response_body=ItemOut,

@@ -40,10 +40,10 @@ class TestAbstractModelView(django.test.TestCase):
         with self.assertRaises(ValueError):
             _ = model_view.model_viewset_class
 
-        model_view.model_viewset_class = ItemViewSet
+        model_view.model_viewset_class = ItemViewSet  # type: ignore
 
         with self.assertRaises(ValueError):
-            model_view.model_viewset_class = ItemViewSet
+            model_view.model_viewset_class = ItemViewSet  # type: ignore
 
     def test_infer_field_type(self):
         self.assertEqual(

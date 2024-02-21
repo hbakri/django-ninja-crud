@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Callable, List, Optional, TypeVar, Union
+from typing import Callable, List, Optional, TypeVar, Union, cast
 
 from django.http import HttpResponse
 from django.test import TestCase
@@ -39,7 +39,7 @@ class ViewTestManager:
         if callable(params):
             return params(test_case)
         elif isinstance(params, property):
-            return params.fget(test_case)
+            return cast(Callable, params.fget)(test_case)
         else:
             return params
 
@@ -160,16 +160,17 @@ class ViewTestManager:
         payloads = self.get_payloads(test_case)
         if payloads.bad_request is None:
             test_case.skipTest(reason="No 'bad_request' payload provided")
-        self.run_combinatorial_tests(
-            test_case=test_case,
-            path_parameters_list=path_parameters.ok,
-            query_parameters_list=query_parameters.ok,
-            headers_list=headers.ok,
-            payload_list=payloads.bad_request,
-            on_completion=self.wrap_completion_with_status_check(
-                test_case, on_completion=on_completion, status=status
-            ),
-        )
+        else:
+            self.run_combinatorial_tests(
+                test_case=test_case,
+                path_parameters_list=path_parameters.ok,
+                query_parameters_list=query_parameters.ok,
+                headers_list=headers.ok,
+                payload_list=payloads.bad_request,
+                on_completion=self.wrap_completion_with_status_check(
+                    test_case, on_completion=on_completion, status=status
+                ),
+            )
 
     def test_view_payloads_conflict(
         self,
@@ -183,16 +184,17 @@ class ViewTestManager:
         payloads = self.get_payloads(test_case)
         if payloads.conflict is None:
             test_case.skipTest(reason="No 'conflict' payload provided")
-        self.run_combinatorial_tests(
-            test_case=test_case,
-            path_parameters_list=path_parameters.ok,
-            query_parameters_list=query_parameters.ok,
-            headers_list=headers.ok,
-            payload_list=payloads.conflict,
-            on_completion=self.wrap_completion_with_status_check(
-                test_case, on_completion=on_completion, status=status
-            ),
-        )
+        else:
+            self.run_combinatorial_tests(
+                test_case=test_case,
+                path_parameters_list=path_parameters.ok,
+                query_parameters_list=query_parameters.ok,
+                headers_list=headers.ok,
+                payload_list=payloads.conflict,
+                on_completion=self.wrap_completion_with_status_check(
+                    test_case, on_completion=on_completion, status=status
+                ),
+            )
 
     def test_view_query_parameters_bad_request(
         self,
@@ -206,16 +208,17 @@ class ViewTestManager:
         payloads = self.get_payloads(test_case)
         if query_parameters.bad_request is None:
             test_case.skipTest(reason="No 'bad_request' query parameters provided")
-        self.run_combinatorial_tests(
-            test_case=test_case,
-            path_parameters_list=path_parameters.ok,
-            query_parameters_list=query_parameters.bad_request,
-            headers_list=headers.ok,
-            payload_list=payloads.ok,
-            on_completion=self.wrap_completion_with_status_check(
-                test_case, on_completion=on_completion, status=status
-            ),
-        )
+        else:
+            self.run_combinatorial_tests(
+                test_case=test_case,
+                path_parameters_list=path_parameters.ok,
+                query_parameters_list=query_parameters.bad_request,
+                headers_list=headers.ok,
+                payload_list=payloads.ok,
+                on_completion=self.wrap_completion_with_status_check(
+                    test_case, on_completion=on_completion, status=status
+                ),
+            )
 
     def test_view_headers_unauthorized(
         self,
@@ -229,16 +232,17 @@ class ViewTestManager:
         payloads = self.get_payloads(test_case)
         if headers.unauthorized is None:
             test_case.skipTest(reason="No 'unauthorized' headers provided")
-        self.run_combinatorial_tests(
-            test_case=test_case,
-            path_parameters_list=path_parameters.ok,
-            query_parameters_list=query_parameters.ok,
-            headers_list=headers.unauthorized,
-            payload_list=payloads.ok,
-            on_completion=self.wrap_completion_with_status_check(
-                test_case, on_completion=on_completion, status=status
-            ),
-        )
+        else:
+            self.run_combinatorial_tests(
+                test_case=test_case,
+                path_parameters_list=path_parameters.ok,
+                query_parameters_list=query_parameters.ok,
+                headers_list=headers.unauthorized,
+                payload_list=payloads.ok,
+                on_completion=self.wrap_completion_with_status_check(
+                    test_case, on_completion=on_completion, status=status
+                ),
+            )
 
     def test_view_headers_forbidden(
         self,
@@ -252,16 +256,17 @@ class ViewTestManager:
         payloads = self.get_payloads(test_case)
         if headers.forbidden is None:
             test_case.skipTest(reason="No 'forbidden' headers provided")
-        self.run_combinatorial_tests(
-            test_case=test_case,
-            path_parameters_list=path_parameters.ok,
-            query_parameters_list=query_parameters.ok,
-            headers_list=headers.forbidden,
-            payload_list=payloads.ok,
-            on_completion=self.wrap_completion_with_status_check(
-                test_case, on_completion=on_completion, status=status
-            ),
-        )
+        else:
+            self.run_combinatorial_tests(
+                test_case=test_case,
+                path_parameters_list=path_parameters.ok,
+                query_parameters_list=query_parameters.ok,
+                headers_list=headers.forbidden,
+                payload_list=payloads.ok,
+                on_completion=self.wrap_completion_with_status_check(
+                    test_case, on_completion=on_completion, status=status
+                ),
+            )
 
     def test_view_path_parameters_not_found(
         self,
@@ -275,13 +280,14 @@ class ViewTestManager:
         payloads = self.get_payloads(test_case)
         if path_parameters.not_found is None:
             test_case.skipTest(reason="No 'not_found' path parameters provided")
-        self.run_combinatorial_tests(
-            test_case=test_case,
-            path_parameters_list=path_parameters.not_found,
-            query_parameters_list=query_parameters.ok,
-            headers_list=headers.ok,
-            payload_list=payloads.ok,
-            on_completion=self.wrap_completion_with_status_check(
-                test_case, on_completion=on_completion, status=status
-            ),
-        )
+        else:
+            self.run_combinatorial_tests(
+                test_case=test_case,
+                path_parameters_list=path_parameters.not_found,
+                query_parameters_list=query_parameters.ok,
+                headers_list=headers.ok,
+                payload_list=payloads.ok,
+                on_completion=self.wrap_completion_with_status_check(
+                    test_case, on_completion=on_completion, status=status
+                ),
+            )

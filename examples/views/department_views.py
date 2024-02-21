@@ -23,7 +23,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     list_employees = views.ListModelView(
         path="/{id}/employees/",
         get_queryset=lambda path_parameters: Employee.objects.filter(
-            department_id=path_parameters.id
+            department_id=getattr(path_parameters, "id", None)
         ),
         response_body=List[EmployeeOut],
     )
@@ -32,7 +32,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         request_body=EmployeeIn,
         response_body=EmployeeOut,
         create_model=lambda request, path_parameters: Employee(
-            department_id=path_parameters.id
+            department_id=getattr(path_parameters, "id", None)
         ),
     )
 

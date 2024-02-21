@@ -1,10 +1,11 @@
 import http
 import json
-from typing import Optional
+from typing import Optional, Type, cast
 
 import django.http
 import django.test
 import django.utils.http
+from ninja import Schema
 
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters
@@ -154,7 +155,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
             query_parameters=None,
             request_body=None,
         )
-        schema = self.model_view.response_body.from_orm(model)
+        schema = cast(Type[Schema], self.model_view.response_body).from_orm(model)
         return json.loads(schema.json())
 
     def on_failed_request(

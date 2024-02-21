@@ -10,6 +10,10 @@ class HTTPMethod(str, Enum):
         * RFC 5789: PATCH Method for HTTP
     """
 
+    def __init__(self, value, description):
+        self._value_ = value
+        self.description = description
+
     def __new__(cls, value, description):
         obj = str.__new__(cls, value)
         obj._value_ = value

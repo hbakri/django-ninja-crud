@@ -129,9 +129,13 @@ class AbstractView(abc.ABC):
         raise NotImplementedError
 
     def create_view_handler(self) -> Callable:
-        path_parameters_schema_class = self.path_parameters
-        query_parameters_schema_class = self.query_parameters
-        request_body_schema_class = self.request_body
+        path_parameters_schema_class: Optional[
+            Type[ninja.Schema]
+        ] = self.path_parameters
+        query_parameters_schema_class: Optional[
+            Type[ninja.Schema]
+        ] = self.query_parameters
+        request_body_schema_class: Optional[Type[ninja.Schema]] = self.request_body
 
         def view_handler(
             request: django.http.HttpRequest,
