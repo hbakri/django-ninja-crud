@@ -146,8 +146,8 @@ class CreateModelViewTest(AbstractModelViewTest):
             else None
         )
         model_class = self.model_view.create_model(
-            request=response.wsgi_request,  # type: ignore
-            path_parameters=path_parameters,
+            getattr(response, "wsgi_request", None),
+            path_parameters,
         ).__class__
         model = model_class.objects.get(id=content["id"])
         schema = cast(Type[Schema], self.model_view.response_body).from_orm(model)

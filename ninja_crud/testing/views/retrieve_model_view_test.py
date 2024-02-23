@@ -150,7 +150,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
             else None
         )
         model = self.model_view.handle_request(
-            request=response.wsgi_request,  # type: ignore
+            request=getattr(response, "wsgi_request", None),
             path_parameters=path_parameters,
             query_parameters=None,
             request_body=None,

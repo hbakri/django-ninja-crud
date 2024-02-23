@@ -186,7 +186,7 @@ class ListModelViewTest(AbstractModelViewTest):
             else None
         )
         return self.model_view.handle_request(
-            request=response.wsgi_request,  # type: ignore
+            request=getattr(response, "wsgi_request", None),
             path_parameters=path_parameters,
             query_parameters=query_parameters,
             request_body=None,
