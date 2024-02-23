@@ -2,7 +2,16 @@ import abc
 import functools
 import http
 import logging
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 import django.http
 import ninja
@@ -105,7 +114,7 @@ class AbstractView(abc.ABC):
         path_parameters: Optional[ninja.Schema],
         query_parameters: Optional[ninja.Schema],
         request_body: Optional[ninja.Schema],
-    ) -> Union[Any, Tuple[http.HTTPStatus, Any]]:  # pragma: no cover
+    ) -> Union[Any, Tuple[http.HTTPStatus, Any]]:
         """
         Handles the request and returns the response.
 
@@ -126,26 +135,22 @@ class AbstractView(abc.ABC):
                 response status is not the default (200 OK), then the method
                 should return a tuple with the status and the response body.
         """
-        raise NotImplementedError
+        pass  # pragma: no cover
 
     def create_view_handler(self) -> Callable:
-        path_parameters_schema_class: Optional[
-            Type[ninja.Schema]
-        ] = self.path_parameters
-        query_parameters_schema_class: Optional[
-            Type[ninja.Schema]
-        ] = self.query_parameters
-        request_body_schema_class: Optional[Type[ninja.Schema]] = self.request_body
+        path_parameters_schema_class = self.path_parameters
+        query_parameters_schema_class = self.query_parameters
+        request_body_schema_class = self.request_body
 
         def view_handler(
             request: django.http.HttpRequest,
-            path_parameters: path_parameters_schema_class = ninja.Path(
+            path_parameters: path_parameters_schema_class = ninja.Path(  # type: ignore
                 default=None, include_in_schema=False
             ),
-            query_parameters: query_parameters_schema_class = ninja.Query(
+            query_parameters: query_parameters_schema_class = ninja.Query(  # type: ignore
                 default=None, include_in_schema=False
             ),
-            request_body: request_body_schema_class = ninja.Body(
+            request_body: request_body_schema_class = ninja.Body(  # type: ignore
                 default=None, include_in_schema=False
             ),
         ):

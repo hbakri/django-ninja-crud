@@ -1,4 +1,3 @@
-from . import enums
 from .abstract_model_view import AbstractModelView
 from .abstract_view import AbstractView
 from .create_model_view import CreateModelView

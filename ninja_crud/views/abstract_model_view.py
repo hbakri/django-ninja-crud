@@ -1,10 +1,10 @@
 import abc
 import http
-import re
 import uuid
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Type, Union
 
 import ninja
+import ninja.signature
 import pydantic
 from django.db.models import Field, ForeignKey, Model
 
@@ -89,19 +89,21 @@ class AbstractModelView(AbstractView, abc.ABC):
         pass
 
     def _infer_path_parameters_schema_class(self):
-        path_parameter_field_names = re.findall(r"{(\w+)}", self.path)
-        if not path_parameter_field_names:
+        path_parameter_names = ninja.signature.utils.get_path_param_names(
+            path=self.path
+        )
+        if not path_parameter_names:
             return
 
         path_parameter_field_definitions = {
-            path_parameter_field_name: (
+            path_parameter_name: (
                 self._infer_field_type(
                     model_class=self.model_viewset_class.model,
-                    field_name=path_parameter_field_name,
+                    field_name=path_parameter_name,
                 ),
                 ...,
             )
-            for path_parameter_field_name in path_parameter_field_names
+            for path_parameter_name in path_parameter_names
         }
         self.path_parameters = pydantic.create_model(
             __model_name="PathParametersSchema", **path_parameter_field_definitions

@@ -141,4 +141,5 @@ class ListModelView(AbstractModelView):
 
     def _inherit_model_viewset_class_attributes(self) -> None:
         if self.response_body is None:
-            self.response_body = List[self.model_viewset_class.default_response_body]
+            default_response_body = self.model_viewset_class.default_response_body
+            self.response_body = List[default_response_body]  # type: ignore
