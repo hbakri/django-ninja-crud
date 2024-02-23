@@ -2,16 +2,7 @@ import abc
 import functools
 import http
 import logging
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import django.http
 import ninja
