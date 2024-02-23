@@ -20,7 +20,7 @@ router = Router()
 def user_is_collection_creator(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        item_id = kwargs.get("path_parameters").id
+        item_id = getattr(kwargs.get("path_parameters"), "id", None)
         item = Item.objects.get(id=item_id)
         if item.collection.created_by != request.auth:
             raise PermissionDenied()
@@ -39,7 +39,9 @@ class ItemViewSet(ModelViewSet):
         get_queryset=lambda path_parameters: Item.objects.get_queryset(),
     )
     retrieve_item = RetrieveModelView(
-        get_model=lambda path_parameters: Item.objects.get(id=path_parameters.id),
+        get_model=lambda path_parameters: Item.objects.get(
+            id=getattr(path_parameters, "id", None)
+        ),
         decorators=[user_is_collection_creator],
     )
     update_item = UpdateModelView(
@@ -52,7 +54,7 @@ class ItemViewSet(ModelViewSet):
     list_tags = ListModelView(
         path="/{id}/tags/",
         get_queryset=lambda path_parameters: Tag.objects.filter(
-            items__id=path_parameters.id
+            items__id=getattr(path_parameters, "id", None)
         ),
         response_body=List[TagOut],
     )

@@ -1,4 +1,5 @@
 import unittest
+from typing import List
 
 from ninja_crud.testing.core.components import utils
 
@@ -15,12 +16,11 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(result, data)
 
     def test_ensure_list_of_dicts_empty_list(self):
-        data = []
+        data: List[dict] = []
         with self.assertRaises(ValueError):
             utils.ensure_list_of_dicts(data=data)
 
     def test_ensure_list_of_dicts_not_list_or_dict(self):
         data = 1
         with self.assertRaises(TypeError):
-            # noinspection PyTypeChecker
-            utils.ensure_list_of_dicts(data=data)
+            utils.ensure_list_of_dicts(data=data)  # type: ignore

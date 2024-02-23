@@ -4,35 +4,19 @@ from django.conf import settings
 from django.db import models
 
 
-class Identifiable(models.Model):
+class Collection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
-    class Meta:
-        abstract = True
-
-
-class Representable(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
-
-    class Meta:
-        abstract = True
-
-
-class Trackable(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        abstract = True
 
-
-class Collection(Identifiable, Representable, Trackable):
-    pass
-
-
-class Item(Identifiable, Representable):
+class Item(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(null=True, blank=True)
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
 
     class Meta:
@@ -44,5 +28,8 @@ class Item(Identifiable, Representable):
         ]
 
 
-class Tag(Identifiable, Representable):
+class Tag(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(null=True, blank=True)
     items = models.ManyToManyField(Item, related_name="tags")

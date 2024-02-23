@@ -80,7 +80,7 @@ class AbstractModelViewTest(ABC):
         query_parameters: dict,
         headers: dict,
         payload: dict,
-    ):  # pragma: no cover
+    ):
         """
         Callback method to handle the response for a successful request.
 
@@ -94,7 +94,7 @@ class AbstractModelViewTest(ABC):
             headers (dict): Headers included in the request.
             payload (dict): Payload sent with the request.
         """
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def on_failed_request(
@@ -104,7 +104,7 @@ class AbstractModelViewTest(ABC):
         query_parameters: dict,
         headers: dict,
         payload: dict,
-    ):  # pragma: no cover
+    ):
         """
         Callback method to handle the response for a failed request.
 
@@ -118,7 +118,7 @@ class AbstractModelViewTest(ABC):
             headers (dict): Headers included in the request.
             payload (dict): Payload sent with the request.
         """
-        pass
+        pass  # pragma: no cover
 
     def bind_to_model_viewset_test_case(
         self, model_viewset_test_case: "ModelViewSetTestCase"
