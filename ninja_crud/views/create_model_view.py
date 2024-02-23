@@ -1,7 +1,7 @@
 import http
 from typing import Callable, Dict, List, Optional, Type
 
-from django.db.models import Model
+from django.db.models import ManyToManyField, Model
 from django.http import HttpRequest
 from ninja import Schema
 
@@ -193,12 +193,22 @@ class CreateModelView(AbstractModelView):
             self.model_viewset_class.model.objects.get(**path_parameters.dict())
 
         instance = self.create_model(request, path_parameters)
+        update_after_save = []
 
         if request_body:
             for field, value in request_body.dict().items():
-                setattr(instance, field, value)
+                if isinstance(instance._meta.get_field(field), ManyToManyField):
+                    update_after_save.append((field, value))
+                else:
+                    setattr(instance, field, value)
 
         self.pre_save(request, path_parameters, instance)
+
+        instance.save()
+
+        if request_body:
+            for field, value in update_after_save:
+                getattr(instance, field).set(value)
 
         instance.save()
 

@@ -55,6 +55,7 @@ class UserRequestBody(Schema):
     username: str
     email: str
     password: str
+    groups: Optional[List[int]] = None
 
 
 class UserResponseBody(Schema):

@@ -24,6 +24,7 @@ class TestUserViewSet(ModelViewSetTestCase, BaseTestCase):
                 "username": "new-user",
                 "email": "user@email.com",
                 "password": "new-password",
+                "groups": [self.group_1.id, self.group_2.id],
             },
             bad_request={"username": "new-user", "password": "new-password"},
             conflict={

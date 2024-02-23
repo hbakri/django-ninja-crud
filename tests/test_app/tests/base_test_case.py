@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
 
 from tests.test_app.models import Collection, Item
@@ -29,3 +29,5 @@ class BaseTestCase(TestCase):
         )
         cls.item_1 = Item.objects.create(name="item-1", collection=cls.collection_1)
         cls.item_2 = Item.objects.create(name="item-2", collection=cls.collection_2)
+        cls.group_1 = Group.objects.create(name="group-1")
+        cls.group_2 = Group.objects.create(name="group-2")
