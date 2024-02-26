@@ -193,12 +193,12 @@ class CreateModelView(AbstractModelView):
             self.model_viewset_class.model.objects.get(**path_parameters.dict())
 
         instance = self.create_model(request, path_parameters)
-        update_after_save = []
+        m2m_fields_to_update = []
 
         if request_body:
             for field, value in request_body.dict().items():
                 if isinstance(instance._meta.get_field(field), ManyToManyField):
-                    update_after_save.append((field, value))
+                    m2m_fields_to_update.append((field, value))
                 else:
                     setattr(instance, field, value)
 
@@ -206,11 +206,8 @@ class CreateModelView(AbstractModelView):
 
         instance.save()
 
-        if request_body:
-            for field, value in update_after_save:
-                getattr(instance, field).set(value)
-
-        instance.save()
+        for field, value in m2m_fields_to_update:
+            getattr(instance, field).set(value)
 
         self.post_save(request, path_parameters, instance)
 
