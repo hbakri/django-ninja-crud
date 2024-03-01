@@ -47,7 +47,7 @@ pydoc-markdown = "^4.8.2"
 pyyaml = "^6.0.1"
 python-frontmatter = "^1.0.1"
 
-[tool.ruff]
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -62,5 +62,5 @@ ignore = [
     "B008",  # do not perform function calls in argument defaults
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-local-folder = ["ninja_crud", "tests", "examples"]

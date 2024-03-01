@@ -13,56 +13,99 @@ class RetrieveModelView(AbstractModelView):
     """
     A view class that handles retrieving a model instance.
 
+    Designed to be used as an attribute of a
+    [`ninja_crud.viewsets.ModelViewSet`](https://django-ninja-crud.readme.io/reference/model-viewset),
+    this class should not be used directly as a standalone view. It is crafted for
+    flexibility and allows extensive customization through overrideable methods for
+    actions including but not limited to permission checks, advanced model instance
+    retrieval. Subclassing is recommended to encapsulate repetitive customizations.
+
     Args:
-        path (str, optional): View path. Defaults to "/{id}".
+        path (str, optional): View path. Defaults to `"/{id}"`.
         path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
-            deserializing path parameters. Automatically inferred from the path
-            and the fields of the `ModelViewSet`'s associated model if not provided.
-            Defaults to None.
+            deserializing path parameters. By default, it is automatically inferred from
+            the path and the fields of the ModelViewSet's associated model. Defaults to
+            `None`.
         response_body (Optional[Type[ninja.Schema]], optional): Schema for serializing
-            the response body. Inherits `ModelViewSet`'s default if unspecified.
-            Defaults to None.
-        get_model (Optional[Callable[[Optional[ninja.Schema]], django.db.models.Model]],
-            optional):
-            Function to retrieve the model instance. Defaults to `default_get_model`.
-            Should have the signature (path_parameters: Optional[Schema]) -> Model.
+            the response body. By default, it inherits the ModelViewSet's default
+            response body. Defaults to `None`.
         decorators (Optional[List[Callable]], optional): Decorators for the view.
-            Defaults to [].
+            Defaults to `[]`.
         router_kwargs (Optional[Dict], optional): Additional router arguments, with
             overrides for 'path', 'methods', and 'response' being ignored. Defaults
-            to {}.
+            to `{}`.
+        retrieve_model (Optional[Callable], optional): Function to retrieve the model
+            instance based on the request, path parameters, and query parameters. This
+            method can be overridden with custom logic, allowing for advanced retrieval
+            logic, such as adding annotations, filtering based on request specifics, or
+            implementing permissions checks, to suit specific requirements and
+            potentially improve efficiency and security. By default, it retrieves the
+            model instance using the ModelViewSet's model and the path parameters.
+            Should have the signature:
+            - `(request: HttpRequest, path_parameters: Optional[Schema],
+                query_parameters: Optional[Schema]) -> Model`.
 
     Raises:
         django.db.models.ObjectDoesNotExist: If the instance is not found.
         django.db.models.MultipleObjectsReturned: If multiple instances are found.
         ninja.errors.ValidationError: For request components validation issues.
 
-    Important:
-        This view does not automatically handle exceptions. It's recommended to
-        implement appropriate
-        [Exception Handlers](https://django-ninja.dev/guides/errors/) in your project to
-        manage such cases effectively, according to your application's needs and
-        conventions. See the [Setup](https://django-ninja-crud.readme.io/docs/03-setup)
-        guide for more information.
+    Since this view does not automatically handle exceptions, implementation requires
+    appropriate [exception handlers](https://django-ninja.dev/guides/errors/) for
+    comprehensive error management according to your application's conventions.
+    Refer to the [setup guide](https://django-ninja-crud.readme.io/docs/03-setup).
 
-    Example Usage:
+    Example:
     ```python
-    # Basic usage using response schema
-    retrieve_department = views.RetrieveModelView(
-        response_body=DepartmentResponseBody,
-    )
+    class DepartmentViewSet(viewsets.ModelViewSet):
+        model = Department
 
-    # Advanced usage with custom get_model logic
-    retrieve_department = views.RetrieveModelView(
-        path="/{id}",
-        response_body=DepartmentResponseBody,
-        get_model=lambda path_parameters: Department.objects.get(id=path_parameters.id),
-    )
+        # Basic usage with implicit default settings
+        retrieve_department = views.RetrieveModelView(
+            response_body=DepartmentOut,
+        )
+
+        # Basic usage with explicit default settings
+        retrieve_department = views.RetrieveModelView(
+            path="/{id}",
+            response_body=DepartmentOut,
+            retrieve_model=lambda request, path_parameters, query_parameters: Department.objects.get(
+                id=path_parameters.id
+            ),
+        )
+
+        # Usage with default response body schema set in the ModelViewSet
+        default_response_body = DepartmentOut
+        retrieve_department = views.RetrieveModelView()
+
+        # Custom queryset retrieval for annotated fields or any advanced logic
+        retrieve_department = views.RetrieveModelView(
+            response_body=DepartmentOut,
+            retrieve_model=lambda request, path_parameters, query_parameters: Department.objects.annotate(
+                count_employees=Count("employees")
+            ).get(id=path_parameters.id),
+        )
+
+        # Authentication at the view level
+        retrieve_department = views.RetrieveModelView(
+            response_body=DepartmentOut,
+            router_kwargs={"auth": ninja.security.django_auth},
+        )
+
+        # Advanced usage with external service
+        retrieve_department = views.RetrieveModelView(
+            response_body=DepartmentOut,
+            retrieve_model=lambda request, path_parameters, query_parameters: external_service.retrieve_department(
+                ...
+            ),
+        )
     ```
 
     Note:
-        The attribute name (e.g., `retrieve_department`) determines the route's name
-        and operation ID in the OpenAPI schema, allowing easy API documentation.
+        The name of the class attribute (e.g., `retrieve_department`) determines the
+        route's name and operation ID in the OpenAPI schema. Can be any valid Python
+        attribute name, but it is recommended to use a name that reflects the action
+        being performed.
     """
 
     def __init__(
@@ -70,9 +113,11 @@ class RetrieveModelView(AbstractModelView):
         path: str = "/{id}",
         path_parameters: Optional[Type[Schema]] = None,
         response_body: Optional[Type[Schema]] = None,
-        get_model: Optional[Callable[[Optional[Schema]], Model]] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
+        retrieve_model: Optional[
+            Callable[[HttpRequest, Optional[Schema], Optional[Schema]], Model]
+        ] = None,
     ) -> None:
         super().__init__(
             method=HTTPMethod.GET,
@@ -85,28 +130,14 @@ class RetrieveModelView(AbstractModelView):
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
-        self.get_model = get_model or self.default_get_model
+        self.retrieve_model = retrieve_model or self._default_retrieve_model
 
-    def default_get_model(self, path_parameters: Optional[Schema]) -> Model:
-        """
-        Default function to retrieve the model instance.
-
-        This method can be overridden with custom logic to retrieve the model instance,
-        allowing for advanced retrieval logic, such as adding annotations, filtering
-        based on request specifics, or implementing permissions checks, to suit specific
-        requirements and potentially improve efficiency and security.
-
-        Args:
-            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
-
-        Returns:
-            django.db.models.Model: The model instance to be retrieved.
-
-        Raises:
-            django.db.models.ObjectDoesNotExist: If no model instance is found.
-            django.db.models.MultipleObjectsReturned: If multiple model instances
-                are found.
-        """
+    def _default_retrieve_model(
+        self,
+        request: HttpRequest,
+        path_parameters: Optional[Schema],
+        query_parameters: Optional[Schema],
+    ) -> Model:
         return self.model_viewset_class.model.objects.get(
             **(path_parameters.dict() if path_parameters else {})
         )
@@ -118,7 +149,7 @@ class RetrieveModelView(AbstractModelView):
         query_parameters: Optional[Schema],
         request_body: Optional[Schema],
     ) -> Model:
-        return self.get_model(path_parameters)
+        return self.retrieve_model(request, path_parameters, query_parameters)
 
     def _inherit_model_viewset_class_attributes(self) -> None:
         if self.response_body is None:

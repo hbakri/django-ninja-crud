@@ -14,7 +14,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     default_request_body = DepartmentIn
     default_response_body = DepartmentOut
 
-    list_departments = views.ListModelView()
+    list_departments = views.ListModelView(response_body=List[DepartmentOut])
     create_department = views.CreateModelView()
     retrieve_department = views.RetrieveModelView()
     update_department = views.UpdateModelView()
@@ -22,7 +22,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
     list_employees = views.ListModelView(
         path="/{id}/employees/",
-        get_queryset=lambda path_parameters: Employee.objects.filter(
+        get_queryset=lambda request, path_parameters: Employee.objects.filter(
             department_id=getattr(path_parameters, "id", None)
         ),
         response_body=List[EmployeeOut],
@@ -31,7 +31,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         path="/{id}/employees/",
         request_body=EmployeeIn,
         response_body=EmployeeOut,
-        create_model=lambda request, path_parameters: Employee(
+        init_model=lambda request, path_parameters: Employee(
             department_id=getattr(path_parameters, "id", None)
         ),
     )

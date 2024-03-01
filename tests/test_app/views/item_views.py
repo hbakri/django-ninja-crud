@@ -36,24 +36,24 @@ class ItemViewSet(ModelViewSet):
 
     list_items = ListModelView(
         query_parameters=OrderByFilterSchema,
-        get_queryset=lambda path_parameters: Item.objects.get_queryset(),
+        get_queryset=lambda request, path_parameters: Item.objects.get_queryset(),
     )
     retrieve_item = RetrieveModelView(
-        get_model=lambda path_parameters: Item.objects.get(
+        retrieve_model=lambda request, path_parameters, _: Item.objects.get(
             id=getattr(path_parameters, "id", None)
         ),
         decorators=[user_is_collection_creator],
     )
     update_item = UpdateModelView(
-        pre_save=lambda request, path_parameters, instance: None,
-        post_save=lambda request, path_parameters, instance: None,
+        pre_save=lambda request, instance: None,
+        post_save=lambda request, instance: None,
         decorators=[user_is_collection_creator],
     )
     delete_item = DeleteModelView(decorators=[user_is_collection_creator])
 
     list_tags = ListModelView(
         path="/{id}/tags/",
-        get_queryset=lambda path_parameters: Tag.objects.filter(
+        get_queryset=lambda request, path_parameters: Tag.objects.filter(
             items__id=getattr(path_parameters, "id", None)
         ),
         response_body=List[TagOut],

@@ -4,6 +4,7 @@ from typing import Optional
 import django.http
 import django.test
 from django.core.exceptions import ObjectDoesNotExist
+from ninja import Schema
 
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters
@@ -121,9 +122,16 @@ class DeleteModelViewTest(AbstractModelViewTest):
         """
         self.model_viewset_test_case.assertEqual(response.content, b"")
 
-        model_class = self.model_viewset_test_case.model_viewset_class.model
+        path_parameters_schema: Optional[Schema] = (
+            self.model_view.path_parameters(**path_parameters)
+            if self.model_view.path_parameters
+            else None
+        )
         with self.model_viewset_test_case.assertRaises(ObjectDoesNotExist):
-            model_class.objects.get(id=path_parameters["id"])
+            self.model_view.get_model(
+                getattr(response, "wsgi_request", None),
+                path_parameters_schema,
+            )
 
     def on_failed_request(
         self,
