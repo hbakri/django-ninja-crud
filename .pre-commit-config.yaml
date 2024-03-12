@@ -28,7 +28,4 @@ repos:
 
 ci:
   autofix_commit_msg: 'ci(pre-commit): auto fixes'
-  autofix_prs: true
-  autoupdate_branch: 'main'
   autoupdate_commit_msg: 'ci(pre-commit): auto update'
-  autoupdate_schedule: 'weekly'
