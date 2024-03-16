@@ -1,7 +1,7 @@
 import http
 from typing import Callable, Dict, List, Optional, Type
 
-from django.db.models import Model
+from django.db.models import ManyToManyField, Model
 from django.http import HttpRequest
 from ninja import Schema
 
@@ -191,11 +191,15 @@ class UpdateModelView(AbstractModelView):
 
         if request_body:
             for field, value in request_body.dict(exclude_unset=True).items():
-                setattr(instance, field, value)
+                if isinstance(instance._meta.get_field(field), ManyToManyField):
+                    getattr(instance, field).set(value)
+                else:
+                    setattr(instance, field, value)
 
         self.pre_save(request, instance)
         instance.save()
         self.post_save(request, instance)
+
         return instance
 
     def handle_request(
