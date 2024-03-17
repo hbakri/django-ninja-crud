@@ -45,11 +45,9 @@ class CollectionViewSet(ModelViewSet):
     create_collection = CreateModelView(
         request_body=CollectionIn,
         response_body=CollectionOut,
-        create_model=lambda request, path_parameters: Collection(
-            created_by=request.auth
-        ),
-        pre_save=lambda request, path_parameters, instance: instance.full_clean(),
-        post_save=lambda request, path_parameters, instance: None,
+        init_model=lambda request, path_parameters: Collection(created_by=request.auth),
+        pre_save=lambda request, instance: instance.full_clean(),
+        post_save=lambda request, instance: None,
     )
     retrieve_collection = RetrieveModelView(response_body=CollectionOut)
     update_collection = UpdateModelView(
@@ -58,14 +56,14 @@ class CollectionViewSet(ModelViewSet):
         decorators=[user_is_creator],
     )
     delete_collection = DeleteModelView(
-        pre_delete=lambda request, path_parameters, instance: None,
-        post_delete=lambda request, path_parameters, instance: None,
+        pre_delete=lambda request, instance: None,
+        post_delete=lambda request, instance: None,
         decorators=[user_is_creator],
     )
 
     list_collection_items = ListModelView(
         path="/{id}/items/",
-        get_queryset=lambda path_parameters: Item.objects.filter(
+        get_queryset=lambda request, path_parameters: Item.objects.filter(
             collection_id=getattr(path_parameters, "id", None)
         ),
         response_body=List[ItemOut],
@@ -73,13 +71,13 @@ class CollectionViewSet(ModelViewSet):
     )
     create_collection_item = CreateModelView(
         path="/{id}/items/",
-        create_model=lambda request, path_parameters: Item(
+        init_model=lambda request, path_parameters: Item(
             collection_id=getattr(path_parameters, "id", None)
         ),
         request_body=ItemIn,
         response_body=ItemOut,
-        pre_save=lambda request, path_parameters, instance: instance.full_clean(),
-        post_save=lambda request, path_parameters, instance: None,
+        pre_save=lambda request, instance: instance.full_clean(),
+        post_save=lambda request, instance: None,
         decorators=[user_is_creator],
     )
 

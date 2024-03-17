@@ -43,6 +43,10 @@ class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
     )
     test_delete_department = testing.views.DeleteModelViewTest(path_parameters)
 
+    @property
+    def employees_path_parameters(self):
+        return testing.components.PathParameters(ok={"id": self.department_1.id})
+
     employee_payloads = testing.components.Payloads(
         ok={
             "first_name": "new_first_name",
@@ -52,8 +56,8 @@ class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
     )
 
     test_list_employees = testing.views.ListModelViewTest(
-        path_parameters=path_parameters
+        path_parameters=employees_path_parameters
     )
     test_create_employee = testing.views.CreateModelViewTest(
-        path_parameters=path_parameters, payloads=employee_payloads
+        path_parameters=employees_path_parameters, payloads=employee_payloads
     )

@@ -23,20 +23,22 @@ class AbstractModelView(AbstractView, abc.ABC):
         method (HTTPMethod): View HTTP method.
         path (str): View path.
         path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
-            deserializing path parameters. Defaults to None.
+            deserializing path parameters. By default, it is automatically inferred from
+            the path and the fields of the ModelViewSet's associated model. Defaults to
+            `None`.
         query_parameters (Optional[Type[ninja.Schema]], optional): Schema for
-            deserializing query parameters. Defaults to None.
+            deserializing query parameters. Defaults to `None`.
         request_body (Optional[Type[ninja.Schema]], optional): Schema for deserializing
-            the request body. Defaults to None.
+            the request body. Defaults to `None`.
         response_body (Optional[Type[ninja.Schema]], optional): Schema for serializing
-            the response body. Defaults to None.
+            the response body. Defaults to `None`.
         response_status (http.HTTPStatus, optional): HTTP status code for the response.
-            Defaults to http.HTTPStatus.OK.
+            Defaults to `http.HTTPStatus.OK`.
         decorators (Optional[List[Callable]], optional): Decorators for the view.
-            Defaults to [].
+            Defaults to `[]`.
         router_kwargs (Optional[Dict], optional): Additional router arguments, with
             overrides for 'path', 'methods', and 'response' being ignored. Defaults
-            to {}.
+            to `{}`.
     """
 
     def __init__(

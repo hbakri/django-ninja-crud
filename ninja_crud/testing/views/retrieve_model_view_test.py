@@ -136,6 +136,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         expected_output = self._get_expected_output(
             response=response,
             path_parameters=path_parameters,
+            query_parameters=query_parameters,
         )
         self.model_viewset_test_case.assertDictEqual(actual_output, expected_output)
 
@@ -143,19 +144,24 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         self,
         response: django.http.HttpResponse,
         path_parameters: dict,
+        query_parameters: dict,
     ) -> dict:
-        path_parameters = (
+        path_parameters_schema: Optional[Schema] = (
             self.model_view.path_parameters(**path_parameters)
             if self.model_view.path_parameters
             else None
         )
-        model = self.model_view.handle_request(
-            request=getattr(response, "wsgi_request", None),
-            path_parameters=path_parameters,
-            query_parameters=None,
-            request_body=None,
+        query_parameters_schema = (
+            self.model_view.query_parameters(**query_parameters)
+            if self.model_view.query_parameters
+            else None
         )
-        schema = cast(Type[Schema], self.model_view.response_body).from_orm(model)
+        instance = self.model_view.retrieve_model(
+            getattr(response, "wsgi_request", None),
+            path_parameters_schema,
+            query_parameters_schema,
+        )
+        schema = cast(Type[Schema], self.model_view.response_body).from_orm(instance)
         return json.loads(schema.json())
 
     def on_failed_request(

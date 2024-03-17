@@ -140,14 +140,14 @@ class CreateModelViewTest(AbstractModelViewTest):
         self, response: django.http.HttpResponse, path_parameters: dict
     ) -> dict:
         content = json.loads(response.content)
-        path_parameters = (
+        path_parameters_schema = (
             self.model_view.path_parameters(**path_parameters)
             if self.model_view.path_parameters
             else None
         )
-        model_class = self.model_view.create_model(
+        model_class = self.model_view.init_model(
             getattr(response, "wsgi_request", None),
-            path_parameters,
+            path_parameters_schema,
         ).__class__
         model = model_class.objects.get(id=content["id"])
         schema = cast(Type[Schema], self.model_view.response_body).from_orm(model)

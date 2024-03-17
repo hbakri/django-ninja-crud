@@ -13,74 +13,119 @@ class CreateModelView(AbstractModelView):
     """
     A view class that handles creating a model instance.
 
+    Designed to be used as an attribute of a
+    [`ninja_crud.viewsets.ModelViewSet`](https://django-ninja-crud.readme.io/reference/model-viewset),
+    this class should not be used directly as a standalone view. It is crafted for
+    flexibility and allows extensive customization through overrideable methods for
+    actions including but not limited to permission checks, advanced model instance
+    creation, and hooks for custom logic, both before and after saving.
+    Subclassing is recommended to encapsulate repetitive customizations.
+
     Args:
-        path (str, optional): View path. Defaults to "/".
+        path (str, optional): View path. Defaults to `"/"`.
         path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
-            deserializing path parameters. Automatically inferred from the path
-            and the fields of the `ModelViewSet`'s associated model if not provided.
-            Defaults to None.
+            deserializing path parameters. By default, it is automatically inferred from
+            the path and the fields of the ModelViewSet's associated model. Defaults to
+            `None`.
         request_body (Optional[Type[ninja.Schema]], optional): Schema for
-            deserializing the request body. Inherits `ModelViewSet`'s default if
-            unspecified. Defaults to None.
+            deserializing the request body. By default, it inherits the ModelViewSet's
+            default request body. Defaults to `None`.
         response_body (Optional[Type[ninja.Schema]], optional): Schema for serializing
-            the response body. Inherits `ModelViewSet`'s default if unspecified.
-            Defaults to None.
-        create_model (Optional[Callable[[django.http.HttpRequest,
-            Optional[ninja.Schema]], django.db.models.Model]], optional): Function to
-            create the model instance. Defaults to `default_create_model`. Should have
-            the signature (request: HttpRequest, path_parameters: Optional[Schema])
-            -> Model.
-        pre_save (Optional[Callable[[django.http.HttpRequest, Optional[ninja.Schema],
-            django.db.models.Model], None]], optional):
-            Hook executed before saving the instance. Should have the signature
-            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model)
-            -> None.
-        post_save (Optional[Callable[[django.http.HttpRequest, Optional[ninja.Schema],
-            django.db.models.Model], None]], optional):
-            Hook executed after saving the instance. Should have the signature
-            (request: HttpRequest, path_parameters: Optional[Schema], instance: Model)
-            -> None.
+            the response body. By default, it inherits the ModelViewSet's default
+            response body. Defaults to `None`.
         decorators (Optional[List[Callable]], optional): Decorators for the view.
-            Defaults to [].
+            Defaults to `[]`.
         router_kwargs (Optional[Dict], optional): Additional router arguments, with
             overrides for 'path', 'methods', and 'response' being ignored. Defaults
-            to {}.
+            to `{}`.
+        init_model (Optional[Callable], optional): Function to initialize the model
+            instance. This method can be overridden with custom logic, allowing for
+            advanced initialization logic, such as setting default values using request
+            specifics or path parameters, to suit specific requirements. By default, it
+            initializes the model instance using the ModelViewSet's model without any
+            additional logic. Should have the signature:
+            - `(request: HttpRequest, path_parameters: Optional[Schema]) -> Model`.
+        pre_save (Optional[Callable], optional): Hook executed before saving the created
+            instance, allowing for custom logic such as permission checks, logging, or
+            side effects. By default, it performs full model validation with
+            [`.full_clean()`](https://docs.djangoproject.com/en/5.0/ref/models/instances/#django.db.models.Model.full_clean).
+            Should have the signature:
+            - `(request: HttpRequest, instance: Model) -> None`.
+        post_save (Optional[Callable], optional): Hook executed after saving the created
+            instance, allowing for custom logic such as sending notifications, logging,
+            or side effects. No-op by default. Should have the signature:
+            - `(request: HttpRequest, instance: Model) -> None`.
+        create_model (Optional[Callable], optional): Function to create the model
+            instance. This method can be overridden with custom logic, allowing for
+            advanced creation logic, such as implementing additional checks, or
+            permissions checks, to suit specific requirements. By default, it calls
+            `init_model`, sets the instance's fields using the request body, calls
+            `pre_save`, saves the instance using
+            [`.save()`](https://docs.djangoproject.com/en/5.0/ref/models/instances/#django.db.models.Model.save),
+            and then calls `post_save`. When overriding this method, note that the
+            init_model, pre- and post-hooks are not called anymore.
+            Should have the signature:
+            - `(request: HttpRequest, path_parameters: Optional[Schema],
+                request_body: Optional[Schema]) -> Model`.
 
     Raises:
         django.core.exceptions.ValidationError: For model validation issues on clean.
         django.db.utils.IntegrityError: For database integrity violations on save.
         ninja.errors.ValidationError: For request components validation issues.
 
-    Important:
-        This view does not automatically handle exceptions. It's recommended to
-        implement appropriate
-        [Exception Handlers](https://django-ninja.dev/guides/errors/) in your project to
-        manage such cases effectively, according to your application's needs and
-        conventions. See the [Setup](https://django-ninja-crud.readme.io/docs/03-setup)
-        guide for more information.
+    Since this view does not automatically handle exceptions, implementation requires
+    appropriate [exception handlers](https://django-ninja.dev/guides/errors/) for
+    comprehensive error management according to your application's conventions.
+    Refer to the [setup guide](https://django-ninja-crud.readme.io/docs/03-setup).
 
-    Example Usage:
+    Example:
     ```python
-    # Basic usage using request and response schemas
-    create_department = views.CreateModelView(
-        request_body=DepartmentRequestBody,
-        response_body=DepartmentResponseBody,
-    )
+    class DepartmentViewSet(viewsets.ModelViewSet):
+        model = Department
 
-    # Advanced usage with custom create_model, pre_save, and post_save logic
-    create_department = views.CreateModelView(
-        path="/",
-        request_body=DepartmentRequestBody,
-        response_body=DepartmentResponseBody,
-        create_model=lambda request, path_parameters: Department(),
-        pre_save=lambda request, path_parameters, instance: instance.full_clean(),
-        post_save=lambda request, path_parameters, instance: None,
-    )
+        # Basic usage with implicit default settings
+        create_department = views.CreateModelView(
+            request_body=DepartmentIn,
+            response_body=DepartmentOut,
+        )
+
+        # Basic usage with explicit default settings
+        create_department = views.CreateModelView(
+            path="/",
+            request_body=DepartmentIn,
+            response_body=DepartmentOut,
+            init_model=lambda request, path_parameters: Department(),
+            pre_save=lambda request, instance: instance.full_clean(),
+            post_save=lambda request, instance: None,
+        )
+
+        # Usage with default request and response body schemas set in the ModelViewSet
+        default_request_body = DepartmentIn
+        default_response_body = DepartmentOut
+        create_department = views.CreateModelView()
+
+        # Authentication at the view level
+        create_department = views.CreateModelView(
+            request_body=DepartmentIn,
+            response_body=DepartmentOut,
+            router_kwargs={"auth": ninja.security.django_auth},
+        )
+
+        # Advanced usage with external service
+        create_department = views.CreateModelView(
+            request_body=DepartmentIn,
+            response_body=DepartmentOut,
+            create_model=lambda request, path_parameters, request_body: external_service.create_department(
+                ...
+            ),
+        )
     ```
 
     Note:
-        The attribute name (e.g., `create_department`) determines the route's name
-        and operation ID in the OpenAPI schema, allowing easy API documentation.
+        The name of the class attribute (e.g., `create_department`) determines the
+        route's name and operation ID in the OpenAPI schema. Can be any valid Python
+        attribute name, but it is recommended to use a name that reflects the action
+        being performed.
     """
 
     def __init__(
@@ -89,15 +134,14 @@ class CreateModelView(AbstractModelView):
         path_parameters: Optional[Schema] = None,
         request_body: Optional[Type[Schema]] = None,
         response_body: Optional[Type[Schema]] = None,
-        create_model: Optional[Callable[[HttpRequest, Optional[Schema]], Model]] = None,
-        pre_save: Optional[
-            Callable[[HttpRequest, Optional[Schema], Model], None]
-        ] = None,
-        post_save: Optional[
-            Callable[[HttpRequest, Optional[Schema], Model], None]
-        ] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
+        init_model: Optional[Callable[[HttpRequest, Optional[Schema]], Model]] = None,
+        pre_save: Optional[Callable[[HttpRequest, Model], None]] = None,
+        post_save: Optional[Callable[[HttpRequest, Model], None]] = None,
+        create_model: Optional[
+            Callable[[HttpRequest, Optional[Schema], Optional[Schema]], Model]
+        ] = None,
     ) -> None:
         super().__init__(
             method=HTTPMethod.POST,
@@ -110,77 +154,48 @@ class CreateModelView(AbstractModelView):
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
-        self.create_model = create_model or self.default_create_model
-        self.pre_save = pre_save or self.default_pre_save
-        self.post_save = post_save or self.default_post_save
+        self.init_model = init_model or self._default_init_model
+        self.pre_save = pre_save or self._default_pre_save
+        self.post_save = post_save or self._default_post_save
+        self.create_model = create_model or self._default_create_model
 
-    def default_create_model(
-        self,
-        request: HttpRequest,
-        path_parameters: Optional[Schema],
+    def _default_init_model(
+        self, request: HttpRequest, path_parameters: Optional[Schema]
     ) -> Model:
-        """
-        Default function to create the model instance.
-
-        This method can be overridden with custom logic to create the model instance,
-        allowing for advanced creation logic, such as setting values based on request
-        specifics, implementing permissions checks, or side effects.
-
-        Args:
-            request (django.http.HttpRequest): The request object.
-            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
-
-        Returns:
-            django.db.models.Model: The model instance to be created.
-        """
         return self.model_viewset_class.model()
 
     @staticmethod
-    def default_pre_save(
-        request: HttpRequest,
-        path_parameters: Optional[Schema],
-        instance: Model,
-    ) -> None:
-        """
-        Default pre-save hook that is called before the model instance is created.
-        Full model validation is performed by default with `instance.full_clean()`.
-
-        This method can be overridden with custom pre-save logic, such as
-        implementing additional checks, permissions, or side effects.
-
-        Args:
-            request (django.http.HttpRequest): The request object.
-            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
-            instance (django.db.models.Model): The model instance to be created, with
-                the changes already applied but not yet saved.
-
-        Returns:
-            None
-        """
+    def _default_pre_save(request: HttpRequest, instance: Model) -> None:
         instance.full_clean()
 
     @staticmethod
-    def default_post_save(
+    def _default_post_save(request: HttpRequest, instance: Model) -> None:
+        pass
+
+    def _default_create_model(
+        self,
         request: HttpRequest,
         path_parameters: Optional[Schema],
-        instance: Model,
-    ) -> None:
-        """
-        Default post-save hook that is called after the model instance is created.
-        No-op by default.
+        request_body: Optional[Schema],
+    ) -> Model:
+        instance = self.init_model(request, path_parameters)
 
-        This method can be overridden with custom post-save logic, such as
-        implementing additional side effects, logging, or sending notifications.
+        m2m_fields_to_set = []
+        if request_body:
+            for field, value in request_body.dict().items():
+                if isinstance(instance._meta.get_field(field), ManyToManyField):
+                    m2m_fields_to_set.append((field, value))
+                else:
+                    setattr(instance, field, value)
 
-        Args:
-            request (django.http.HttpRequest): The request object.
-            path_parameters (Optional[ninja.Schema]): Deserialized path parameters.
-            instance (django.db.models.Model): The created model instance.
+        self.pre_save(request, instance)
+        instance.save()
+        self.post_save(request, instance)
 
-        Returns:
-            None
-        """
-        pass
+        for field, value in m2m_fields_to_set:
+            getattr(instance, field).set(value)
+
+        return instance
 
     def handle_request(
         self,
@@ -189,29 +204,7 @@ class CreateModelView(AbstractModelView):
         query_parameters: Optional[Schema],
         request_body: Optional[Schema],
     ) -> Model:
-        if path_parameters:
-            self.model_viewset_class.model.objects.get(**path_parameters.dict())
-
-        instance = self.create_model(request, path_parameters)
-        m2m_fields_to_update = []
-
-        if request_body:
-            for field, value in request_body.dict().items():
-                if isinstance(instance._meta.get_field(field), ManyToManyField):
-                    m2m_fields_to_update.append((field, value))
-                else:
-                    setattr(instance, field, value)
-
-        self.pre_save(request, path_parameters, instance)
-
-        instance.save()
-
-        for field, value in m2m_fields_to_update:
-            getattr(instance, field).set(value)
-
-        self.post_save(request, path_parameters, instance)
-
-        return instance
+        return self.create_model(request, path_parameters, request_body)
 
     def _inherit_model_viewset_class_attributes(self) -> None:
         if self.request_body is None:

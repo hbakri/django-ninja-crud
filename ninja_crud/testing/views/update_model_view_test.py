@@ -144,9 +144,16 @@ class UpdateModelViewTest(AbstractModelViewTest):
     def _get_expected_output(
         self, response: django.http.HttpResponse, path_parameters: dict
     ) -> dict:
-        model_class = self.model_viewset_test_case.model_viewset_class.model
-        model = model_class.objects.get(id=path_parameters["id"])
-        schema = cast(Type[Schema], self.model_view.response_body).from_orm(model)
+        path_parameters_schema: Optional[Schema] = (
+            self.model_view.path_parameters(**path_parameters)
+            if self.model_view.path_parameters
+            else None
+        )
+        instance = self.model_view.get_model(
+            getattr(response, "wsgi_request", None),
+            path_parameters_schema,
+        )
+        schema = cast(Type[Schema], self.model_view.response_body).from_orm(instance)
         return json.loads(schema.json())
 
     def on_failed_request(

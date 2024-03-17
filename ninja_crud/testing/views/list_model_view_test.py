@@ -175,21 +175,20 @@ class ListModelViewTest(AbstractModelViewTest):
         path_parameters: dict,
         query_parameters: dict,
     ) -> django.db.models.QuerySet:
-        path_parameters = (
+        path_parameters_schema = (
             self.model_view.path_parameters(**path_parameters)
             if self.model_view.path_parameters
             else None
         )
-        query_parameters = (
+        query_parameters_schema = (
             self.model_view.query_parameters(**query_parameters)
             if self.model_view.query_parameters
             else None
         )
-        return self.model_view.handle_request(
-            request=getattr(response, "wsgi_request", None),
-            path_parameters=path_parameters,
-            query_parameters=query_parameters,
-            request_body=None,
+        return self.model_view.list_models(
+            getattr(response, "wsgi_request", None),
+            path_parameters_schema,
+            query_parameters_schema,
         )
 
     def _validate_response_items(
