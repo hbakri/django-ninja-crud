@@ -16,7 +16,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
     list_departments = views.ListModelView(response_body=List[DepartmentOut])
     create_department = views.CreateModelView()
-    retrieve_department = views.RetrieveModelView()
+    read_department = views.ReadModelView()
     update_department = views.UpdateModelView()
     delete_department = views.DeleteModelView()
 

@@ -48,13 +48,13 @@ docs:
     hidden: false
     order: 2
     path: "docs/reference/views/CreateModelView.md"
-  - title: "RetrieveModelView"
-    slug: "retrieve-model-view"
-    excerpt: "Insight into the workings of the RetrieveModelView in Django Ninja CRUD"
+  - title: "ReadModelView"
+    slug: "read-model-view"
+    excerpt: "Insight into the workings of the ReadModelView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 3
-    path: "docs/reference/views/RetrieveModelView.md"
+    path: "docs/reference/views/ReadModelView.md"
   - title: "UpdateModelView"
     slug: "update-model-view"
     excerpt: "Understanding and applying the UpdateModelView in Django Ninja CRUD"
@@ -131,13 +131,13 @@ docs:
     hidden: false
     order: 2
     path: "docs/reference/testing/views/CreateModelViewTest.md"
-  - title: "RetrieveModelViewTest"
-    slug: "retrieve-model-view-test"
-    excerpt: "Provides a declarative and powerful way to test RetrieveModelView"
+  - title: "ReadModelViewTest"
+    slug: "read-model-view-test"
+    excerpt: "Provides a declarative and powerful way to test ReadModelView"
     categorySlug: "testing-views"
     hidden: false
     order: 3
-    path: "docs/reference/testing/views/RetrieveModelViewTest.md"
+    path: "docs/reference/testing/views/ReadModelViewTest.md"
   - title: "UpdateModelViewTest"
     slug: "update-model-view-test"
     excerpt: "Provides a declarative and powerful way to test UpdateModelView"

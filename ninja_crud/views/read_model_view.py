@@ -9,7 +9,7 @@ from ninja_crud.views.abstract_model_view import AbstractModelView
 from ninja_crud.views.enums import HTTPMethod
 
 
-class RetrieveModelView(AbstractModelView):
+class ReadModelView(AbstractModelView):
     """
     A view class that handles retrieving a model instance.
 
@@ -36,12 +36,12 @@ class RetrieveModelView(AbstractModelView):
         router_kwargs (Optional[Dict], optional): Additional router arguments, with
             overrides for 'path', 'methods', and 'response' being ignored. Defaults
             to `{}`.
-        retrieve_model (Optional[Callable], optional): Function to retrieve the model
-            instance based on the request, path parameters, and query parameters. This
-            method can be overridden with custom logic, allowing for advanced retrieval
-            logic, such as adding annotations, filtering based on request specifics, or
+        read_model (Optional[Callable], optional): Function to get the instance
+            based on the request, path parameters, and query parameters. This method
+            can be overridden with custom logic, allowing for advanced retrieval logic,
+            such as adding annotations, filtering based on request specifics, or
             implementing permissions checks, to suit specific requirements and
-            potentially improve efficiency and security. By default, it retrieves the
+            potentially improve efficiency and security. By default, it gets the
             model instance using the ModelViewSet's model and the path parameters.
             Should have the signature:
             - `(request: HttpRequest, path_parameters: Optional[Schema],
@@ -63,48 +63,48 @@ class RetrieveModelView(AbstractModelView):
         model = Department
 
         # Basic usage with implicit default settings
-        retrieve_department = views.RetrieveModelView(
+        read_department = views.ReadModelView(
             response_body=DepartmentOut,
         )
 
         # Basic usage with explicit default settings
-        retrieve_department = views.RetrieveModelView(
+        read_department = views.ReadModelView(
             path="/{id}",
             response_body=DepartmentOut,
-            retrieve_model=lambda request, path_parameters, query_parameters: Department.objects.get(
+            read_model=lambda request, path_parameters, query_parameters: Department.objects.get(
                 id=path_parameters.id
             ),
         )
 
         # Usage with default response body schema set in the ModelViewSet
         default_response_body = DepartmentOut
-        retrieve_department = views.RetrieveModelView()
+        read_department = views.ReadModelView()
 
         # Custom queryset retrieval for annotated fields or any advanced logic
-        retrieve_department = views.RetrieveModelView(
+        read_department = views.ReadModelView(
             response_body=DepartmentOut,
-            retrieve_model=lambda request, path_parameters, query_parameters: Department.objects.annotate(
+            read_model=lambda request, path_parameters, query_parameters: Department.objects.annotate(
                 count_employees=Count("employees")
             ).get(id=path_parameters.id),
         )
 
         # Authentication at the view level
-        retrieve_department = views.RetrieveModelView(
+        read_department = views.ReadModelView(
             response_body=DepartmentOut,
             router_kwargs={"auth": ninja.security.django_auth},
         )
 
         # Advanced usage with external service
-        retrieve_department = views.RetrieveModelView(
+        read_department = views.ReadModelView(
             response_body=DepartmentOut,
-            retrieve_model=lambda request, path_parameters, query_parameters: external_service.retrieve_department(
+            read_model=lambda request, path_parameters, query_parameters: external_service.read_department(
                 ...
             ),
         )
     ```
 
     Note:
-        The name of the class attribute (e.g., `retrieve_department`) determines the
+        The name of the class attribute (e.g., `read_department`) determines the
         route's name and operation ID in the OpenAPI schema. Can be any valid Python
         attribute name, but it is recommended to use a name that reflects the action
         being performed.
@@ -118,7 +118,7 @@ class RetrieveModelView(AbstractModelView):
         response_body: Optional[Type[Schema]] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
-        retrieve_model: Optional[
+        read_model: Optional[
             Callable[[HttpRequest, Optional[Schema], Optional[Schema]], Model]
         ] = None,
     ) -> None:
@@ -133,9 +133,9 @@ class RetrieveModelView(AbstractModelView):
             decorators=decorators,
             router_kwargs=router_kwargs,
         )
-        self.retrieve_model = retrieve_model or self._default_retrieve_model
+        self.read_model = read_model or self._default_read_model
 
-    def _default_retrieve_model(
+    def _default_read_model(
         self,
         request: HttpRequest,
         path_parameters: Optional[Schema],
@@ -152,7 +152,7 @@ class RetrieveModelView(AbstractModelView):
         query_parameters: Optional[Schema],
         request_body: Optional[Schema],
     ) -> Model:
-        return self.retrieve_model(request, path_parameters, query_parameters)
+        return self.read_model(request, path_parameters, query_parameters)
 
     def _inherit_model_viewset_class_attributes(self) -> None:
         if self.response_body is None:

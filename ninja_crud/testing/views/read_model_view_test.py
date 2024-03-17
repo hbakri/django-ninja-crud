@@ -10,31 +10,31 @@ from ninja import Schema
 from ninja_crud.testing.core import ArgOrCallable, TestCaseType, ViewTestManager
 from ninja_crud.testing.core.components import Headers, PathParameters
 from ninja_crud.testing.views import AbstractModelViewTest
-from ninja_crud.views import RetrieveModelView
+from ninja_crud.views import ReadModelView
 
 
-class RetrieveModelViewTest(AbstractModelViewTest):
+class ReadModelViewTest(AbstractModelViewTest):
     """
-    Provides a declarative and powerful way to test the retrieve model view.
+    Provides a declarative and powerful way to test the read model view.
 
-    This class executes a matrix of test cases to validate the functionality of the `RetrieveModelView`,
+    This class executes a matrix of test cases to validate the functionality of the `ReadModelView`,
     checking its behavior under various conditions using combinations of path parameters and headers.
 
     Each test method within this class is automatically attached to the test case when instantiated
     as a class attribute on a `ModelViewSetTestCase` subclass. The test method names are dynamically
-    generated based on the class attribute name. For example, if the `RetrieveModelViewTest` is being
-    used to test a `RetrieveModelView` named `retrieve_department_view`, the test methods will be named
-    `test_retrieve_department_view__test_retrieve_model_ok`,
-    `test_retrieve_department_view__test_retrieve_model_headers_unauthorized`, etc.
+    generated based on the class attribute name. For example, if the `ReadModelViewTest` is being
+    used to test a `ReadModelView` named `read_department_view`, the test methods will be named
+    `test_read_department_view__test_read_model_ok`,
+    `test_read_department_view__test_read_model_headers_unauthorized`, etc.
 
     This naming convention ensures clear and consistent identification of test cases.
 
     Attributes:
-        model_view (RetrieveModelView): The retrieve model view to be tested.
+        model_view (ReadModelView): The read model view to be tested.
         model_viewset_test_case (ModelViewSetTestCase): The test case to which this test belongs.
 
     Example:
-    1. Let's say you defined a `RetrieveModelView` like this:
+    1. Let's say you defined a `ReadModelView` like this:
     ```python
     # examples/views/department_views.py
     from ninja_crud import views, viewsets
@@ -45,11 +45,11 @@ class RetrieveModelViewTest(AbstractModelViewTest):
     class DepartmentViewSet(viewsets.ModelViewSet):
         model = Department
 
-        retrieve_department_view = views.RetrieveModelView(
+        read_department_view = views.ReadModelView(
             response_body=DepartmentOut
         )
     ```
-    2. You can test the `retrieve_department_view` like this:
+    2. You can test the `read_department_view` like this:
     ```python
     # examples/tests/test_department_views.py
     from ninja_crud import testing
@@ -63,7 +63,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         def setUpTestData(cls):
             cls.department_1 = Department.objects.create(title="department-1")
 
-        test_retrieve_department_view = testing.views.RetrieveModelViewTest(
+        test_read_department_view = testing.views.ReadModelViewTest(
             path_parameters=lambda test_case: testing.components.PathParameters(
                 ok={"id": test_case.department_1.id},
                 not_found={"id": 999}
@@ -72,13 +72,13 @@ class RetrieveModelViewTest(AbstractModelViewTest):
     ```
 
     Note:
-        The class attribute `RetrieveModelViewTest` should be named after the view being tested.
-        For example, if you are testing the `retrieve_department_view` attribute of the
+        The class attribute `ReadModelViewTest` should be named after the view being tested.
+        For example, if you are testing the `read_department_view` attribute of the
         `DepartmentViewSet` class, the class attribute should be named
-        `test_retrieve_department_view`.
+        `test_read_department_view`.
     """
 
-    model_view: RetrieveModelView
+    model_view: ReadModelView
 
     def __init__(
         self,
@@ -86,7 +86,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         headers: Optional[ArgOrCallable[Headers, TestCaseType]] = None,
     ) -> None:
         """
-        Initializes the RetrieveModelViewTest with path parameters and optional headers.
+        Initializes the ReadModelViewTest with path parameters and optional headers.
 
         Args:
             path_parameters (ArgOrCallable[PathParameters, TestCaseType]): Path parameters for
@@ -103,7 +103,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
                 request. Similar to path_parameters, this can be a static object, a callable, or
                 a property on the test case. Defaults to None.
         """
-        super().__init__(model_view_class=RetrieveModelView)
+        super().__init__(model_view_class=ReadModelView)
         self.view_test_manager = ViewTestManager(
             simulate_request=self.simulate_request,
             path_parameters=path_parameters,
@@ -156,7 +156,7 @@ class RetrieveModelViewTest(AbstractModelViewTest):
             if self.model_view.query_parameters
             else None
         )
-        instance = self.model_view.retrieve_model(
+        instance = self.model_view.read_model(
             getattr(response, "wsgi_request", None),
             path_parameters_schema,
             query_parameters_schema,
@@ -188,8 +188,8 @@ class RetrieveModelViewTest(AbstractModelViewTest):
         """
         pass
 
-    @django.test.tag("retrieve")
-    def test_retrieve_model_ok(self):
+    @django.test.tag("read")
+    def test_read_model_ok(self):
         """
         Tests the successful scenarios.
 
@@ -202,8 +202,8 @@ class RetrieveModelViewTest(AbstractModelViewTest):
             status=http.HTTPStatus.OK,
         )
 
-    @django.test.tag("retrieve")
-    def test_retrieve_model_headers_unauthorized(self):
+    @django.test.tag("read")
+    def test_read_model_headers_unauthorized(self):
         """
         Tests the unauthorized headers scenarios.
 
@@ -215,8 +215,8 @@ class RetrieveModelViewTest(AbstractModelViewTest):
             on_completion=self.on_failed_request,
         )
 
-    @django.test.tag("retrieve")
-    def test_retrieve_model_headers_forbidden(self):
+    @django.test.tag("read")
+    def test_read_model_headers_forbidden(self):
         """
         Tests the forbidden headers scenarios.
 
@@ -228,8 +228,8 @@ class RetrieveModelViewTest(AbstractModelViewTest):
             on_completion=self.on_failed_request,
         )
 
-    @django.test.tag("retrieve")
-    def test_retrieve_model_path_parameters_not_found(self):
+    @django.test.tag("read")
+    def test_read_model_path_parameters_not_found(self):
         """
         Tests the not found path parameter scenarios.
 

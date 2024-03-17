@@ -9,7 +9,7 @@ from ninja_crud.testing.core.components import (
 from ninja_crud.testing.views import (
     DeleteModelViewTest,
     ListModelViewTest,
-    RetrieveModelViewTest,
+    ReadModelViewTest,
     UpdateModelViewTest,
 )
 from ninja_crud.testing.viewsets import ModelViewSetTestCase
@@ -42,7 +42,7 @@ class TestItemViewSet(ModelViewSetTestCase, BaseTestCase):
             ok=[{}, {"order_by": ["name"], "limit": 1}]
         ),
     )
-    test_retrieve_item = RetrieveModelViewTest(
+    test_read_item = ReadModelViewTest(
         path_parameters=get_path_parameters,
         headers=get_headers_ok_forbidden,
     )

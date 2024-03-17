@@ -8,7 +8,7 @@ from ninja_crud.views import (
     CreateModelView,
     DeleteModelView,
     ListModelView,
-    RetrieveModelView,
+    ReadModelView,
     UpdateModelView,
 )
 from ninja_crud.viewsets import ModelViewSet
@@ -49,7 +49,7 @@ class CollectionViewSet(ModelViewSet):
         pre_save=lambda request, instance: instance.full_clean(),
         post_save=lambda request, instance: None,
     )
-    retrieve_collection = RetrieveModelView(response_body=CollectionOut)
+    read_collection = ReadModelView(response_body=CollectionOut)
     update_collection = UpdateModelView(
         request_body=CollectionIn,
         response_body=CollectionOut,

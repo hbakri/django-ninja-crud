@@ -3,7 +3,7 @@ from ninja_crud.testing.views import (
     CreateModelViewTest,
     DeleteModelViewTest,
     ListModelViewTest,
-    RetrieveModelViewTest,
+    ReadModelViewTest,
     UpdateModelViewTest,
 )
 from ninja_crud.testing.viewsets import ModelViewSetTestCase
@@ -36,7 +36,7 @@ class TestUserViewSet(ModelViewSetTestCase, BaseTestCase):
 
     test_list_users = ListModelViewTest()
     test_create_user = CreateModelViewTest(payloads=get_user_payloads)
-    test_retrieve_user = RetrieveModelViewTest(path_parameters=get_path_parameters)
+    test_read_user = ReadModelViewTest(path_parameters=get_path_parameters)
     test_update_user = UpdateModelViewTest(
         path_parameters=get_path_parameters, payloads=get_user_payloads
     )

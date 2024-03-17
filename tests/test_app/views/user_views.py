@@ -25,7 +25,7 @@ class UserViewSet(ModelViewSet):
     create_user = views.CreateModelView(
         request_body=UserRequestBody, response_body=UserResponseBody
     )
-    retrieve_user = views.RetrieveModelView(response_body=UserResponseBody)
+    read_user = views.ReadModelView(response_body=UserResponseBody)
     update_user = views.UpdateModelView(
         request_body=UserRequestBody, response_body=UserResponseBody
     )
