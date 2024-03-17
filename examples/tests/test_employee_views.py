@@ -5,7 +5,7 @@ from examples.views.employee_views import EmployeeViewSet
 from ninja_crud.testing.core.components import PathParameters, Payloads
 from ninja_crud.testing.views import (
     DeleteModelViewTest,
-    RetrieveModelViewTest,
+    ReadModelViewTest,
     UpdateModelViewTest,
 )
 from ninja_crud.testing.viewsets import ModelViewSetTestCase
@@ -41,7 +41,7 @@ class TestEmployeeViewSet(ModelViewSetTestCase):
         bad_request={"first_name": 1},
     )
 
-    test_retrieve_employee = RetrieveModelViewTest(path_parameters=get_path_parameters)
+    test_read_employee = ReadModelViewTest(path_parameters=get_path_parameters)
     test_update_employee = UpdateModelViewTest(
         path_parameters=get_path_parameters, payloads=employee_payloads
     )

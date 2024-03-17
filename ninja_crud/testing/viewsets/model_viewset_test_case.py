@@ -41,7 +41,7 @@ class ModelViewSetTestCase(django.test.TestCase):
 
         list_departments = views.ListModelView()
         create_department = views.CreateModelView()
-        retrieve_department = views.RetrieveModelView()
+        read_department = views.ReadModelView()
         update_department = views.UpdateModelView()
         delete_department = views.DeleteModelView()
 
@@ -92,7 +92,7 @@ class ModelViewSetTestCase(django.test.TestCase):
 
         test_list_departments = testing.views.ListModelViewTest()
         test_create_department = testing.views.CreateModelViewTest(payloads)
-        test_retrieve_department = testing.views.RetrieveModelViewTest(path_parameters)
+        test_read_department = testing.views.ReadModelViewTest(path_parameters)
         test_update_department = testing.views.UpdateModelViewTest(path_parameters, payloads)
         test_delete_department = testing.views.DeleteModelViewTest(path_parameters)
     ```

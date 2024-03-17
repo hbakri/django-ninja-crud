@@ -29,7 +29,7 @@ class AbstractModelViewTest(ABC):
 
     Note:
         This is an abstract base class and should not be instantiated directly. Instead, use one of its
-        subclasses like `ListModelViewTest`, `CreateModelViewTest`, `RetrieveModelViewTest`,
+        subclasses like `ListModelViewTest`, `CreateModelViewTest`, `ReadModelViewTest`,
         `UpdateModelViewTest`, or `DeleteModelViewTest`.
     """
 

@@ -37,7 +37,7 @@ class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
     test_create_department = testing.views.CreateModelViewTest(
         payloads=department_payloads
     )
-    test_retrieve_department = testing.views.RetrieveModelViewTest(path_parameters)
+    test_read_department = testing.views.ReadModelViewTest(path_parameters)
     test_update_department = testing.views.UpdateModelViewTest(
         path_parameters, payloads=department_payloads
     )

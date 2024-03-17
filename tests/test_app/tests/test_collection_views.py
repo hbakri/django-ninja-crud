@@ -11,7 +11,7 @@ from ninja_crud.testing.views import (
     CreateModelViewTest,
     DeleteModelViewTest,
     ListModelViewTest,
-    RetrieveModelViewTest,
+    ReadModelViewTest,
     UpdateModelViewTest,
 )
 from ninja_crud.testing.viewsets import ModelViewSetTestCase
@@ -57,7 +57,7 @@ class TestCollectionViewSet(ModelViewSetTestCase, BaseTestCase):
         headers=get_headers_ok,
         payloads=collection_payloads,
     )
-    test_retrieve_collection = RetrieveModelViewTest(
+    test_read_collection = ReadModelViewTest(
         path_parameters=get_path_parameters,
         headers=get_headers_ok,
     )

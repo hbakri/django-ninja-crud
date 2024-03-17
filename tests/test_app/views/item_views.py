@@ -7,7 +7,7 @@ from ninja import Router
 from ninja_crud.views import (
     DeleteModelView,
     ListModelView,
-    RetrieveModelView,
+    ReadModelView,
     UpdateModelView,
 )
 from ninja_crud.viewsets import ModelViewSet
@@ -38,8 +38,8 @@ class ItemViewSet(ModelViewSet):
         query_parameters=OrderByFilterSchema,
         get_queryset=lambda request, path_parameters: Item.objects.get_queryset(),
     )
-    retrieve_item = RetrieveModelView(
-        retrieve_model=lambda request, path_parameters, _: Item.objects.get(
+    read_item = ReadModelView(
+        read_model=lambda request, path_parameters, _: Item.objects.get(
             id=getattr(path_parameters, "id", None)
         ),
         decorators=[user_is_collection_creator],
