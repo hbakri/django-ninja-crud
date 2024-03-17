@@ -48,7 +48,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
     list_view = views.ListModelView()
     create_view = views.CreateModelView()
-    retrieve_view = views.ReadModelView()
+    retrieve_view = views.RetrieveModelView()
     update_view = views.UpdateModelView()
     delete_view = views.DeleteModelView()
 
