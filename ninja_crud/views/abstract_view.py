@@ -25,55 +25,20 @@ class AbstractView(abc.ABC):
         method (HTTPMethod): View HTTP method.
         path (str): View path.
         path_parameters (Optional[Type[ninja.Schema]], optional): Schema for
-            deserializing path parameters. Defaults to None.
+            deserializing path parameters. Defaults to `None`.
         query_parameters (Optional[Type[ninja.Schema]], optional): Schema for
-            deserializing query parameters. Defaults to None.
+            deserializing query parameters. Defaults to `None`.
         request_body (Optional[Type[ninja.Schema]], optional): Schema for deserializing
-            the request body. Defaults to None.
+            the request body. Defaults to `None`.
         response_body (Optional[Type[ninja.Schema]], optional): Schema for serializing
-            the response body. Defaults to None.
+            the response body. Defaults to `None`.
         response_status (http.HTTPStatus, optional): HTTP status code for the response.
-            Defaults to http.HTTPStatus.OK.
+            Defaults to `http.HTTPStatus.OK`.
         decorators (Optional[List[Callable]], optional): Decorators for the view.
-            Defaults to [].
+            Defaults to `[]`.
         router_kwargs (Optional[Dict], optional): Additional router arguments, with
             overrides for 'path', 'methods', and 'response' being ignored. Defaults
-            to {}.
-
-    Examples:
-    ```python
-    # examples/abstract_views.py
-    import http
-    from typing import Union, Any, Optional, Tuple
-
-    import django.http
-    import ninja
-
-    from ninja_crud import views
-
-    class HelloWorldSchema(ninja.Schema):
-        message: str
-
-    class HelloWorldView(views.AbstractView):
-        def __init__(self) -> None:
-            super().__init__(
-                method=views.enums.HTTPMethod.GET,
-                path="/hello-world/",
-                response_body=HelloWorldSchema,
-            )
-
-        def handle_request(
-            self,
-            request: django.http.HttpRequest,
-            path_parameters: Optional[ninja.Schema],
-            query_parameters: Optional[ninja.Schema],
-            request_body: Optional[ninja.Schema]
-        ) -> Union[Any, Tuple[http.HTTPStatus, Any]]:
-            return {"message": "Hello, world!"}
-    ```
-
-    Note:
-        Subclasses should implement the `handle_request` method to define the view's
+            to `{}`.
     """
 
     def __init__(
@@ -168,23 +133,12 @@ class AbstractView(abc.ABC):
             route_name (str): The name of the route. This name is used as the
                 function name for the view and as the operation id in the OpenAPI
                 schema.
-
-        Example:
-        ```python
-        import ninja
-
-        from examples.abstract_views import HelloWorldView
-
-        router = ninja.Router()
-        view = HelloWorldView()
-        view.register_route(router, route_name="hello_world")
-        ```
         """
         view = self.create_view_handler()
         view.__name__ = route_name
-        self.configure_view_routing(router=router)(view)
+        self._configure_view_routing(router=router)(view)
 
-    def configure_view_routing(self, router: ninja.Router) -> Callable:
+    def _configure_view_routing(self, router: ninja.Router) -> Callable:
         def route_decorator(view: Callable):
             for decorator in reversed(self.decorators):
                 view = decorator(view)

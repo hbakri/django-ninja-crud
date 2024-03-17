@@ -26,6 +26,8 @@ class RetrieveModelView(AbstractModelView):
             deserializing path parameters. By default, it is automatically inferred from
             the path and the fields of the ModelViewSet's associated model. Defaults to
             `None`.
+        query_parameters (Optional[Type[ninja.Schema]], optional): Schema for
+            deserializing query parameters. Defaults to `None`.
         response_body (Optional[Type[ninja.Schema]], optional): Schema for serializing
             the response body. By default, it inherits the ModelViewSet's default
             response body. Defaults to `None`.
@@ -112,6 +114,7 @@ class RetrieveModelView(AbstractModelView):
         self,
         path: str = "/{id}",
         path_parameters: Optional[Type[Schema]] = None,
+        query_parameters: Optional[Type[Schema]] = None,
         response_body: Optional[Type[Schema]] = None,
         decorators: Optional[List[Callable]] = None,
         router_kwargs: Optional[Dict] = None,
@@ -123,7 +126,7 @@ class RetrieveModelView(AbstractModelView):
             method=HTTPMethod.GET,
             path=path,
             path_parameters=path_parameters,
-            query_parameters=None,
+            query_parameters=query_parameters,
             request_body=None,
             response_body=response_body,
             response_status=http.HTTPStatus.OK,
