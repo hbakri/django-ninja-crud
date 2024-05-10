@@ -1,49 +1,23 @@
 modules:
   # --------------------- Views -----------------------
-  - input_path: "views/abstract_model_view"
-    output_path: "views/AbstractModelView.md"
-  - input_path: "views/list_model_view"
-    output_path: "views/ListModelView.md"
-  - input_path: "views/create_model_view"
-    output_path: "views/CreateModelView.md"
-  - input_path: "views/read_model_view"
-    output_path: "views/ReadModelView.md"
-  - input_path: "views/update_model_view"
-    output_path: "views/UpdateModelView.md"
-  - input_path: "views/delete_model_view"
-    output_path: "views/DeleteModelView.md"
+  - input_path: "views/api_view"
+    output_path: "views/APIView.md"
+  - input_path: "views/list_view"
+    output_path: "views/ListView.md"
+  - input_path: "views/create_view"
+    output_path: "views/CreateView.md"
+  - input_path: "views/read_view"
+    output_path: "views/ReadView.md"
+  - input_path: "views/update_view"
+    output_path: "views/UpdateView.md"
+  - input_path: "views/delete_view"
+    output_path: "views/DeleteView.md"
+  - input_path: "views/helpers/path_parameters_type_resolver"
+    output_path: "views/helpers/PathParametersTypeResolver.md"
 
   # -------------------- Viewsets ---------------------
-  - input_path: "viewsets/model_viewset"
-    output_path: "viewsets/ModelViewSet.md"
-
-  # --------------- Testing Components ----------------
-  - input_path: "testing/core/components/headers"
-    output_path: "testing/core/components/Headers.md"
-  - input_path: "testing/core/components/path_parameters"
-    output_path: "testing/core/components/PathParameters.md"
-  - input_path: "testing/core/components/payloads"
-    output_path: "testing/core/components/Payloads.md"
-  - input_path: "testing/core/components/query_parameters"
-    output_path: "testing/core/components/QueryParameters.md"
-
-  # ----------------- Testing Views -------------------
-  - input_path: "testing/views/abstract_model_view_test"
-    output_path: "testing/views/AbstractModelViewTest.md"
-  - input_path: "testing/views/list_model_view_test"
-    output_path: "testing/views/ListModelViewTest.md"
-  - input_path: "testing/views/create_model_view_test"
-    output_path: "testing/views/CreateModelViewTest.md"
-  - input_path: "testing/views/read_model_view_test"
-    output_path: "testing/views/ReadModelViewTest.md"
-  - input_path: "testing/views/update_model_view_test"
-    output_path: "testing/views/UpdateModelViewTest.md"
-  - input_path: "testing/views/delete_model_view_test"
-    output_path: "testing/views/DeleteModelViewTest.md"
-
-  # ---------------- Testing Viewsets -----------------
-  - input_path: "testing/viewsets/model_viewset_test_case"
-    output_path: "testing/viewsets/ModelViewSetTestCase.md"
+  - input_path: "viewsets/api_viewset"
+    output_path: "viewsets/APIViewSet.md"
 
 settings:
   project_root: ninja_crud

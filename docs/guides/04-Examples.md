@@ -41,7 +41,7 @@ from examples.schemas import DepartmentIn, DepartmentOut
 router = Router()
 
 
-class DepartmentViewSet(viewsets.ModelViewSet):
+class DepartmentViewSet(viewsets.APIViewSet):
     model = Department
     default_request_body = DepartmentIn
     default_response_body = DepartmentOut
@@ -75,7 +75,7 @@ from examples.models import Department
 from examples.views.department_views import DepartmentViewSet
 
 
-class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
+class TestDepartmentViewSet(testing.viewsets.APITestCase):
     model_viewset_class = DepartmentViewSet
     base_path = "api/departments"
 
@@ -109,6 +109,6 @@ class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
     def test_get_department_statistics(self):
         response = self.client.get(f"{self.base_path}/statistics/")
         self.assertEqual(response.status_code, 200)
-        ... # Additional assertions
+        ...  # Additional assertions
 ```
 With this package, these tests can be written in a consistent, straightforward way, making it easier to ensure your views are working as expected.

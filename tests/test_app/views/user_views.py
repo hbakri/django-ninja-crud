@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from ninja import Router
 
 from ninja_crud import views
-from ninja_crud.viewsets import ModelViewSet
+from ninja_crud.viewsets import APIViewSet
 from tests.test_app.schemas import (
     UserQueryParameters,
     UserRequestBody,
@@ -14,22 +14,22 @@ from tests.test_app.schemas import (
 router = Router()
 
 
-class UserViewSet(ModelViewSet):
+class UserViewSet(APIViewSet):
     model = User
 
-    list_users = views.ListModelView(
+    list_users = views.ListView(
         query_parameters=UserQueryParameters,
         response_body=List[UserResponseBody],
         pagination_class=None,
     )
-    create_user = views.CreateModelView(
+    create_user = views.CreateView(
         request_body=UserRequestBody, response_body=UserResponseBody
     )
-    read_user = views.ReadModelView(response_body=UserResponseBody)
-    update_user = views.UpdateModelView(
+    read_user = views.ReadView(response_body=UserResponseBody)
+    update_user = views.UpdateView(
         request_body=UserRequestBody, response_body=UserResponseBody
     )
-    delete_user = views.DeleteModelView()
+    delete_user = views.DeleteView()
 
 
-UserViewSet.register_routes(router)
+UserViewSet.add_views_to(router)

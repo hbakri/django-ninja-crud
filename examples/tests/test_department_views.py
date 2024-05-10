@@ -1,14 +1,12 @@
 import uuid
+from http import HTTPStatus
 
 from examples.models import Department, Employee
-from examples.views.department_views import DepartmentViewSet
-from ninja_crud import testing
+from examples.schemas import DepartmentOut, EmployeeOut, Paged
+from ninja_crud.testing import APITestCase, APIViewTestScenario
 
 
-class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
-    model_viewset_class = DepartmentViewSet
-    base_path = "api/departments"
-
+class TestDepartmentViewSet(APITestCase):
     department_1: Department
     department_2: Department
     employee: Employee
@@ -21,43 +19,141 @@ class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
             first_name="first_name", last_name="last_name", department=cls.department_1
         )
 
-    @property
-    def path_parameters(self):
-        return testing.components.PathParameters(
-            ok={"id": self.department_1.id}, not_found={"id": uuid.uuid4()}
+    def test_list_departments(self):
+        self.assertScenariosSucceed(
+            method="GET",
+            path="/api/departments/",
+            scenarios=[
+                APIViewTestScenario(
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=Paged[DepartmentOut],
+                ),
+            ],
         )
 
-    department_payloads = testing.components.Payloads(
-        ok={"title": "new_title"},
-        bad_request={"bad-title": 1},
-        conflict={"title": "department-2"},
-    )
+    def test_create_department(self):
+        self.assertScenariosSucceed(
+            method="POST",
+            path="/api/departments/",
+            scenarios=[
+                APIViewTestScenario(
+                    request_body={"title": "new_title"},
+                    expected_response_status=HTTPStatus.CREATED,
+                    expected_response_body_type=DepartmentOut,
+                ),
+                APIViewTestScenario(
+                    request_body={"title": "department-1"},
+                    expected_response_status=HTTPStatus.CONFLICT,
+                ),
+                APIViewTestScenario(
+                    request_body={"title": [1]},
+                    expected_response_status=HTTPStatus.BAD_REQUEST,
+                ),
+            ],
+        )
 
-    test_list_departments = testing.views.ListModelViewTest()
-    test_create_department = testing.views.CreateModelViewTest(
-        payloads=department_payloads
-    )
-    test_read_department = testing.views.ReadModelViewTest(path_parameters)
-    test_update_department = testing.views.UpdateModelViewTest(
-        path_parameters, payloads=department_payloads
-    )
-    test_delete_department = testing.views.DeleteModelViewTest(path_parameters)
+    def test_read_department(self):
+        self.assertScenariosSucceed(
+            method="GET",
+            path="/api/departments/{id}",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.department_1.id},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=DepartmentOut,
+                    expected_response_body={
+                        "id": str(self.department_1.id),
+                        "title": self.department_1.title,
+                    },
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+            ],
+        )
 
-    @property
-    def employees_path_parameters(self):
-        return testing.components.PathParameters(ok={"id": self.department_1.id})
+    def test_update_department(self):
+        self.assertScenariosSucceed(
+            method="PUT",
+            path="/api/departments/{id}",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.department_1.id},
+                    request_body={"title": "new_title"},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=DepartmentOut,
+                    expected_response_body={
+                        "id": str(self.department_1.id),
+                        "title": "new_title",
+                    },
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    request_body={"title": "new_title"},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.department_1.id},
+                    request_body={"title": [1]},
+                    expected_response_status=HTTPStatus.BAD_REQUEST,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.department_1.id},
+                    request_body={"title": self.department_2.title},
+                    expected_response_status=HTTPStatus.CONFLICT,
+                ),
+            ],
+        )
 
-    employee_payloads = testing.components.Payloads(
-        ok={
-            "first_name": "new_first_name",
-            "last_name": "new_last_name",
-        },
-        bad_request={"first_name": 1},
-    )
+    def test_delete_department(self):
+        self.assertScenariosSucceed(
+            method="DELETE",
+            path="/api/departments/{id}",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.department_1.id},
+                    expected_response_status=HTTPStatus.NO_CONTENT,
+                    expected_response_body=b"",
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+            ],
+        )
 
-    test_list_employees = testing.views.ListModelViewTest(
-        path_parameters=employees_path_parameters
-    )
-    test_create_employee = testing.views.CreateModelViewTest(
-        path_parameters=employees_path_parameters, payloads=employee_payloads
-    )
+    def test_list_employees(self):
+        self.assertScenariosSucceed(
+            method="GET",
+            path="/api/departments/{id}/employees/",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.department_1.id},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=Paged[EmployeeOut],
+                ),
+            ],
+        )
+
+    def test_create_employee(self):
+        self.assertScenariosSucceed(
+            method="POST",
+            path="/api/departments/{id}/employees/",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.department_1.id},
+                    request_body={
+                        "first_name": "first_name",
+                        "last_name": "last_name",
+                    },
+                    expected_response_status=HTTPStatus.CREATED,
+                    expected_response_body_type=EmployeeOut,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.department_1.id},
+                    request_body={"first_name": "first_name"},
+                    expected_response_status=HTTPStatus.BAD_REQUEST,
+                ),
+            ],
+        )

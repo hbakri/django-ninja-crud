@@ -1,3 +1,3 @@
-from .model_viewset import ModelViewSet
+from .api_viewset import APIViewSet
 
-__all__ = ["ModelViewSet"]
+__all__ = ["APIViewSet"]

@@ -1,82 +1,223 @@
-import random
 import uuid
+from http import HTTPStatus
 
-from ninja_crud.testing.core.components import (
-    Headers,
-    PathParameters,
-    Payloads,
-    QueryParameters,
-)
-from ninja_crud.testing.views import (
-    CreateModelViewTest,
-    DeleteModelViewTest,
-    ListModelViewTest,
-    ReadModelViewTest,
-    UpdateModelViewTest,
-)
-from ninja_crud.testing.viewsets import ModelViewSetTestCase
+from ninja_crud.testing import APITestCase, APIViewTestScenario
+from tests.test_app.schemas import CollectionOut, ItemOut, Paged
 from tests.test_app.tests.base_test_case import BaseTestCase
-from tests.test_app.views.collection_views import CollectionViewSet
 
 
-class TestCollectionViewSet(ModelViewSetTestCase, BaseTestCase):
-    model_viewset_class = CollectionViewSet
-    base_path = "api/collections"
-
-    def get_path_parameters(self):
-        return PathParameters(
-            ok=[{"id": self.collection_1.id}], not_found={"id": uuid.uuid4()}
+class TestCollectionViewSet(APITestCase, BaseTestCase):
+    def test_list_collections(self):
+        self.assertScenariosSucceed(
+            method="GET",
+            path="/api/collections/",
+            scenarios=[
+                APIViewTestScenario(
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=Paged[CollectionOut],
+                ),
+                APIViewTestScenario(
+                    query_parameters={
+                        "name": "collection-1",
+                        "order_by": ["name"],
+                        "limit": 1,
+                    },
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=Paged[CollectionOut],
+                ),
+                APIViewTestScenario(
+                    query_parameters={"order_by": ["unknown_field"]},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    expected_response_status=HTTPStatus.BAD_REQUEST,
+                ),
+                APIViewTestScenario(
+                    expected_response_status=HTTPStatus.UNAUTHORIZED,
+                ),
+            ],
         )
 
-    def get_headers_ok(self):
-        return Headers(
-            ok=[{"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"}], unauthorized={}
+    def test_create_collection(self):
+        self.assertScenariosSucceed(
+            method="POST",
+            path="/api/collections/",
+            scenarios=[
+                APIViewTestScenario(
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    request_body={"name": "new-name", "description": "new-description"},
+                    expected_response_status=HTTPStatus.CREATED,
+                    expected_response_body_type=CollectionOut,
+                ),
+                APIViewTestScenario(
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    request_body={"description": "new-description"},
+                    expected_response_status=HTTPStatus.BAD_REQUEST,
+                ),
+                APIViewTestScenario(
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    request_body={"name": "collection-2"},
+                    expected_response_status=HTTPStatus.CONFLICT,
+                ),
+                APIViewTestScenario(
+                    expected_response_status=HTTPStatus.UNAUTHORIZED,
+                ),
+            ],
         )
 
-    def get_headers_ok_forbidden(self):
-        return Headers(
-            ok={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
-            unauthorized={"HTTP_AUTHORIZATION": f"Bearer {random.randint(100, 1000)}"},
-            forbidden={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
+    def test_read_collection(self):
+        self.assertScenariosSucceed(
+            method="GET",
+            path="/api/collections/{id}",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=CollectionOut,
+                    expected_response_body=CollectionOut.from_orm(
+                        self.collection_1
+                    ).json(),
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    expected_response_status=HTTPStatus.UNAUTHORIZED,
+                ),
+            ],
         )
 
-    collection_payloads = Payloads(
-        ok={"name": "new-name", "description": "new-description"},
-        bad_request={"name": []},
-        conflict={"name": "collection-2"},
-    )
+    def test_update_collection(self):
+        self.assertScenariosSucceed(
+            method="PUT",
+            path="/api/collections/{id}",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    request_body={"name": "new-name", "description": "new-description"},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=CollectionOut,
+                    expected_response_body={
+                        "id": str(self.collection_1.id),
+                        "name": "new-name",
+                        "description": "new-description",
+                    },
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    request_body={"description": "new-description"},
+                    expected_response_status=HTTPStatus.BAD_REQUEST,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    request_body={"name": "collection-2"},
+                    expected_response_status=HTTPStatus.CONFLICT,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
+                    expected_response_status=HTTPStatus.FORBIDDEN,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    expected_response_status=HTTPStatus.UNAUTHORIZED,
+                ),
+            ],
+        )
 
-    test_list_collections = ListModelViewTest(
-        headers=get_headers_ok,
-        query_parameters=QueryParameters(
-            ok=[{}, {"name": "collection-1", "order_by": ["name"], "limit": 1}],
-            bad_request={"order_by": ["unknown_field"]},
-        ),
-    )
-    test_create_collection = CreateModelViewTest(
-        headers=get_headers_ok,
-        payloads=collection_payloads,
-    )
-    test_read_collection = ReadModelViewTest(
-        path_parameters=get_path_parameters,
-        headers=get_headers_ok,
-    )
-    test_update_collection = UpdateModelViewTest(
-        path_parameters=get_path_parameters,
-        headers=get_headers_ok_forbidden,
-        payloads=collection_payloads,
-    )
-    test_delete_collection = DeleteModelViewTest(
-        path_parameters=get_path_parameters, headers=get_headers_ok_forbidden
-    )
+    def test_delete_collection(self):
+        self.assertScenariosSucceed(
+            method="DELETE",
+            path="/api/collections/{id}",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    expected_response_status=HTTPStatus.NO_CONTENT,
+                    expected_response_body=b"",
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
+                    expected_response_status=HTTPStatus.FORBIDDEN,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    expected_response_status=HTTPStatus.UNAUTHORIZED,
+                ),
+            ],
+        )
 
-    test_list_collection_items = ListModelViewTest(
-        path_parameters=get_path_parameters, headers=get_headers_ok_forbidden
-    )
-    test_create_collection_item = CreateModelViewTest(
-        path_parameters=get_path_parameters,
-        headers=get_headers_ok_forbidden,
-        payloads=Payloads(
-            ok={"name": "new-name", "description": "new-description"},
-        ),
-    )
+    def test_list_collection_items(self):
+        self.assertScenariosSucceed(
+            method="GET",
+            path="/api/collections/{id}/items/",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=Paged[ItemOut],
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
+                    expected_response_status=HTTPStatus.FORBIDDEN,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    expected_response_status=HTTPStatus.UNAUTHORIZED,
+                ),
+            ],
+        )
+
+    def test_create_collection_item(self):
+        self.assertScenariosSucceed(
+            method="POST",
+            path="/api/collections/{id}/items/",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    request_body={"name": "new-name", "description": "new-description"},
+                    expected_response_status=HTTPStatus.CREATED,
+                    expected_response_body_type=ItemOut,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
+                    expected_response_status=HTTPStatus.FORBIDDEN,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.collection_1.id},
+                    expected_response_status=HTTPStatus.UNAUTHORIZED,
+                ),
+            ],
+        )

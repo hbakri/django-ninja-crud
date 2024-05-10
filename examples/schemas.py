@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Optional
+from typing import Generic, List, Optional, TypeVar
 from uuid import UUID
 
 from ninja import Schema
@@ -26,3 +26,11 @@ class EmployeeOut(Schema):
     last_name: str
     birthdate: Optional[date] = None
     department_id: UUID
+
+
+T = TypeVar("T")
+
+
+class Paged(Schema, Generic[T]):
+    items: List[T]
+    count: int

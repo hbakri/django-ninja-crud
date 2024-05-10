@@ -7,6 +7,9 @@ from tests.test_app.models import Collection, Item
 class BaseTestCase(TestCase):
     user_1: User
     user_2: User
+    group_1: Group
+    group_2: Group
+
     collection_1: Collection
     collection_2: Collection
     item_1: Item
@@ -21,6 +24,9 @@ class BaseTestCase(TestCase):
         cls.user_2 = User.objects.create(
             username="user-2", password="password", email="email2@example.com"
         )
+        cls.group_1 = Group.objects.create(name="group-1")
+        cls.group_2 = Group.objects.create(name="group-2")
+
         cls.collection_1 = Collection.objects.create(
             name="collection-1", created_by=cls.user_1
         )
@@ -29,5 +35,3 @@ class BaseTestCase(TestCase):
         )
         cls.item_1 = Item.objects.create(name="item-1", collection=cls.collection_1)
         cls.item_2 = Item.objects.create(name="item-2", collection=cls.collection_2)
-        cls.group_1 = Group.objects.create(name="group-1")
-        cls.group_2 = Group.objects.create(name="group-2")

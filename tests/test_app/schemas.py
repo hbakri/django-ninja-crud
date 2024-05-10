@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Generic, List, Optional, TypeVar
 from uuid import UUID
 
 from django.db.models import Q, QuerySet
@@ -14,7 +14,7 @@ class Representable(Schema):
     description: Optional[str] = None
 
 
-class OrderByFilterSchema(FilterSchema):
+class OrderByFilter(FilterSchema):
     order_by: Optional[List[str]] = None
 
     def filter_order_by(self, value) -> Q:
@@ -27,7 +27,7 @@ class OrderByFilterSchema(FilterSchema):
         return queryset
 
 
-class CollectionFilter(OrderByFilterSchema):
+class CollectionFilter(OrderByFilter):
     name: Optional[str] = None
 
 
@@ -45,6 +45,10 @@ class ItemIn(Representable):
 
 class ItemOut(Identifiable, Representable):
     collection_id: UUID
+
+
+class ItemFilter(OrderByFilter):
+    name: Optional[str] = None
 
 
 class TagOut(Identifiable, Representable):
@@ -66,3 +70,11 @@ class UserResponseBody(Schema):
 
 class UserQueryParameters(Schema):
     username__contains: Optional[str] = None
+
+
+T = TypeVar("T")
+
+
+class Paged(Schema, Generic[T]):
+    items: List[T]
+    count: int
