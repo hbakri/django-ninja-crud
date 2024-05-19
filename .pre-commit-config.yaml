@@ -28,5 +28,5 @@ repos:
         additional_dependencies: ['types-PyYAML', 'django-stubs', 'pydantic']
 
 ci:
-  autofix_commit_msg: 'ci(pre-commit): auto fixes'
-  autoupdate_commit_msg: 'ci(pre-commit): auto update'
+  autofix_commit_msg: 'ci(pre-commit): 👷 auto fixes'
+  autoupdate_commit_msg: 'ci(pre-commit): 👷 auto update'
