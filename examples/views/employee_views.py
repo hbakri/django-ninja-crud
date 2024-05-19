@@ -7,14 +7,14 @@ from ninja_crud import views, viewsets
 router = Router()
 
 
-class EmployeeViewSet(viewsets.ModelViewSet):
+class EmployeeViewSet(viewsets.APIViewSet):
     model = Employee
 
-    read_employee = views.ReadModelView(response_body=EmployeeOut)
-    update_employee = views.UpdateModelView(
+    read_employee = views.ReadView(response_body=EmployeeOut)
+    update_employee = views.UpdateView(
         request_body=EmployeeIn, response_body=EmployeeOut
     )
-    delete_employee = views.DeleteModelView()
+    delete_employee = views.DeleteView()
 
 
-EmployeeViewSet.register_routes(router)
+EmployeeViewSet.add_views_to(router)

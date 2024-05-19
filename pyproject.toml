@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "django-ninja-crud"
 version = "0.4.1"
-description = "Declarative CRUD Views & Tests with Django Ninja."
+description = "Declarative Endpoints & Tests for RESTful APIs with Django Ninja."
 authors = ["Hicham Bakri <hicham.bakri76@gmail.com>"]
 maintainers = ["Hicham Bakri <hicham.bakri76@gmail.com>"]
 readme = "README.md"
@@ -15,8 +15,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Development Status :: 4 - Beta",
-    "Topic :: Software Development :: Libraries :: Application Frameworks",
-    "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Testing",
     "Topic :: Software Development",
@@ -37,8 +35,12 @@ packages = [{ include = "ninja_crud" },]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0"
-Django = ">=3.2"
-django-ninja = ">=0.21"
+django = ">=3.2"
+django-ninja = ">=1.0"
+django-rest-testing = { version = ">=0.1", optional = true }
+
+[tool.poetry.extras]
+testing = ["django-rest-testing"]
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^6.5.0"

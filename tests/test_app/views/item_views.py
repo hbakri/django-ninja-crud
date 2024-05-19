@@ -4,15 +4,10 @@ from typing import List
 from django.core.exceptions import PermissionDenied
 from ninja import Router
 
-from ninja_crud.views import (
-    DeleteModelView,
-    ListModelView,
-    ReadModelView,
-    UpdateModelView,
-)
-from ninja_crud.viewsets import ModelViewSet
+from ninja_crud import views
+from ninja_crud.viewsets import APIViewSet
 from tests.test_app.models import Item, Tag
-from tests.test_app.schemas import ItemIn, ItemOut, OrderByFilterSchema, TagOut
+from tests.test_app.schemas import ItemIn, ItemOut, OrderByFilter, TagOut
 
 router = Router()
 
@@ -29,35 +24,35 @@ def user_is_collection_creator(func):
     return wrapper
 
 
-class ItemViewSet(ModelViewSet):
+class ItemViewSet(APIViewSet):
     model = Item
     default_request_body = ItemIn
     default_response_body = ItemOut
 
-    list_items = ListModelView(
-        query_parameters=OrderByFilterSchema,
+    list_items = views.ListView(
+        query_parameters=OrderByFilter,
         get_queryset=lambda request, path_parameters: Item.objects.get_queryset(),
     )
-    read_item = ReadModelView(
-        read_model=lambda request, path_parameters, _: Item.objects.get(
-            id=getattr(path_parameters, "id", None)
+    read_item = views.ReadView(
+        get_model=lambda request, path_parameters: Item.objects.get(
+            id=path_parameters.id
         ),
         decorators=[user_is_collection_creator],
     )
-    update_item = UpdateModelView(
+    update_item = views.UpdateView(
         pre_save=lambda request, instance: None,
         post_save=lambda request, instance: None,
         decorators=[user_is_collection_creator],
     )
-    delete_item = DeleteModelView(decorators=[user_is_collection_creator])
+    delete_item = views.DeleteView(decorators=[user_is_collection_creator])
 
-    list_tags = ListModelView(
+    list_tags = views.ListView(
         path="/{id}/tags/",
         get_queryset=lambda request, path_parameters: Tag.objects.filter(
-            items__id=getattr(path_parameters, "id", None)
+            items__id=path_parameters.id
         ),
         response_body=List[TagOut],
     )
 
 
-ItemViewSet.register_routes(router)
+ItemViewSet.add_views_to(router)

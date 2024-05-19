@@ -1,20 +1,12 @@
 import uuid
+from http import HTTPStatus
 
 from examples.models import Department, Employee
-from examples.views.employee_views import EmployeeViewSet
-from ninja_crud.testing.core.components import PathParameters, Payloads
-from ninja_crud.testing.views import (
-    DeleteModelViewTest,
-    ReadModelViewTest,
-    UpdateModelViewTest,
-)
-from ninja_crud.testing.viewsets import ModelViewSetTestCase
+from examples.schemas import EmployeeOut
+from ninja_crud.testing import APITestCase, APIViewTestScenario
 
 
-class TestEmployeeViewSet(ModelViewSetTestCase):
-    model_viewset_class = EmployeeViewSet
-    base_path = "api/employees"
-
+class TestEmployeeViewSet(APITestCase):
     department_1: Department
     department_2: Department
     employee: Employee
@@ -27,22 +19,67 @@ class TestEmployeeViewSet(ModelViewSetTestCase):
             first_name="first_name", last_name="last_name", department=cls.department_1
         )
 
-    def get_path_parameters(self):
-        return PathParameters(
-            ok={"id": self.employee.id}, not_found={"id": uuid.uuid4()}
+    def test_read_employee(self):
+        self.assertScenariosSucceed(
+            method="GET",
+            path="/api/employees/{id}",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.employee.id},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=EmployeeOut,
+                    expected_response_body=EmployeeOut.from_orm(self.employee).json(),
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+            ],
         )
 
-    employee_payloads = Payloads(
-        ok={
-            "first_name": "new_first_name",
-            "last_name": "new_last_name",
-            "birthdate": "2020-01-01",
-        },
-        bad_request={"first_name": 1},
-    )
+    def test_update_employee(self):
+        self.assertScenariosSucceed(
+            method="PUT",
+            path="/api/employees/{id}",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.employee.id},
+                    request_body={"first_name": "new_name", "last_name": "new_name"},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body={
+                        "id": str(self.employee.id),
+                        "first_name": "new_name",
+                        "last_name": "new_name",
+                        "birthdate": self.employee.birthdate,
+                        "department_id": str(self.employee.department_id),
+                    },
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    request_body={"first_name": "new_name", "last_name": "new_name"},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": self.employee.id},
+                    request_body={"bad-title": "bad-value"},
+                    expected_response_status=HTTPStatus.BAD_REQUEST,
+                ),
+            ],
+        )
 
-    test_read_employee = ReadModelViewTest(path_parameters=get_path_parameters)
-    test_update_employee = UpdateModelViewTest(
-        path_parameters=get_path_parameters, payloads=employee_payloads
-    )
-    test_delete_employee = DeleteModelViewTest(path_parameters=get_path_parameters)
+    def test_delete_employee(self):
+        self.assertScenariosSucceed(
+            method="DELETE",
+            path="/api/employees/{id}",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.employee.id},
+                    expected_response_status=HTTPStatus.NO_CONTENT,
+                    expected_response_body=b"",
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+            ],
+        )

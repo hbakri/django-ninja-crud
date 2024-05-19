@@ -1,6 +1,6 @@
 Django Ninja CRUD is a [declarative](https://en.wikipedia.org/wiki/Declarative_programming), powerful, and yet opinionated framework that simplifies the development of **CRUD** ([**C**reate, **R**ead, **U**pdate, **D**elete](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete)) views and tests with [Django Ninja](https://github.com/vitalik/django-ninja).
 It promotes best practices for efficient, robust endpoint creation, allowing you to focus on what matters most: solving real problems.
-Initially inspired by DRF's [ModelViewSet](https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset), Django Ninja CRUD evolved to address its limitations, adopting a [composition-over-inheritance](https://en.wikipedia.org/wiki/Composition_over_inheritance) approach to achieve true modularity – a foundational step towards a broader declarative interface for endpoint creation.
+Initially inspired by DRF's [APIViewSet](https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset), Django Ninja CRUD evolved to address its limitations, adopting a [composition-over-inheritance](https://en.wikipedia.org/wiki/Composition_over_inheritance) approach to achieve true modularity – a foundational step towards a broader declarative interface for endpoint creation.
 
 # ✨ Key Features
 - **Purely Declarative**: Embrace an approach where defining views and tests is a matter of declaring what you want, not how to achieve it.

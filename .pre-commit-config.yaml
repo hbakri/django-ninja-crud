@@ -21,11 +21,12 @@ repos:
     rev: v1.10.0
     hooks:
       - id: mypy
+        files: ^ninja_crud/
         args:
           - --ignore-missing-imports
-          - --check-untyped-defs
-        additional_dependencies: ['types-PyYAML']
+          - --strict
+        additional_dependencies: ['types-PyYAML', 'django-stubs', 'pydantic']
 
 ci:
-  autofix_commit_msg: 'ci(pre-commit): auto fixes'
-  autoupdate_commit_msg: 'ci(pre-commit): auto update'
+  autofix_commit_msg: 'ci(pre-commit): 👷 auto fixes'
+  autoupdate_commit_msg: 'ci(pre-commit): 👷 auto update'

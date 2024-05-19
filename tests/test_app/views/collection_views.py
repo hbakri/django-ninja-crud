@@ -4,14 +4,8 @@ from typing import List
 from django.core.exceptions import PermissionDenied
 from ninja import Router
 
-from ninja_crud.views import (
-    CreateModelView,
-    DeleteModelView,
-    ListModelView,
-    ReadModelView,
-    UpdateModelView,
-)
-from ninja_crud.viewsets import ModelViewSet
+from ninja_crud import views
+from ninja_crud.viewsets import APIViewSet
 from tests.test_app.models import Collection, Item
 from tests.test_app.schemas import (
     CollectionFilter,
@@ -36,43 +30,43 @@ def user_is_creator(func):
     return wrapper
 
 
-class CollectionViewSet(ModelViewSet):
+class CollectionViewSet(APIViewSet):
     model = Collection
 
-    list_collections = ListModelView(
+    list_collections = views.ListView(
         response_body=List[CollectionOut], query_parameters=CollectionFilter
     )
-    create_collection = CreateModelView(
+    create_collection = views.CreateView(
         request_body=CollectionIn,
         response_body=CollectionOut,
         init_model=lambda request, path_parameters: Collection(created_by=request.auth),
         pre_save=lambda request, instance: instance.full_clean(),
         post_save=lambda request, instance: None,
     )
-    read_collection = ReadModelView(response_body=CollectionOut)
-    update_collection = UpdateModelView(
+    read_collection = views.ReadView(response_body=CollectionOut)
+    update_collection = views.UpdateView(
         request_body=CollectionIn,
         response_body=CollectionOut,
         decorators=[user_is_creator],
     )
-    delete_collection = DeleteModelView(
+    delete_collection = views.DeleteView(
         pre_delete=lambda request, instance: None,
         post_delete=lambda request, instance: None,
         decorators=[user_is_creator],
     )
 
-    list_collection_items = ListModelView(
+    list_collection_items = views.ListView(
         path="/{id}/items/",
         get_queryset=lambda request, path_parameters: Item.objects.filter(
-            collection_id=getattr(path_parameters, "id", None)
+            collection_id=path_parameters.id
         ),
         response_body=List[ItemOut],
         decorators=[user_is_creator],
     )
-    create_collection_item = CreateModelView(
+    create_collection_item = views.CreateView(
         path="/{id}/items/",
         init_model=lambda request, path_parameters: Item(
-            collection_id=getattr(path_parameters, "id", None)
+            collection_id=path_parameters.id
         ),
         request_body=ItemIn,
         response_body=ItemOut,
@@ -82,4 +76,4 @@ class CollectionViewSet(ModelViewSet):
     )
 
 
-CollectionViewSet.register_routes(router)
+CollectionViewSet.add_views_to(router)

@@ -1,18 +1,15 @@
-from .abstract_model_view import AbstractModelView
-from .abstract_view import AbstractView
-from .create_model_view import CreateModelView
-from .delete_model_view import DeleteModelView
-from .list_model_view import ListModelView
-from .read_model_view import ReadModelView
-from .update_model_view import UpdateModelView
+from .api_view import APIView
+from .create_view import CreateView
+from .delete_view import DeleteView
+from .list_view import ListView
+from .read_view import ReadView
+from .update_view import UpdateView
 
 __all__ = [
-    "AbstractView",
-    "AbstractModelView",
-    "ListModelView",
-    "CreateModelView",
-    "ReadModelView",
-    "UpdateModelView",
-    "DeleteModelView",
-    "enums",
+    "APIView",
+    "ListView",
+    "CreateView",
+    "ReadView",
+    "UpdateView",
+    "DeleteView",
 ]
