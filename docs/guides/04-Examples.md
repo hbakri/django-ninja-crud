@@ -1,6 +1,5 @@
-In this section, we'll walk through some quick examples of how to use Django Ninja CRUD. The goal is to illustrate how simple it is to define data operations and tests with this tool.
+# 🌞 How It Works
 
-# 👨‍🎨 Usage
 Let's imagine you're building a system for a university and you have a model called `Department`. Each department in your university has a unique title.
 
 ```python
@@ -27,88 +26,151 @@ class DepartmentOut(Schema):
 
 The `DepartmentIn` schema defines what data we need when creating or updating a department. The `DepartmentOut` schema defines what data we'll provide when retrieving a department.
 
-Now, here comes the power of Django Ninja CRUD. With it, you can set up the **CRUD** operations for the `Department` model with just a few lines of code:
+Now, here comes the power of the package. With it, you can set up the **CRUD**
+operations for the `Department` model with just a few lines of code:
 
 ```python
 # examples/views/department_views.py
+from typing import List
 from django.http import HttpRequest
-from ninja import Router
+from ninja import NinjaAPI
 from ninja_crud import views, viewsets
 
 from examples.models import Department
 from examples.schemas import DepartmentIn, DepartmentOut
 
-router = Router()
+api = NinjaAPI()
 
 
 class DepartmentViewSet(viewsets.APIViewSet):
+    api = api
     model = Department
-    default_request_body = DepartmentIn
-    default_response_body = DepartmentOut
 
-    list_view = views.ListModelView()
-    create_view = views.CreateModelView()
-    retrieve_view = views.RetrieveModelView()
-    update_view = views.UpdateModelView()
-    delete_view = views.DeleteModelView()
-
-
-# The register_routes method must be called to register the routes
-DepartmentViewSet.register_routes(router)
+    list_departments = views.ListView(
+        response_body=List[DepartmentOut]
+    )
+    create_department = views.CreateView(
+        request_body=DepartmentIn,
+        response_body=DepartmentOut,
+    )
+    read_department = views.ReadView(
+        response_body=DepartmentOut
+    )
+    update_department = views.UpdateView(
+        request_body=DepartmentIn,
+        response_body=DepartmentOut,
+    )
+    delete_department = views.DeleteView()
 
 
 # Beyond the CRUD operations managed by the viewset,
-# the router can be used in the standard Django Ninja way
-@router.get("/statistics/", response=dict)
+# the api or router can be used in the standard Django Ninja way
+@api.get("/statistics/", response=dict)
 def get_department_statistics(request: HttpRequest):
     return {"total": Department.objects.count()}
 ```
 
-# 🥷 Testing
-A key advantage of this package is that it makes your views easy to test. Once you've set up your **CRUD** operations, you can write tests to ensure they're working as expected. Here's an example of how you might test the `Department` operations:
+And if your viewset is as simple as the one above, you can leverage the `APIViewSet`
+class to define it in a more concise way, with default request and response bodies:
+```python
+# examples/views/department_views.py
+from ninja import NinjaAPI
+from ninja_crud import views, viewsets
+
+from examples.models import Department
+from examples.schemas import DepartmentIn, DepartmentOut
+
+api = NinjaAPI()
+
+
+class DepartmentViewSet(viewsets.APIViewSet):
+    api = api
+    model = Department
+    default_request_body = DepartmentIn
+    default_response_body = DepartmentOut
+
+    list_departments = views.ListView()
+    create_department = views.CreateView()
+    read_department = views.ReadView()
+    update_department = views.UpdateView()
+    delete_department = views.DeleteView()
+```
+
+# ☔️ Scenario-based Testing
+
+Django Ninja CRUD integrates seamlessly with [Django REST Testing](https://github.com/hbakri/django-rest-testing),
+and ensures comprehensive coverage and robust validation of your CRUD endpoints. At
+first, the testing framework was part of this package, but it was later extracted
+to its own package to allow for more flexibility and to be used with other Django
+REST frameworks than Django Ninja.
+
+With this package, you can:
+- **Declaratively Define Test Scenarios**: Specify expected request and response details for each scenario, making your tests self-documenting and easy to understand.
+- **Test Diverse Conditions**: Validate endpoint behaviors under various conditions, including valid and invalid inputs, nonexistent resources, and custom business rules.
+- **Enhance Clarity and Maintainability**: Break tests into modular, manageable units, improving code organization and reducing technical debt.
+- **Ensure Comprehensive Coverage**: Rigorously test your endpoints, leaving no stone unturned, thanks to the scenario-based approach.
+
+To handle exceptions like `ObjectDoesNotExist` and return appropriate responses in your
+tests, you can define an exception handler like this:
+
+```python
+# examples/exception_handlers.py
+from ninja import NinjaAPI
+from django.core.exceptions import ObjectDoesNotExist
+
+api = NinjaAPI()
+
+
+@api.exception_handler(ObjectDoesNotExist)
+def handle_object_does_not_exist(request, exc):
+    return api.create_response(
+        request,
+        {"message": "ObjectDoesNotExist", "detail": str(exc)},
+        status=404,
+    )
+
+# ... other exception handlers
+```
+
+Now, you can write tests for your CRUD views using the scenario-based testing framework:
 
 ```python
 # examples/tests/test_department_views.py
-from ninja_crud import testing
-
 from examples.models import Department
-from examples.views.department_views import DepartmentViewSet
+from examples.schemas import DepartmentOut
+
+from ninja_crud.testing import APITestCase, APIViewTestScenario
 
 
-class TestDepartmentViewSet(testing.viewsets.APITestCase):
-    model_viewset_class = DepartmentViewSet
-    base_path = "api/departments"
+class TestDepartmentViewSet(APITestCase):
+    department: Department
 
     @classmethod
     def setUpTestData(cls):
-        cls.department_1 = Department.objects.create(title="department-1")
-        cls.department_2 = Department.objects.create(title="department-2")
+        cls.department = Department.objects.create(title="department")
 
-    @property
-    def path_parameters(self):
-        return testing.components.PathParameters(
-            ok={"id": self.department_1.id},
-            not_found={"id": 9999}
+    def test_read_department(self):
+        self.assertScenariosSucceed(
+            method="GET",
+            path="/api/departments/{id}",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.department.id},
+                    expected_response_status=200,
+                    expected_response_body_type=DepartmentOut,
+                    expected_response_body={
+                        "id": self.department.id,
+                        "title": self.department.title,
+                    },
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": 9999},
+                    expected_response_status=404,
+                ),
+            ],
         )
-
-    @property
-    def payloads(self):
-        return testing.components.Payloads(
-            ok={"title": "department-3"},
-            bad_request={},
-            conflict={"title": self.department_2.title},
-        )
-
-    test_list_view = testing.views.ListModelViewTest()
-    test_create_view = testing.views.CreateModelViewTest(payloads)
-    test_retrieve_view = testing.views.RetrieveModelViewTest(path_parameters)
-    test_update_view = testing.views.UpdateModelViewTest(path_parameters, payloads)
-    test_delete_view = testing.views.DeleteModelViewTest(path_parameters)
-
-    # You can then add additional tests as needed
-    def test_get_department_statistics(self):
-        response = self.client.get(f"{self.base_path}/statistics/")
-        self.assertEqual(response.status_code, 200)
-        ...  # Additional assertions
 ```
-With this package, these tests can be written in a consistent, straightforward way, making it easier to ensure your views are working as expected.
+
+By combining Django Ninja CRUD's declarative views with Django REST Testing's
+scenario-based testing capabilities, you can confidently build and maintain robust,
+well-tested RESTful APIs with ease.
