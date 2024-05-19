@@ -10,7 +10,7 @@
 ![Django Ninja CRUD](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/docs/assets/images/django-ninja-crud-cover.png)
 
 > [!IMPORTANT]
-> With the upcoming release of version `0.5`, Django Ninja CRUD introduces significant
+> With the release of version `0.5`, Django Ninja CRUD introduces significant
 > and breaking changes. Users are strongly advised to pin their requirements to the
 > appropriate version to ensure compatibility with their projects.
 
