@@ -19,6 +19,7 @@ simplifies the development of **CRUD** ([**C**reate, **R**ead, **U**pdate, **D**
 endpoints with [Django Ninja](https://github.com/vitalik/django-ninja), and also
 provides a declarative scenario-based way for testing these endpoints with
 [Django REST Testing](https://github.com/hbakri/django-rest-testing) _(the little brother of this package)_ 🐣.
+
 It allows you to define common endpoints as class-based views and customize them to
 conform to your project's conventions with ease, and also create easily your own
 custom views and declare them alongside the provided CRUD views, fostering modularity
