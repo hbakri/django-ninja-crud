@@ -17,7 +17,7 @@ Before installing the `django-ninja-crud` package, please ensure you have the fo
 Once you have the prerequisites installed, you can install `django-ninja-crud` using pip:
 
 ```shell
-pip install django-ninja-crud
+pip install django-ninja-crud[testing]
 ```
 
 If you encounter any issues during the installation process, please [contact us](https://github.com/hbakri).

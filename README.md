@@ -9,23 +9,40 @@
 
 ![Django Ninja CRUD](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/docs/assets/images/django-ninja-crud-cover.png)
 
-Django Ninja CRUD is a powerful, [declarative](https://en.wikipedia.org/wiki/Declarative_programming), and yet opinionated framework that
+> [!IMPORTANT]
+> With the upcoming release of version `0.5`, Django Ninja CRUD introduces significant
+> and breaking changes. Users are strongly advised to pin their requirements to the
+> appropriate version to ensure compatibility with their projects.
+
+Django Ninja CRUD is a powerful, [declarative](https://en.wikipedia.org/wiki/Declarative_programming), and yet a little bit opinionated framework that
 simplifies the development of **CRUD** ([**C**reate, **R**ead, **U**pdate, **D**elete](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete))
-endpoints and tests with [Django Ninja](https://github.com/vitalik/django-ninja).
-It promotes best practices for efficient, robust endpoint creation, allowing you to
-focus on what matters most: solving real problems.
-Initially inspired by DRF's [ModelViewSet](https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset), Django Ninja CRUD evolved to address
-its limitations, adopting a [composition-over-inheritance](https://en.wikipedia.org/wiki/Composition_over_inheritance) approach to achieve
-true modularity – a foundational step towards a broader declarative interface for
-endpoint creation.
+endpoints with [Django Ninja](https://github.com/vitalik/django-ninja), and also
+provides a declarative scenario-based way for testing these endpoints with
+[Django REST Testing](https://github.com/hbakri/django-rest-testing) _(the little brother of this package)_ 🐣.
+It allows you to define common endpoints as class-based views and customize them to
+conform to your project's conventions with ease, and also create easily your own
+custom views and declare them alongside the provided CRUD views, fostering modularity
+and extensibility. This package promotes focusing on what matters most:
+**solving real problems**, not reinventing the wheel all over your project.
+
+Initially inspired by DRF's [ModelViewSet](https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset),
+Django Ninja CRUD evolved to address its limitations, adopting a
+[composition-over-inheritance](https://en.wikipedia.org/wiki/Composition_over_inheritance)
+approach to achieve true modularity – a foundational step towards a broader declarative
+interface for endpoint creation.
+
+Key challenges with inheritance-based viewsets:
+- **Unicity of CRUD endpoints per model**: Django Ninja CRUD allows you to define multiple endpoints for the same model, enabling versioning or alternative representations.
+- **Customization inflexibility**: Instead of overriding methods on a monolithic class, you can customize individual views through composition and configuration.
+- **Implicit relations within inheritance hierarchies**: Composition decouples views, reducing dependencies and promoting reusability.
+- **Lack of modularity for new endpoints**: Adding custom endpoints no longer requires subclassing the entire viewset, making it easier to introduce new functionality incrementally.
 
 ## ✨ Key Features
-- **Purely Declarative**: Embrace an approach where defining views and tests is a matter of declaring what you want, not how to achieve it.
-- **Unmatched Modularity**: Tailor your viewsets with the desired CRUD views and customize each view's behavior with ease. Extend the flexibility by creating your own subclasses of the provided views and tests.
-- **Powerful Testing Framework**: Leverage a matrix-based testing framework for defining diverse test scenarios declaratively.
-- **Focus on What Matters**: Spend more time solving real-world problems and less on CRUD boilerplate.
-
-Its blend of declarative syntax, modularity, and powerful testing capabilities sets a new standard for developers seeking efficiency and precision.
+- **Purely Declarative**: Define views and tests by declaring what you want, not how to do it.
+- **Unmatched Modularity**: Tailor your viewsets with desired CRUD views, customize each view's behavior.
+- **Easy to Extend**: Create your own custom views and use them alongside the provided CRUD views as reusable components.
+- **Scenario-based Testing Framework**: Leverage a scenario-based testing framework for defining diverse test cases declaratively and concisely.
+- **Focus on What Matters**: Spend more time solving real-world problems and less on common and repetitive tasks.
 
 > **Django Ninja CRUD is not just a tool; it's a paradigm shift in Django web application development and testing.**
 
@@ -37,12 +54,12 @@ Its blend of declarative syntax, modularity, and powerful testing capabilities s
 
 ## ⚒️ Installation
 ```bash
-pip install django-ninja-crud
+pip install django-ninja-crud[testing]
 ```
 For more information, see the [installation guide](https://django-ninja-crud.readme.io/docs/02-installation).
 
-## 👨‍🎨 Example
-### Usage
+## 🌞 How It Works
+
 Let's imagine you're building a system for a university and you have a model called `Department`. Each department in your university has a unique title.
 
 ```python
@@ -69,98 +86,162 @@ class DepartmentOut(Schema):
 
 The `DepartmentIn` schema defines what data we need when creating or updating a department. The `DepartmentOut` schema defines what data we'll provide when retrieving a department.
 
-Now, here comes the power of Django Ninja CRUD. With it, you can set up the **CRUD** operations for the `Department` model with just a few lines of code:
+Now, here comes the power of the package. With it, you can set up the **CRUD**
+operations for the `Department` model with just a few lines of code:
 
 ```python
 # examples/views/department_views.py
+from typing import List
 from django.http import HttpRequest
-from ninja import Router
+from ninja import NinjaAPI
 from ninja_crud import views, viewsets
 
 from examples.models import Department
 from examples.schemas import DepartmentIn, DepartmentOut
 
-router = Router()
+api = NinjaAPI()
 
 
-class DepartmentViewSet(viewsets.ModelViewSet):
+class DepartmentViewSet(viewsets.APIViewSet):
+    api = api
     model = Department
-    default_input_schema = DepartmentIn
-    default_output_schema = DepartmentOut
 
-    list_departments = views.ListModelView()
-    create_department = views.CreateModelView()
-    retrieve_department = views.RetrieveModelView()
-    update_department = views.UpdateModelView()
-    delete_department = views.DeleteModelView()
-
-
-# The register_routes method must be called to register the routes
-DepartmentViewSet.register_routes(router)
+    list_departments = views.ListView(
+        response_body=List[DepartmentOut]
+    )
+    create_department = views.CreateView(
+        request_body=DepartmentIn,
+        response_body=DepartmentOut,
+    )
+    read_department = views.ReadView(
+        response_body=DepartmentOut
+    )
+    update_department = views.UpdateView(
+        request_body=DepartmentIn,
+        response_body=DepartmentOut,
+    )
+    delete_department = views.DeleteView()
 
 
 # Beyond the CRUD operations managed by the viewset,
-# the router can be used in the standard Django Ninja way
-@router.get("/statistics/", response=dict)
+# the api or router can be used in the standard Django Ninja way
+@api.get("/statistics/", response=dict)
 def get_department_statistics(request: HttpRequest):
     return {"total": Department.objects.count()}
 ```
 
-### Testing
-A key advantage of this package is that it makes your views easy to test. Once you've set up your **CRUD** operations, you can write tests to ensure they're working as expected. Here's an example of how you might test the `Department` operations:
+And if your viewset is as simple as the one above, you can leverage the `APIViewSet`
+class to define it in a more concise way, with default request and response bodies:
+```python
+# examples/views/department_views.py
+from ninja import NinjaAPI
+from ninja_crud import views, viewsets
+
+from examples.models import Department
+from examples.schemas import DepartmentIn, DepartmentOut
+
+api = NinjaAPI()
+
+
+class DepartmentViewSet(viewsets.APIViewSet):
+    api = api
+    model = Department
+    default_request_body = DepartmentIn
+    default_response_body = DepartmentOut
+
+    list_departments = views.ListView()
+    create_department = views.CreateView()
+    read_department = views.ReadView()
+    update_department = views.UpdateView()
+    delete_department = views.DeleteView()
+```
+
+## ☔️ Scenario-based Testing
+
+Django Ninja CRUD integrates seamlessly with [Django REST Testing](https://github.com/hbakri/django-rest-testing),
+and ensures comprehensive coverage and robust validation of your CRUD endpoints. At
+first, the testing framework was part of this package, but it was later extracted
+to its own package to allow for more flexibility and to be used with other Django
+REST frameworks than Django Ninja.
+
+With this package, you can:
+- **Declaratively Define Test Scenarios**: Specify expected request and response details for each scenario, making your tests self-documenting and easy to understand.
+- **Test Diverse Conditions**: Validate endpoint behaviors under various conditions, including valid and invalid inputs, nonexistent resources, and custom business rules.
+- **Enhance Clarity and Maintainability**: Break tests into modular, manageable units, improving code organization and reducing technical debt.
+- **Ensure Comprehensive Coverage**: Rigorously test your endpoints, leaving no stone unturned, thanks to the scenario-based approach.
+
+To handle exceptions like `ObjectDoesNotExist` and return appropriate responses in your
+tests, you can define an exception handler like this:
+
+```python
+# examples/exception_handlers.py
+from ninja import NinjaAPI
+from django.core.exceptions import ObjectDoesNotExist
+
+api = NinjaAPI()
+
+
+@api.exception_handler(ObjectDoesNotExist)
+def handle_object_does_not_exist(request, exc):
+    return api.create_response(
+        request,
+        {"message": "ObjectDoesNotExist", "detail": str(exc)},
+        status=404,
+    )
+
+# ... other exception handlers
+```
+
+Now, you can write tests for your CRUD views using the scenario-based testing framework:
 
 ```python
 # examples/tests/test_department_views.py
-from ninja_crud import testing
-
 from examples.models import Department
-from examples.views.department_views import DepartmentViewSet
+from examples.schemas import DepartmentOut
+
+from ninja_crud.testing import APITestCase, APIViewTestScenario
 
 
-class TestDepartmentViewSet(testing.viewsets.ModelViewSetTestCase):
-    model_viewset_class = DepartmentViewSet
-    base_path = "api/departments"
+class TestDepartmentViewSet(APITestCase):
+    department: Department
 
     @classmethod
     def setUpTestData(cls):
-        cls.department_1 = Department.objects.create(title="department-1")
-        cls.department_2 = Department.objects.create(title="department-2")
+        cls.department = Department.objects.create(title="department")
 
-    @property
-    def path_parameters(self):
-        return testing.components.PathParameters(
-            ok={"id": self.department_1.id},
-            not_found={"id": 9999}
+    def test_read_department(self):
+        self.assertScenariosSucceed(
+            method="GET",
+            path="/api/departments/{id}",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.department.id},
+                    expected_response_status=200,
+                    expected_response_body_type=DepartmentOut,
+                    expected_response_body={
+                        "id": self.department.id,
+                        "title": self.department.title,
+                    },
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": 9999},
+                    expected_response_status=404,
+                ),
+            ],
         )
-
-    @property
-    def payloads(self):
-        return testing.components.Payloads(
-            ok={"title": "department-3"},
-            bad_request={},
-            conflict={"title": self.department_2.title},
-        )
-
-    test_list_departments = testing.views.ListModelViewTest()
-    test_create_department = testing.views.CreateModelViewTest(payloads)
-    test_retrieve_department = testing.views.RetrieveModelViewTest(path_parameters)
-    test_update_department = testing.views.UpdateModelViewTest(path_parameters, payloads)
-    test_delete_department = testing.views.DeleteModelViewTest(path_parameters)
-
-    # You can then add additional tests as needed
-    def test_get_department_statistics(self):
-        response = self.client.get(f"{self.base_path}/statistics/")
-        self.assertEqual(response.status_code, 200)
-        ... # Additional assertions
 ```
+
+By combining Django Ninja CRUD's declarative views with Django REST Testing's
+scenario-based testing capabilities, you can confidently build and maintain robust,
+well-tested RESTful APIs with ease.
 
 ## 📚 Documentation
 For more information, see the [documentation](https://django-ninja-crud.readme.io/).
 
 ## 🫶 Support
-First and foremost, a heartfelt thank you for taking an interest in this project. If it has been helpful to you or you believe in its potential, kindly consider giving it a star on GitHub. Such recognition not only fuels my drive to maintain and improve this work but also makes it more visible to new potential users and contributors.
+First and foremost, a heartfelt thank you to the 400+ stargazers who have shown their support for this project. Your recognition and belief in its potential fuel my drive to maintain and improve this work, making it more visible to new potential users and contributors.
 
-![GitHub Repo stars](https://img.shields.io/github/stars/hbakri/django-ninja-crud?style=social)
+[![Star History Chart](https://api.star-history.com/svg?repos=hbakri/django-ninja-crud&type=Date)](https://star-history.com/#hbakri/django-ninja-crud&Date)
 
 If you've benefited from this project or appreciate the dedication behind it, consider showing further support. Whether it's the price of a coffee, a word of encouragement, or a sponsorship, every gesture adds fuel to the open-source fire, making it shine even brighter. ✨
 
