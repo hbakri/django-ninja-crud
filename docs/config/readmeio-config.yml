@@ -27,48 +27,48 @@ docs:
 
   # ------------------- Reference ---------------------
   # --------------------- Views -----------------------
-  - title: "AbstractModelView"
-    slug: "abstract-model-view"
-    excerpt: "Overview and usage patterns of the AbstractModelView in Django Ninja CRUD"
+  - title: "APIView"
+    slug: "api-view"
+    excerpt: "Overview and usage patterns of the APIView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 0
-    path: "docs/reference/views/AbstractModelView.md"
-  - title: "ListModelView"
-    slug: "list-model-view"
-    excerpt: "Guide to implementing and utilizing the ListModelView in Django Ninja CRUD"
+    path: "docs/reference/views/APIView.md"
+  - title: "ListView"
+    slug: "list-view"
+    excerpt: "Guide to implementing and utilizing the ListView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 1
-    path: "docs/reference/views/ListModelView.md"
-  - title: "CreateModelView"
-    slug: "create-model-view"
-    excerpt: "Instructions on how to leverage the CreateModelView in Django Ninja CRUD"
+    path: "docs/reference/views/ListView.md"
+  - title: "CreateView"
+    slug: "create-view"
+    excerpt: "Instructions on how to leverage the CreateView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 2
-    path: "docs/reference/views/CreateModelView.md"
-  - title: "ReadModelView"
-    slug: "read-model-view"
-    excerpt: "Insight into the workings of the ReadModelView in Django Ninja CRUD"
+    path: "docs/reference/views/CreateView.md"
+  - title: "ReadView"
+    slug: "read-view"
+    excerpt: "Insight into the workings of the ReadView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 3
-    path: "docs/reference/views/ReadModelView.md"
-  - title: "UpdateModelView"
-    slug: "update-model-view"
-    excerpt: "Understanding and applying the UpdateModelView in Django Ninja CRUD"
+    path: "docs/reference/views/ReadView.md"
+  - title: "UpdateView"
+    slug: "update-view"
+    excerpt: "Understanding and applying the UpdateView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 4
-    path: "docs/reference/views/UpdateModelView.md"
-  - title: "DeleteModelView"
-    slug: "delete-model-view"
-    excerpt: "Exploring the functionality of the DeleteModelView in Django Ninja CRUD"
+    path: "docs/reference/views/UpdateView.md"
+  - title: "DeleteView"
+    slug: "delete-view"
+    excerpt: "Exploring the functionality of the DeleteView in Django Ninja CRUD"
     categorySlug: "views"
     hidden: false
     order: 5
-    path: "docs/reference/views/DeleteModelView.md"
+    path: "docs/reference/views/DeleteView.md"
   - title: "PathParametersTypeResolver"
     slug: "path-parameters-type-resolver"
     excerpt: "Detailed examination of the PathParametersTypeResolver in Django Ninja CRUD"
@@ -80,8 +80,8 @@ docs:
   # -------------------- Viewsets ---------------------
   - title: "APIViewSet"
     slug: "api-viewset"
-    excerpt: "Detailed examination of ModelViewSet and its role in Django Ninja CRUD viewsets"
+    excerpt: "Detailed examination of APIViewSet and its role in Django Ninja CRUD viewsets"
     categorySlug: "viewsets"
     hidden: false
     order: 0
-    path: "docs/reference/viewsets/ModelViewSet.md"
+    path: "docs/reference/viewsets/APIViewSet.md"
