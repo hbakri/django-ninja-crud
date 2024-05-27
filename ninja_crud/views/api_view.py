@@ -199,7 +199,7 @@ class APIView:
         self.decorators = decorators or []
         self.model = model
         self.operation_kwargs = operation_kwargs or {}
-        self._api_viewset_class: Optional[Type["APIViewSet"]] = None
+        self._api_viewset_class: Optional[Type[APIViewSet]] = None
 
         if self.path_parameters is None:
             self._resolve_path_parameters_type()
