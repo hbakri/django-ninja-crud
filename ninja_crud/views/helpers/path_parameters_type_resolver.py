@@ -8,15 +8,16 @@ from django.db import models
 
 class PathParametersTypeResolver:
     """
-    Helper class for resolving the type of path parameters based on a model class
-    and URL path variables.
+    Helper class for automatically resolving the type of path parameters in a URL
+    based on a Django model class.
 
-    This class maps Django model field types to corresponding Python types, allowing
-    automatic determination of path parameter types in API views.
+    This class utilizes the `ninja.orm.fields.get_schema_field` method to map Django
+    model fields to their corresponding Python types, allowing the creation of a
+    Pydantic model representing the path parameters.
 
-    The `resolve` method takes a URL path and a Django model class, and returns a
-    Pydantic model representing the path parameters. If there are no path parameters,
-    it returns `None`.
+    The `resolve` method takes a URL path and a Django model class as input and
+    returns a dynamically generated Pydantic model representing the path parameters.
+    If there are no path parameters in the given URL, it returns `None`.
 
     Example:
     ```python
@@ -45,19 +46,43 @@ class PathParametersTypeResolver:
     ```
 
     Note:
-        Supported field type mappings are as follows:
-        - `models.AutoField`, `models.SmallAutoField`, `models.BigAutoField` -> `int`
-        - `models.IntegerField`, `models.SmallIntegerField`, `models.BigIntegerField`,
-            `models.PositiveIntegerField`, `models.PositiveSmallIntegerField`,
-            `models.PositiveBigIntegerField` -> `int`
-        - `models.UUIDField` -> `uuid.UUID`
-        - `models.CharField`, `models.SlugField`, `models.TextField` -> `str`
+        The `PathParametersTypeResolver` now relies on the
+        `ninja.orm.fields.get_schema_field` method to determine the appropriate type
+        for each path parameter based on the corresponding model field.
+        This method supports a wide range of field types, including:
+        - `models.AutoField`, `models.BigAutoField` -> `int`
+        - `models.BigIntegerField`, `models.IntegerField`,
+            `models.PositiveBigIntegerField`, `models.PositiveIntegerField`,
+            `models.PositiveSmallIntegerField`, `models.SmallIntegerField` -> `int`
         - `models.BinaryField` -> `bytes`
-        - `models.ForeignKey` -> Primary key type of the related model, but only if
-            the real field name is used in the path (e.g., `/{department_id}` instead
-            of `/{department}`). If the related model is `"self"`, the primary key of
-            the current model is used.
-        - Other field types are not supported and will raise a `ValueError`.
+        - `models.BooleanField`, `models.NullBooleanField` -> `bool`
+        - `models.CharField`, `models.SlugField`, `models.TextField`, `models.FileField`,
+            `models.FilePathField` -> `str`
+        - `models.DateField` -> `datetime.date`
+        - `models.DateTimeField` -> `datetime.datetime`
+        - `models.DecimalField` -> `Decimal`
+        - `models.DurationField` -> `datetime.timedelta`
+        - `models.FloatField` -> `float`
+        - `models.GenericIPAddressField`, `models.IPAddressField` -> `IPvAnyAddress`
+        - `models.JSONField` -> `AnyObject`
+        - `models.TimeField` -> `datetime.time`
+        - `models.UUIDField` -> `UUID`
+
+        Additionally, some PostgreSQL-specific fields are supported:
+        - `models.ArrayField` -> `List`
+        - `models.CICharField`, `models.CIEmailField`, `models.CITextField` -> `str`
+        - `models.HStoreField` -> `Dict`
+
+        For `models.ForeignKey` fields, the primary key type of the related model is
+        used, and you can use both the real field name (e.g., `/{department_id}`) or
+        the related model name (e.g., `/{department}`) in the path.
+
+    Important:
+        While `ninja.orm.fields.get_schema_field` supports a wide range of field types,
+        it is not recommended to use all of them in URL paths. Path parameters should
+        typically be limited to simple types like strings, integers, and UUIDs to ensure
+        proper URL formatting and compatibility with web standards. Including complex
+        types or fields with special characters in the URL path is generally discouraged.
     """
 
     @classmethod
