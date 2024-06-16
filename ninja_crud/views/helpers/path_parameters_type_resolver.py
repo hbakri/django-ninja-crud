@@ -89,6 +89,18 @@ class PathParametersTypeResolver:
     def resolve(
         cls, path: str, model_class: Type[models.Model]
     ) -> Optional[Type[pydantic.BaseModel]]:
+        """
+        Resolve the type of path parameters in a URL based on a Django model class.
+
+        Args:
+            path (str): The URL path containing path parameters.
+            model_class (Type[models.Model]): The Django model class to resolve the path
+                parameters against.
+
+        Returns:
+            Optional[Type[pydantic.BaseModel]]: The Pydantic model representing the path
+                parameters, or `None` if there are no path parameters in the URL.
+        """
         path_parameters_names = ninja.signature.utils.get_path_param_names(path)
         if not path_parameters_names:
             return None
