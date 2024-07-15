@@ -111,6 +111,7 @@ class TestCollectionViewSet(APITestCase, BaseTestCase):
                 APIViewTestScenario(
                     path_parameters={"id": uuid.uuid4()},
                     request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    request_body={"name": "new-name", "description": "new-description"},
                     expected_response_status=HTTPStatus.NOT_FOUND,
                 ),
                 APIViewTestScenario(
@@ -128,6 +129,7 @@ class TestCollectionViewSet(APITestCase, BaseTestCase):
                 APIViewTestScenario(
                     path_parameters={"id": self.collection_1.id},
                     request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
+                    request_body={"name": "new-name", "description": "new-description"},
                     expected_response_status=HTTPStatus.FORBIDDEN,
                 ),
                 APIViewTestScenario(
@@ -208,11 +210,13 @@ class TestCollectionViewSet(APITestCase, BaseTestCase):
                 APIViewTestScenario(
                     path_parameters={"id": uuid.uuid4()},
                     request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_1.id}"},
+                    request_body={"name": "new-name", "description": "new-description"},
                     expected_response_status=HTTPStatus.NOT_FOUND,
                 ),
                 APIViewTestScenario(
                     path_parameters={"id": self.collection_1.id},
                     request_headers={"HTTP_AUTHORIZATION": f"Bearer {self.user_2.id}"},
+                    request_body={"name": "new-name", "description": "new-description"},
                     expected_response_status=HTTPStatus.FORBIDDEN,
                 ),
                 APIViewTestScenario(

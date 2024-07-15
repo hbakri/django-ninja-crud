@@ -32,11 +32,11 @@ class TestReadView(TestCase):
     def test_default_get_model_without_model(self):
         read_view = views.ReadView()
         with self.assertRaises(ValueError):
-            read_view.default_get_model(HttpRequest(), None)
+            read_view._default_get_model(HttpRequest(), None)
 
     def test_default_get_model(self):
         path_parameters = self.PathParameters(id=self.item.id)
-        model_instance = self.read_view.default_get_model(
+        model_instance = self.read_view._default_get_model(
             HttpRequest(), path_parameters
         )
 
@@ -45,9 +45,7 @@ class TestReadView(TestCase):
 
     def test_default_view_function(self):
         path_parameters = self.PathParameters(id=self.item.id)
-        model_instance = self.read_view.default_view_function(
-            HttpRequest(), path_parameters, None, None
-        )
+        model_instance = self.read_view.handler(HttpRequest(), path_parameters)
 
         self.assertIsInstance(model_instance, Item)
         self.assertEqual(model_instance.id, self.item.id)
@@ -62,5 +60,4 @@ class TestReadView(TestCase):
 
         read_view.set_api_viewset_class(ItemViewSet)
         self.assertEqual(read_view.model, Item)
-        self.assertEqual(read_view.request_body, None)
         self.assertEqual(read_view.response_body, ItemOut)

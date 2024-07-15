@@ -85,6 +85,7 @@ class APIViewSet:
 
     api: Optional[ninja.NinjaAPI] = None
     router: Optional[ninja.Router] = None
+
     model: Optional[Type[django.db.models.Model]] = None
     default_request_body: Optional[Type[pydantic.BaseModel]] = None
     default_response_body: Optional[Type[Any]] = None
@@ -117,8 +118,8 @@ class APIViewSet:
             view_members.items(),
             key=lambda view_member: list(cls.__dict__).index(view_member[0]),
         )
-        for name, api_view in ordered_view_members:
-            if api_view.view_function_name is None:
-                api_view.view_function_name = name
-            api_view.set_api_viewset_class(cls)
-            api_view.add_view_to(api_or_router)
+        for name, view in ordered_view_members:
+            if view.name is None:
+                view.name = name
+            view.set_api_viewset_class(cls)
+            view.add_view_to(api_or_router)

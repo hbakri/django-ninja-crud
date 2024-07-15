@@ -1,3 +1,4 @@
+from typing import List
 from unittest import mock
 
 import ninja
@@ -38,8 +39,18 @@ class TestAPIViewSet(TestCase):
 
         mock_api.default_router.add_api_operation.assert_has_calls(
             [
-                mock.call(**self.CollectionViewSet.list_view.as_operation()),
-                mock.call(**self.CollectionViewSet.create_view.as_operation()),
+                mock.call(
+                    path="/",
+                    methods=["GET"],
+                    view_func=mock.ANY,
+                    response={200: List[self.CollectionViewSet.default_response_body]},
+                ),
+                mock.call(
+                    path="/",
+                    methods=["POST"],
+                    view_func=mock.ANY,
+                    response={201: self.CollectionViewSet.default_response_body},
+                ),
             ]
         )
 
@@ -51,8 +62,18 @@ class TestAPIViewSet(TestCase):
 
         mock_router.add_api_operation.assert_has_calls(
             [
-                mock.call(**self.CollectionViewSet.list_view.as_operation()),
-                mock.call(**self.CollectionViewSet.create_view.as_operation()),
+                mock.call(
+                    path="/",
+                    methods=["GET"],
+                    view_func=mock.ANY,
+                    response={200: List[self.CollectionViewSet.default_response_body]},
+                ),
+                mock.call(
+                    path="/",
+                    methods=["POST"],
+                    view_func=mock.ANY,
+                    response={201: self.CollectionViewSet.default_response_body},
+                ),
             ]
         )
 
@@ -72,8 +93,18 @@ class TestAPIViewSet(TestCase):
 
         mock_api.default_router.add_api_operation.assert_has_calls(
             [
-                mock.call(**CollectionViewSet.list_view.as_operation()),
-                mock.call(**CollectionViewSet.create_view.as_operation()),
+                mock.call(
+                    path="/",
+                    methods=["GET"],
+                    view_func=mock.ANY,
+                    response={200: List[CollectionViewSet.default_response_body]},
+                ),
+                mock.call(
+                    path="/",
+                    methods=["POST"],
+                    view_func=mock.ANY,
+                    response={201: CollectionViewSet.default_response_body},
+                ),
             ]
         )
 
@@ -92,7 +123,17 @@ class TestAPIViewSet(TestCase):
 
         mock_router.add_api_operation.assert_has_calls(
             [
-                mock.call(**CollectionViewSet.list_view.as_operation()),
-                mock.call(**CollectionViewSet.create_view.as_operation()),
+                mock.call(
+                    path="/",
+                    methods=["GET"],
+                    view_func=mock.ANY,
+                    response={200: List[CollectionViewSet.default_response_body]},
+                ),
+                mock.call(
+                    path="/",
+                    methods=["POST"],
+                    view_func=mock.ANY,
+                    response={201: CollectionViewSet.default_response_body},
+                ),
             ]
         )

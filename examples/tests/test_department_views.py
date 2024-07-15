@@ -55,7 +55,7 @@ class TestDepartmentViewSet(APITestCase):
     def test_read_department(self):
         self.assertScenariosSucceed(
             method="GET",
-            path="/api/departments/{id}",
+            path="/api/departments/{id}/reusable",
             scenarios=[
                 APIViewTestScenario(
                     path_parameters={"id": self.department_1.id},

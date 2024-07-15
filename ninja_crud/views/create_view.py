@@ -1,10 +1,22 @@
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type
+from types import FunctionType
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Type,
+    cast,
+)
 
 from django.db.models import ManyToManyField, Model
 from django.http import HttpRequest
+from ninja.params.functions import Body, Path
 from pydantic import BaseModel
+from typing_extensions import Annotated
 
-from ninja_crud.views.api_view import APIView, ViewDecorator, ViewFunction
+from ninja_crud.views.api_view import APIView
 
 if TYPE_CHECKING:  # pragma: no cover
     from ninja_crud.viewsets import APIViewSet
@@ -20,51 +32,33 @@ class CreateView(APIView):
     create endpoints.
 
     Args:
-        method (str, optional): The HTTP method for the view. Defaults to "POST".
-        path (str, optional): The URL path for the view. Defaults to "/{id}".
-        response_status (int, optional): The HTTP status code for the response.
-            Defaults to 201 (Created).
-        response_body (Optional[Type[Any]], optional): The response body type.
-            Defaults to None. If not provided, the default response body of the viewset
-            will be used.
-        view_function (Optional[ViewFunction], optional): The function that handles the
-            view logic. Default implementation is `default_view_function`, which calls
-            `init_model` to create a new model instance, sets the instance attributes
-            based on the request body, calls the pre-save hook, saves the instance, and
-            calls the post-save hook.
-        view_function_name (Optional[str], optional): The name of the view function.
-            Defaults to None, which will use the default function name. If bound to a
-            viewset, the function name will be the class attribute name. Useful for
-            standalone views outside viewsets.
-        path_parameters (Optional[Type[BaseModel]], optional): The path parameters type.
-            Defaults to None. If not provided, the default path parameters will be
-            resolved based on the model, specified in the viewset or standalone view.
-        request_body (Optional[Type[BaseModel]], optional): The request body type.
-            Defaults to None. If not provided, the default request body of the viewset
-            will be used.
-        model (Optional[Type[Model]], optional): The Django model associated with the
-            view. Defaults to None. Mandatory if not bound to a viewset, otherwise
-            inherited from the viewset.
-        decorators (Optional[List[ViewDecorator]], optional): List of decorators to
-            apply to the view function. Decorators are applied in reverse order.
-        operation_kwargs (Optional[Dict[str, Any]], optional): Additional keyword
-            arguments for the operation.
-        init_model (Optional[Callable], optional): A callable to initialize the model
-            instance. By default, it creates a new instance of the model using the model
-            class defined in the view: `Model()`.
-            Should have the signature:
-            - `init_model(request: HttpRequest, path_parameters: Optional[BaseModel])
-            -> Model`.
-        pre_save (Optional[Callable], optional): A callable to perform pre-create
-            operations on the model instance. By default, it calls `full_clean` on the
-            instance to validate the data before creating.
-            Should have the signature:
-            - `pre_save(request: HttpRequest, instance: Model) -> None`.
-        post_save (Optional[Callable], optional): A callable to perform post-create
-            operations on the model instance. By default, it does nothing. Useful for
-            additional processing or side effects after saving.
-            Should have the signature:
-            - `post_save(request: HttpRequest, instance: Model) -> None`.
+        name (str | None, optional): View function name. Defaults to `None`.
+            If None, uses class attribute name in viewsets or "handler" for standalone
+            views (unless decorator-overridden).
+        method (str): HTTP method. Defaults to `"POST"`.
+        path (str): URL path. Defaults to `"/{id}"`.
+        response_status (int, optional): HTTP response status code. Defaults to `201`.
+        response_body (Type | None, optional): Response body type. Defaults to `None`.
+            If None, uses the default response body of the viewset.
+        model (Type[django.db.models.Model] | None, optional): Associated Django model.
+            Inherits from viewset if not provided. Defaults to `None`.
+        path_parameters (Type[BaseModel] | None, optional): Path parameters type.
+            Defaults to `None`. If not provided, resolved from the path and model.
+        request_body (Type[BaseModel] | None, optional): The request body type.
+            Defaults to `None`. If None, uses the default request body of the viewset.
+        init_model (Callable | None, optional): Initialize the model instance.
+            Default uses `self.model()`. Should have the signature:
+            - `(request: HttpRequest, path_parameters: Optional[BaseModel]) -> Model`
+        pre_save (Callable | None, optional): Pre-create operations on the model instance.
+            Default calls `full_clean` on the instance. Should have the signature:
+            - `(request: HttpRequest, instance: Model) -> None`
+        post_save (Callable | None, optional): Post-create operations on the model instance.
+            Default does nothing. Should have the signature:
+            - `(request: HttpRequest, instance: Model) -> None`
+        decorators (List[Callable] | None, optional): View function decorators
+            (applied in reverse order). Defaults to `None`.
+        operation_kwargs (Dict[str, Any] | None, optional): Additional operation
+            keyword arguments. Defaults to `None`.
 
     Example:
     ```python
@@ -80,8 +74,8 @@ class CreateView(APIView):
     class DepartmentViewSet(viewsets.APIViewSet):
         api = api
         model = Department
+        default_request_body = DepartmentIn
         default_response_body = DepartmentOut
-        default_request_body = DepartmentOut
 
         # Usage with default request and response bodies:
         create_department = views.CreateView()
@@ -94,108 +88,65 @@ class CreateView(APIView):
 
     # Usage as a standalone view:
     views.CreateView(
+        name="create_department",
         model=Department,
         request_body=DepartmentIn,
         response_body=DepartmentOut,
-        view_function_name="create_department",
     ).add_view_to(api)
     ```
     """
 
     def __init__(
         self,
+        name: Optional[str] = None,
         method: str = "POST",
         path: str = "/",
         response_status: int = 201,
         response_body: Optional[Type[Any]] = None,
-        view_function: Optional[ViewFunction] = None,
-        view_function_name: Optional[str] = None,
+        model: Optional[Type[Model]] = None,
         path_parameters: Optional[Type[BaseModel]] = None,
         request_body: Optional[Type[BaseModel]] = None,
-        model: Optional[Type[Model]] = None,
-        decorators: Optional[List[ViewDecorator]] = None,
-        operation_kwargs: Optional[Dict[str, Any]] = None,
         init_model: Optional[
             Callable[[HttpRequest, Optional[BaseModel]], Model]
         ] = None,
         pre_save: Optional[Callable[[HttpRequest, Model], None]] = None,
         post_save: Optional[Callable[[HttpRequest, Model], None]] = None,
+        decorators: Optional[
+            List[Callable[[Callable[..., Any]], Callable[..., Any]]]
+        ] = None,
+        operation_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         super().__init__(
+            name=name,
             method=method,
             path=path,
             response_status=response_status,
             response_body=response_body,
-            view_function=view_function or self.default_view_function,
-            view_function_name=view_function_name,
-            path_parameters=path_parameters,
-            query_parameters=None,
-            request_body=request_body,
             model=model,
             decorators=decorators,
             operation_kwargs=operation_kwargs,
         )
-        self.init_model = init_model or self.default_init_model
-        self.pre_save = pre_save or self.default_pre_save
-        self.post_save = post_save or self.default_post_save
+        self.decorators.append(self._update_handler_annotations)
+        self.path_parameters = path_parameters or self.resolve_path_parameters()
+        self.request_body = request_body
+        self.init_model = init_model or self._default_init_model
+        self.pre_save = pre_save or self._default_pre_save
+        self.post_save = post_save or self._default_post_save
 
-    def default_init_model(
-        self, request: HttpRequest, path_parameters: Optional[BaseModel]
-    ) -> Model:
-        """
-        Default implementation of the model initialization hook for the view. This
-        method creates a new instance of the model using the model class defined in the
-        view: `Model()`.
-        """
-        if self.model is None:
-            raise ValueError("No model set for the view.")
-
-        return self.model()
-
-    @staticmethod
-    def default_pre_save(request: HttpRequest, instance: Model) -> None:
-        """
-        Default implementation of the pre-save hook for the view. This method calls
-        `full_clean` on the model instance to validate the data before creating.
-        """
-        instance.full_clean()
-
-    @staticmethod
-    def default_post_save(request: HttpRequest, instance: Model) -> None:
-        """
-        Default implementation of the post-save hook for the view. This method does
-        nothing by default and can be overridden in init or subclasses to perform
-        additional operations after creating the instance.
-        """
-        pass
-
-    def default_view_function(
+    def handler(
         self,
         request: HttpRequest,
         path_parameters: Optional[BaseModel],
-        query_parameters: Optional[BaseModel],
-        request_body: Optional[BaseModel],
+        request_body: BaseModel,
     ) -> Model:
-        """
-        Default implementation of the view function for the view. This method creates
-        a new instance of the model by calling the `init_model` method, sets the
-        instance attributes based on the request body, calls the pre-save hook, saves
-        the instance, and calls the post-save hook.
-
-        Note:
-            If the request body contains many-to-many fields, they are set after saving
-            the instance to ensure that the instance exists in the database before setting
-            the many-to-many relationships.
-        """
         instance = self.init_model(request, path_parameters)
 
         m2m_fields_to_set = []
-        if request_body:
-            for field, value in request_body.dict().items():
-                if isinstance(instance._meta.get_field(field), ManyToManyField):
-                    m2m_fields_to_set.append((field, value))
-                else:
-                    setattr(instance, field, value)
+        for field, value in request_body.model_dump().items():
+            if isinstance(instance._meta.get_field(field), ManyToManyField):
+                m2m_fields_to_set.append((field, value))
+            else:
+                setattr(instance, field, value)
 
         self.pre_save(request, instance)
         instance.save()
@@ -205,6 +156,32 @@ class CreateView(APIView):
             getattr(instance, field).set(value)
 
         return instance
+
+    def _update_handler_annotations(
+        self, handler: Callable[..., Any]
+    ) -> Callable[..., Any]:
+        annotations = cast(FunctionType, handler).__annotations__
+        annotations["path_parameters"] = Annotated[
+            self.path_parameters, Path(default=None, include_in_schema=False)
+        ]
+        annotations["request_body"] = Annotated[self.request_body, Body()]
+        return handler
+
+    def _default_init_model(
+        self, request: HttpRequest, path_parameters: Optional[BaseModel]
+    ) -> Model:
+        if self.model is None:
+            raise ValueError("No model set for the view.")
+
+        return self.model()
+
+    @staticmethod
+    def _default_pre_save(request: HttpRequest, instance: Model) -> None:
+        instance.full_clean()
+
+    @staticmethod
+    def _default_post_save(request: HttpRequest, instance: Model) -> None:
+        pass
 
     def set_api_viewset_class(self, api_viewset_class: Type["APIViewSet"]) -> None:
         """
@@ -220,9 +197,8 @@ class CreateView(APIView):
             defining views as class attributes. It should not be called manually.
         """
         super().set_api_viewset_class(api_viewset_class)
-
-        if self.request_body is None:
-            self.request_body = api_viewset_class.default_request_body
-
-        if self.response_body is None:
-            self.response_body = api_viewset_class.default_response_body
+        self.path_parameters = self.path_parameters or self.resolve_path_parameters()
+        self.request_body = self.request_body or api_viewset_class.default_request_body
+        self.response_body = (
+            self.response_body or api_viewset_class.default_response_body
+        )
