@@ -33,11 +33,11 @@ class TestUpdateView(TestCase):
     def test_default_get_model_without_model(self):
         update_view = views.UpdateView()
         with self.assertRaises(ValueError):
-            update_view.default_get_model(HttpRequest(), None)
+            update_view._default_get_model(HttpRequest(), None)
 
     def test_default_get_model(self):
         path_parameters = self.PathParameters(id=self.item.id)
-        model_instance = self.update_view.default_get_model(
+        model_instance = self.update_view._default_get_model(
             HttpRequest(), path_parameters
         )
 
@@ -47,8 +47,8 @@ class TestUpdateView(TestCase):
     def test_default_view_function(self):
         path_parameters = self.PathParameters(id=self.item.id)
         request_body = ItemIn(name="updated-item")
-        updated_instance = self.update_view.default_view_function(
-            HttpRequest(), path_parameters, None, request_body
+        updated_instance = self.update_view.handler(
+            HttpRequest(), path_parameters, request_body
         )
 
         self.assertIsInstance(updated_instance, Item)

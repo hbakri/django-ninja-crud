@@ -29,10 +29,10 @@ class TestListView(TestCase):
     def test_default_get_queryset_without_model(self):
         list_view = views.ListView()
         with self.assertRaises(ValueError):
-            list_view.default_get_queryset(HttpRequest(), None)
+            list_view._default_get_queryset(HttpRequest(), None)
 
     def test_default_get_queryset(self):
-        queryset = self.list_view.default_get_queryset(HttpRequest(), None)
+        queryset = self.list_view._default_get_queryset(HttpRequest(), None)
 
         self.assertIsInstance(queryset, QuerySet)
         self.assertEqual(list(queryset), [self.item1, self.item2])
@@ -44,7 +44,7 @@ class TestListView(TestCase):
             name: str
 
         query_parameters = QueryParameters(name="item1")
-        filtered_queryset = self.list_view.default_filter_queryset(
+        filtered_queryset = self.list_view._default_filter_queryset(
             queryset, query_parameters
         )
 
@@ -58,7 +58,7 @@ class TestListView(TestCase):
             name: str
 
         query_parameters = QueryParameters(name="item1")
-        filtered_queryset = self.list_view.default_filter_queryset(
+        filtered_queryset = self.list_view._default_filter_queryset(
             queryset, query_parameters
         )
 
@@ -67,9 +67,7 @@ class TestListView(TestCase):
 
     def test_default_view_function(self):
         query_parameters = ItemFilter(name="item1")
-        result = self.list_view.default_view_function(
-            HttpRequest(), None, query_parameters, None
-        )
+        result = self.list_view.handler(HttpRequest(), None, query_parameters)
 
         self.assertIsInstance(result, QuerySet)
         self.assertEqual(list(result), [self.item1])
@@ -84,5 +82,4 @@ class TestListView(TestCase):
 
         list_view.set_api_viewset_class(ItemViewSet)
         self.assertEqual(list_view.model, Item)
-        self.assertEqual(list_view.request_body, None)
         self.assertEqual(list_view.response_body, List[ItemOut])

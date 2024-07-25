@@ -1,10 +1,25 @@
-from typing import Any, Callable, Dict, List, Optional, Type
+from types import FunctionType
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Type,
+    cast,
+)
 
 from django.db.models import Model
 from django.http import HttpRequest
+from ninja.params.functions import Path
 from pydantic import BaseModel
+from typing_extensions import Annotated
 
-from ninja_crud.views.api_view import APIView, ViewDecorator, ViewFunction
+from ninja_crud.views.api_view import APIView
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ninja_crud.viewsets import APIViewSet
 
 
 class DeleteView(APIView):
@@ -17,47 +32,35 @@ class DeleteView(APIView):
     of delete endpoints.
 
     Args:
-        method (str, optional): The HTTP method for the view. Defaults to "DELETE".
-        path (str, optional): The URL path for the view. Defaults to "/{id}".
-        response_status (int, optional): The HTTP status code for the response.
-            Defaults to 204 (No Content).
-        response_body (Optional[Type[Any]], optional): The response body type.
-            Defaults to None.
-        view_function (Optional[ViewFunction], optional): The function that handles
-            the view logic. Default implementation is `default_view_function`, which
-            calls `get_model` to retrieve the model instance based on the request
-            and path parameters, calls the pre-delete hook, deletes the instance,
-            and calls the post-delete hook.
-        view_function_name (Optional[str], optional): The name of the view function.
-            Defaults to None, which will use the default function name. If bound to
-            a viewset, the function name will be the class attribute name. Useful for
-            standalone views outside viewsets.
-        path_parameters (Optional[Type[BaseModel]], optional): The path parameters type.
-            Defaults to None. If not provided, the default path parameters will be
-            resolved based on the model, specified in the viewset or standalone view.
-        model (Optional[Type[Model]], optional): The Django model associated with the
-            view. Defaults to None. Mandatory if not bound to a viewset, otherwise
-            inherited from the viewset.
-        decorators (Optional[List[ViewDecorator]], optional): List of decorators to
-            apply to the view function. Decorators are applied in reverse order.
-        operation_kwargs (Optional[Dict[str, Any]], optional): Additional keyword
-            arguments for the operation.
-        get_model (Optional[Callable], optional): A callable to retrieve the model
-            instance. By default, it gets the model instance based on the path
-            parameters. Useful for customizing the model retrieval logic, for example,
-            for optimizing queries or handling errors. Should have the signature:
-            - `get_model(request: HttpRequest, path_parameters: Optional[BaseModel])
-            -> Model`.
-        pre_delete (Optional[Callable], optional): A callable to perform pre-delete
+        name (str | None, optional): View function name. Defaults to `None`. If None,
+            uses class attribute name in viewsets or "handler" for standalone views.
+        method (str, optional): The HTTP method for the view. Defaults to `"DELETE"`.
+        path (str, optional): The URL path for the view. Defaults to `"/{id}"`.
+        response_status (int, optional): HTTP response status code. Defaults to `204`.
+        response_body (Type | None, optional): Response body type. Defaults to `None`.
+        model (Type[django.db.models.Model] | None, optional): Associated Django model.
+            Inherits from viewset if not provided. Defaults to `None`.
+        path_parameters (Type[BaseModel] | None, optional): Path parameters type.
+            Defaults to `None`. If not provided, resolved from the path and model.
+        get_model (Callable | None, optional): Retrieves model instance. Default uses
+            path parameters (e.g., `self.model.objects.get(id=path_parameters.id)`
+            for `/{id}` path). Useful for customizing model retrieval logic.
+            Should have the signature:
+            - `(request: HttpRequest, path_parameters: Optional[BaseModel]) -> Model`
+        pre_delete (Callable | None, optional): A callable to perform pre-delete
             operations on the model instance. By default, it does nothing. Useful for
             additional operations before deleting the instance.
             Should have the signature:
-            - `pre_delete(request: HttpRequest, instance: Model) -> None`.
-        post_delete (Optional[Callable], optional): A callable to perform post-delete
+            - `(request: HttpRequest, instance: Model) -> None`
+        post_delete (Callable | None, optional): A callable to perform post-delete
             operations on the model instance. By default, it does nothing. Useful for
             additional operations after deleting the instance.
             Should have the signature:
-            - `post_delete(request: HttpRequest, instance: Model) -> None`.
+            - `(request: HttpRequest, instance: Model) -> None`
+        decorators (List[Callable] | None, optional): View function decorators
+            (applied in reverse order). Defaults to `None`.
+        operation_kwargs (Dict[str, Any] | None, optional): Additional operation
+            keyword arguments. Defaults to `None`.
 
     Example:
     ```python
@@ -77,56 +80,68 @@ class DeleteView(APIView):
 
     # Usage as a standalone view:
     views.DeleteView(
-        model=Department,
-        view_function_name="delete_department",
+        name="delete_department",
+        model=Department
     ).add_view_to(api)
     ```
     """
 
     def __init__(
         self,
+        name: Optional[str] = None,
         method: str = "DELETE",
         path: str = "/{id}",
         response_status: int = 204,
         response_body: Optional[Type[Any]] = None,
-        view_function: Optional[ViewFunction] = None,
-        view_function_name: Optional[str] = None,
-        path_parameters: Optional[Type[BaseModel]] = None,
         model: Optional[Type[Model]] = None,
-        decorators: Optional[List[ViewDecorator]] = None,
-        operation_kwargs: Optional[Dict[str, Any]] = None,
+        path_parameters: Optional[Type[BaseModel]] = None,
         get_model: Optional[Callable[[HttpRequest, Optional[BaseModel]], Model]] = None,
         pre_delete: Optional[Callable[[HttpRequest, Model], None]] = None,
         post_delete: Optional[Callable[[HttpRequest, Model], None]] = None,
+        decorators: Optional[
+            List[Callable[[Callable[..., Any]], Callable[..., Any]]]
+        ] = None,
+        operation_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         super().__init__(
+            name=name,
             method=method,
             path=path,
             response_status=response_status,
             response_body=response_body,
-            view_function=view_function or self.default_view_function,
-            view_function_name=view_function_name,
-            path_parameters=path_parameters,
-            query_parameters=None,
-            request_body=None,
             model=model,
             decorators=decorators,
             operation_kwargs=operation_kwargs,
         )
-        self.get_model = get_model or self.default_get_model
-        self.pre_delete = pre_delete or self.default_pre_delete
-        self.post_delete = post_delete or self.default_post_delete
+        self.decorators.append(self._update_handler_annotations)
+        self.path_parameters = path_parameters or self.resolve_path_parameters()
+        self.get_model = get_model or self._default_get_model
+        self.pre_delete = pre_delete or self._default_pre_delete
+        self.post_delete = post_delete or self._default_post_delete
 
-    def default_get_model(
+    def handler(
+        self,
+        request: HttpRequest,
+        path_parameters: Optional[BaseModel],
+    ) -> None:
+        instance = self.get_model(request, path_parameters)
+
+        self.pre_delete(request, instance)
+        instance.delete()
+        self.post_delete(request, instance)
+
+    def _update_handler_annotations(
+        self, handler: Callable[..., Any]
+    ) -> Callable[..., Any]:
+        annotations = cast(FunctionType, handler).__annotations__
+        annotations["path_parameters"] = Annotated[
+            self.path_parameters, Path(default=None, include_in_schema=False)
+        ]
+        return handler
+
+    def _default_get_model(
         self, request: HttpRequest, path_parameters: Optional[BaseModel]
     ) -> Model:
-        """
-        Default implementation of the model retrieval logic for the view.
-
-        This method retrieves the model instance based on the path parameters. For
-        example, if the path is `/{id}`, it will fetch the model instance with
-        the corresponding id value: `Model.objects.get(id=path_parameters.id)`.
-        """
         if self.model is None:
             raise ValueError("No model set for the view.")
 
@@ -135,40 +150,22 @@ class DeleteView(APIView):
         )
 
     @staticmethod
-    def default_pre_delete(request: HttpRequest, instance: Model) -> None:
-        """
-        Default implementation of the pre-delete logic for the view. This method does
-        nothing by default and can be overridden in init or subclasses to perform
-        additional operations before deleting the instance.
-        """
+    def _default_pre_delete(request: HttpRequest, instance: Model) -> None:
         pass
 
     @staticmethod
-    def default_post_delete(request: HttpRequest, instance: Model) -> None:
-        """
-        Default implementation of the post-delete logic for the view. This method does
-        nothing by default and can be overridden in init or subclasses to perform
-        additional operations after deleting the instance.
-        """
+    def _default_post_delete(request: HttpRequest, instance: Model) -> None:
         pass
 
-    def default_view_function(
-        self,
-        request: HttpRequest,
-        path_parameters: Optional[BaseModel],
-        query_parameters: Optional[BaseModel],
-        request_body: Optional[BaseModel],
-    ) -> None:
+    def set_api_viewset_class(self, api_viewset_class: Type["APIViewSet"]) -> None:
         """
-        Default implementation of the view function for the view. This method retrieves
-        the model instance based on the path parameters, calls the pre-delete hook,
-        deletes the instance, and calls the post-delete hook.
+        Bind the view to a viewset class.
 
-        This method does not return a response body, as the instance is deleted and
-        the response status is set to 204 (No Content).
+        This method sets the model and path parameters type based on the viewset class.
+
+        Note:
+            This method is called internally and automatically by the viewset when
+            defining views as class attributes. It should not be called manually.
         """
-        instance = self.get_model(request, path_parameters)
-
-        self.pre_delete(request, instance)
-        instance.delete()
-        self.post_delete(request, instance)
+        super().set_api_viewset_class(api_viewset_class)
+        self.path_parameters = self.path_parameters or self.resolve_path_parameters()

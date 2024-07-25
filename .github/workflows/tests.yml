@@ -43,6 +43,7 @@ jobs:
         pip install django==${{ matrix.django-version }}
         pip install django-ninja==${{ matrix.django-ninja-version }}
         pip install django-rest-testing==${{ matrix.django-rest-testing }}
+        pip install packaging
 
     - name: Run tests with coverage
       env:

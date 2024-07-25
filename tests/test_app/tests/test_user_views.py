@@ -114,6 +114,12 @@ class TestUserViewSet(APITestCase, BaseTestCase):
                 ),
                 APIViewTestScenario(
                     path_parameters={"id": 999},
+                    request_body={
+                        "username": "new-user",
+                        "email": "user@email.com",
+                        "password": "new-password",
+                        "groups": [self.group_1.id, self.group_2.id],
+                    },
                     expected_response_status=HTTPStatus.NOT_FOUND,
                 ),
             ],

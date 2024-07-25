@@ -1,12 +1,24 @@
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type
+from types import FunctionType
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Type,
+    cast,
+)
 
 from django.db.models import Model, QuerySet
 from django.http import HttpRequest
 from ninja import FilterSchema
 from ninja.pagination import LimitOffsetPagination, PaginationBase, paginate
+from ninja.params.functions import Path, Query
 from pydantic import BaseModel
+from typing_extensions import Annotated
 
-from ninja_crud.views.api_view import APIView, ViewDecorator, ViewFunction
+from ninja_crud.views.api_view import APIView
 
 if TYPE_CHECKING:  # pragma: no cover
     from ninja_crud.viewsets import APIViewSet
@@ -22,50 +34,36 @@ class ListView(APIView):
     creation of list endpoints.
 
     Args:
-        method (str, optional): The HTTP method for the view. Defaults to "GET".
-        path (str, optional): The URL path for the view. Defaults to "/".
-        response_status (int, optional): The HTTP status code for the response.
-            Defaults to 200 (OK).
-        response_body (Optional[Type[Any]], optional): The response body list type.
-            Defaults to None. If not provided, the default response body of the
-            viewset will be used as a list type.
-        view_function (Optional[ViewFunction], optional): The function that handles the
-            view logic. Default implementation is `default_view_function`, which calls
-            `get_queryset` to retrieve the queryset based on the request and path
-            parameters, and then filters the queryset using `filter_queryset` based on
-            the query parameters.
-        view_function_name (Optional[str], optional): The name of the view function.
-            Defaults to None, which will use the default function name. If bound to
-            a viewset, the function name will be the class attribute name. Useful for
-            standalone views outside viewsets.
-        path_parameters (Optional[Type[BaseModel]], optional): The path parameters type.
-            Defaults to None. If not provided, the default path parameters will be
-            resolved based on the model, specified in the viewset or standalone view.
-        query_parameters (Optional[Type[BaseModel]], optional): The query parameters
-            type. Defaults to None.
-        model (Optional[Type[Model]], optional): The Django model associated with the
-            view. Defaults to None. Mandatory if not bound to a viewset, otherwise
-            inherited from the viewset.
-        decorators (Optional[List[ViewDecorator]], optional): List of decorators to
-            apply to the view function. Decorators are applied in reverse order.
-        operation_kwargs (Optional[Dict[str, Any]], optional): Additional keyword
-            arguments for the operation.
-        get_queryset (Optional[Callable], optional): A callable to retrieve the
-            queryset. By default, it gets the queryset based on the model. Useful
-            for customizing the queryset retrieval logic, for example, for optimizing
-            queries or handling filters. Should have the signature:
-            - `get_queryset(request: HttpRequest, path_parameters: Optional[BaseModel])
-            -> QuerySet`.
-        filter_queryset (Optional[Callable], optional): A callable to filter the
-            queryset. By default, it filters the queryset based on the query parameters.
-            Useful for customizing the queryset filtering logic, for example, for
-            handling complex filters or permissions. Should have the signature:
-            - `filter_queryset(queryset: QuerySet, query_parameters: Optional[BaseModel])
-            -> QuerySet`.
-        pagination_class (Optional[Type[PaginationBase]], optional): The pagination
-            class to use for the view. Defaults to `LimitOffsetPagination`. If set,
-            the pagination will be applied to the response. Set to `None` to disable
-            pagination.
+        name (str | None, optional): View function name. Defaults to `None`. If None,
+            uses class attribute name in viewsets or "handler" for standalone views.
+        method (str, optional): The HTTP method for the view. Defaults to `"GET"`.
+        path (str, optional): The URL path for the view. Defaults to `"/"`.
+        response_status (int, optional): HTTP response status code. Defaults to `200`.
+        response_body (Type | None, optional): Response body type. Defaults to `None`.
+            If None, uses the default response body of the viewset as a list type.
+        path_parameters (Type[BaseModel] | None, optional): Path parameters type.
+            Defaults to `None`. If not provided, resolved from the path and model.
+        query_parameters (Type[BaseModel] | None, optional): Query parameters type.
+            Defaults to `None`.
+        model (Type[django.db.models.Model] | None, optional): Associated Django model.
+            Inherits from viewset if not provided. Defaults to `None`.
+        get_queryset (Callable | None, optional): Callable to retrieve the queryset.
+            Default uses `self.model.objects.get_queryset()`. Useful for selecting
+            related models or optimizing queries. Should have the signature:
+            - `(request: HttpRequest, path_parameters: Optional[BaseModel]) -> QuerySet`
+        filter_queryset (Callable | None, optional): Callable to filter the queryset.
+            Default uses `query_parameters.filter(queryset)` if `query_parameters` is a
+            `ninja.FilterSchema`, otherwise filters the queryset based on the query
+            parameters as keyword arguments:
+            `queryset.filter(**query_parameters.dict(exclude_unset=True))`.
+            Should have the signature:
+            - `(queryset: QuerySet, query_parameters: Optional[BaseModel]) -> QuerySet`
+        pagination_class (Type[PaginationBase] | None, optional): Pagination class.
+            Defaults to `LimitOffsetPagination`. If None, no pagination is applied.
+        decorators (List[Callable] | None, optional): View function decorators
+            (applied in reverse order). Defaults to `None`.
+        operation_kwargs (Dict[str, Any] | None, optional): Additional operation
+            keyword arguments. Defaults to `None`.
 
     Example:
     ```python
@@ -87,26 +85,23 @@ class ListView(APIView):
 
     # Usage as a standalone view:
     views.ListView(
+        name="list_departments",
         model=Department,
         response_body=List[DepartmentOut],
-        view_function_name="list_departments",
     ).add_view_to(api)
     ```
     """
 
     def __init__(
         self,
+        name: Optional[str] = None,
         method: str = "GET",
         path: str = "/",
         response_status: int = 200,
         response_body: Optional[Type[Any]] = None,
-        view_function: Optional[ViewFunction] = None,
-        view_function_name: Optional[str] = None,
+        model: Optional[Type[Model]] = None,
         path_parameters: Optional[Type[BaseModel]] = None,
         query_parameters: Optional[Type[BaseModel]] = None,
-        model: Optional[Type[Model]] = None,
-        decorators: Optional[List[ViewDecorator]] = None,
-        operation_kwargs: Optional[Dict[str, Any]] = None,
         get_queryset: Optional[
             Callable[[HttpRequest, Optional[BaseModel]], QuerySet[Model]]
         ] = None,
@@ -114,76 +109,69 @@ class ListView(APIView):
             Callable[[QuerySet[Model], Optional[BaseModel]], QuerySet[Model]]
         ] = None,
         pagination_class: Optional[Type[PaginationBase]] = LimitOffsetPagination,
+        decorators: Optional[
+            List[Callable[[Callable[..., Any]], Callable[..., Any]]]
+        ] = None,
+        operation_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         super().__init__(
+            name=name,
             method=method,
             path=path,
             response_status=response_status,
             response_body=response_body,
-            view_function=view_function or self.default_view_function,
-            view_function_name=view_function_name,
-            path_parameters=path_parameters,
-            query_parameters=query_parameters,
-            request_body=None,
             model=model,
             decorators=decorators,
             operation_kwargs=operation_kwargs,
         )
-        self.get_queryset = get_queryset or self.default_get_queryset
-        self.filter_queryset = filter_queryset or self.default_filter_queryset
+        self.decorators.append(self._update_handler_annotations)
+        self.path_parameters = path_parameters or self.resolve_path_parameters()
+        self.query_parameters = query_parameters
+        self.get_queryset = get_queryset or self._default_get_queryset
+        self.filter_queryset = filter_queryset or self._default_filter_queryset
         self.pagination_class = pagination_class
         if self.pagination_class:
             self.decorators.append(paginate(self.pagination_class))
 
-    def default_get_queryset(
+    def handler(
+        self,
+        request: HttpRequest,
+        path_parameters: Optional[BaseModel],
+        query_parameters: Optional[BaseModel],
+    ) -> QuerySet[Model]:
+        queryset = self.get_queryset(request, path_parameters)
+        return self.filter_queryset(queryset, query_parameters)
+
+    def _update_handler_annotations(
+        self, handler: Callable[..., Any]
+    ) -> Callable[..., Any]:
+        annotations = cast(FunctionType, handler).__annotations__
+        annotations["path_parameters"] = Annotated[
+            self.path_parameters, Path(default=None, include_in_schema=False)
+        ]
+        annotations["query_parameters"] = Annotated[
+            self.query_parameters, Query(default=None, include_in_schema=False)
+        ]
+        return handler
+
+    def _default_get_queryset(
         self, request: HttpRequest, path_parameters: Optional[BaseModel]
     ) -> QuerySet[Model]:
-        """
-        Default implementation of the queryset retrieval logic for the view.
-
-        This method retrieves the queryset based on the model. By default, it gets
-        all instances of the model without any filtering `Model.objects.get_queryset()`.
-        It can be customized to include additional filtering using path parameters or
-        for optimization purposes.
-        """
         if self.model is None:
             raise ValueError("No model set for the view.")
 
         return self.model.objects.get_queryset()
 
     @staticmethod
-    def default_filter_queryset(
+    def _default_filter_queryset(
         queryset: QuerySet[Model], query_parameters: Optional[BaseModel]
     ) -> QuerySet[Model]:
-        """
-        Default implementation of the filtering logic for the queryset.
-
-        This method filters the queryset based on the query parameters. By default,
-        it filters the queryset using the query parameters as keyword arguments:
-        `queryset.filter(**query_parameters.dict(exclude_unset=True))` if the query
-        parameters is not a `ninja.FilterSchema`. It can be customized to include
-        additional filtering logic or handle complex filters.
-        """
         if query_parameters is not None:
             if isinstance(query_parameters, FilterSchema):
                 queryset = query_parameters.filter(queryset)
             else:
                 queryset = queryset.filter(**query_parameters.dict(exclude_unset=True))
         return queryset
-
-    def default_view_function(
-        self,
-        request: HttpRequest,
-        path_parameters: Optional[BaseModel],
-        query_parameters: Optional[BaseModel],
-        request_body: Optional[BaseModel],
-    ) -> QuerySet[Model]:
-        """
-        Default implementation of the view function for the view. It retrieves the
-        queryset using `get_queryset` and then filters it using `filter_queryset`.
-        """
-        queryset = self.get_queryset(request, path_parameters)
-        return self.filter_queryset(queryset, query_parameters)
 
     def set_api_viewset_class(self, api_viewset_class: Type["APIViewSet"]) -> None:
         """
@@ -198,6 +186,7 @@ class ListView(APIView):
             defining views as class attributes. It should not be called manually.
         """
         super().set_api_viewset_class(api_viewset_class)
-
-        if self.response_body is None:
-            self.response_body = List[api_viewset_class.default_response_body]  # type: ignore[name-defined]
+        self.path_parameters = self.path_parameters or self.resolve_path_parameters()
+        self.response_body = (
+            self.response_body or List[api_viewset_class.default_response_body]  # type: ignore[name-defined]
+        )

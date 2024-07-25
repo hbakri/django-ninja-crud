@@ -1,8 +1,8 @@
+import abc
 import functools
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 import django.db.models
-import django.http
 import ninja
 import pydantic
 
@@ -11,92 +11,65 @@ from ninja_crud.views.helpers import PathParametersTypeResolver
 if TYPE_CHECKING:  # pragma: no cover
     from ninja_crud.viewsets import APIViewSet
 
-ViewFunction = Callable[
-    [
-        django.http.HttpRequest,
-        Optional[pydantic.BaseModel],
-        Optional[pydantic.BaseModel],
-        Optional[pydantic.BaseModel],
-    ],
-    Any,
-]
-ViewDecorator = Callable[[Callable[..., Any]], Callable[..., Any]]
 
-
-class APIView:
+class APIView(abc.ABC):
     """
     Base class for creating declarative and reusable API views like components.
 
     This class provides a framework for defining API views with a declarative syntax
     and minimal boilerplate code. It handles setting up the HTTP method, path, response
-    status, and request/response bodies, among other configurations.
+    status/body, among other configurations.
 
-    This class is intended to be subclassed, not used directly, although it can be.
+    This class is intended to be subclassed, not used directly.
     By subclassing, you can create custom API views that leverage the provided
     functionality, enabling you to refactor common view logic into reusable components.
 
     Args:
-        method (str): The HTTP method for the view.
-        path (str): The URL path for the view.
-        response_status (int): The HTTP status code for the response.
-        response_body (Optional[Type[Any]]): The response body type.
-        view_function (ViewFunction): The function that handles the view logic.
-            Should have the signature:
-            - `view_function(request: HttpRequest, path_parameters: Optional[BaseModel],
-            query_parameters: Optional[BaseModel], request_body: Optional[BaseModel])
-            -> Any`.
-        view_function_name (Optional[str], optional): The name of the view function.
-        path_parameters (Optional[Type[pydantic.BaseModel]], optional): The path
-            parameters type. If not provided, it will be resolved automatically based
-            on the path and model (see `PathParametersTypeResolver` for more details).
-        query_parameters (Optional[Type[pydantic.BaseModel]], optional): The query
-            parameters type.
-        request_body (Optional[Type[pydantic.BaseModel]], optional): The request body
-            type.
-        model (Optional[Type[django.db.models.Model]], optional): The model associated
-            with the view. If not provided and the view is bound to a `APIViewSet`,
-            the model of the viewset will be used.
-        decorators (Optional[List[ViewDecorator]], optional): List of decorators to
-            apply to the view function. Decorators are applied in reverse order.
-        operation_kwargs (Optional[Dict[str, Any]], optional): Additional keyword
-            arguments for the operation.
+        name (str | None): View function name. If None, uses class attribute name in
+            viewsets or "handler" for standalone views (unless decorator-overridden).
+        method (str): HTTP method.
+        path (str): URL path.
+        response_status (int): HTTP response status code.
+        response_body (Type | None): Response body type.
+        model (Type[django.db.models.Model] | None, optional): Associated Django model.
+            Inherits from viewset if not provided. Defaults to `None`.
+        decorators (List[Callable] | None, optional): View function decorators
+            (applied in reverse order). Defaults to `None`.
+        operation_kwargs (Dict[str, Any] | None, optional): Additional operation
+            keyword arguments. Defaults to `None`.
 
     Examples:
 
     Thanks to the flexibility of `APIView`, you can create a wide variety of views
     with minimal boilerplate code. Here is an example of how you can create a simple
-    reusable read view by subclassing `APIView`:
+    reusable read view supporting only models with a UUID primary key:
     ```python
     # examples/reusable_views.py
+    from uuid import UUID
     from typing import Optional, Type
-    import pydantic
-    import django.http
+    from pydantic import BaseModel
+    from django.http import HttpRequest
     from django.db import models
     from ninja_crud.views import APIView
 
     class ReusableReadView(APIView):
         def __init__(
             self,
+            name: Optional[str] = None,
             model: Optional[Type[models.Model]] = None,
-            response_body: Optional[Type[pydantic.BaseModel]] = None,
+            response_body: Optional[Type[BaseModel]] = None,
         ) -> None:
             super().__init__(
+                name=name,
                 method="GET",
-                path="/custom-path/{id}",
+                path="/{id}/reusable",
                 response_status=200,
                 response_body=response_body,
-                view_function=self._view_function,
                 model=model,
             )
 
-        def _view_function(
-            self,
-            request: django.http.HttpRequest,
-            path_parameters: Optional[pydantic.BaseModel],
-            query_parameters: Optional[pydantic.BaseModel],
-            request_body: Optional[pydantic.BaseModel],
-        ) -> models.Model:
-            return self.model.objects.get(id=path_parameters.id)
+        def handler(self, request: HttpRequest, id: UUID) -> models.Model:
+            return self.model.objects.get(id=id)
     ```
 
     You can then directly use the view but first, let's create a simple django model:
@@ -133,12 +106,20 @@ class APIView:
 
     api = NinjaAPI()
 
-    ReusableReadView(model=Department, response_body=DepartmentOut).add_view_to(api)
+    ReusableReadView(
+        name="read_department",
+        model=Department,
+        response_body=DepartmentOut
+    ).add_view_to(api)
 
     # or `add_view_to` can be called with a router instance
     router = Router()
 
-    ReusableReadView(model=Department, response_body=DepartmentOut).add_view_to(router)
+    ReusableReadView(
+        name="read_department",
+        model=Department,
+        response_body=DepartmentOut
+    ).add_view_to(router)
     ```
 
     Or, you can create a viewset in order to group related views together:
@@ -174,35 +155,26 @@ class APIView:
 
     def __init__(
         self,
+        name: Optional[str],
         method: str,
         path: str,
         response_status: int,
         response_body: Optional[Type[Any]],
-        view_function: ViewFunction,
-        view_function_name: Optional[str] = None,
-        path_parameters: Optional[Type[pydantic.BaseModel]] = None,
-        query_parameters: Optional[Type[pydantic.BaseModel]] = None,
-        request_body: Optional[Type[pydantic.BaseModel]] = None,
         model: Optional[Type[django.db.models.Model]] = None,
-        decorators: Optional[List[ViewDecorator]] = None,
+        decorators: Optional[
+            List[Callable[[Callable[..., Any]], Callable[..., Any]]]
+        ] = None,
         operation_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
+        self.name = name
         self.method = method
         self.path = path
         self.response_status = response_status
         self.response_body = response_body
-        self.view_function = view_function
-        self.view_function_name = view_function_name
-        self.path_parameters = path_parameters
-        self.query_parameters = query_parameters
-        self.request_body = request_body
-        self.decorators = decorators or []
         self.model = model
+        self.decorators = decorators or []
         self.operation_kwargs = operation_kwargs or {}
         self._api_viewset_class: Optional[Type[APIViewSet]] = None
-
-        if self.path_parameters is None:
-            self._resolve_path_parameters_type()
 
     def add_view_to(self, api_or_router: Union[ninja.NinjaAPI, ninja.Router]) -> None:
         """
@@ -260,45 +232,38 @@ class APIView:
         return {
             "path": self.path,
             "methods": [self.method],
-            "view_func": self.view_func,
+            "view_func": functools.reduce(
+                lambda f, g: g(f),
+                reversed(self.decorators),
+                self.wrap_handler(self.handler),
+            ),
             "response": {self.response_status: self.response_body},
             **self.operation_kwargs,
         }
 
-    @functools.cached_property
-    def view_func(self) -> ViewFunction:
+    @abc.abstractmethod
+    def handler(self, *args: Any, **kwargs: Any) -> Any:
         """
-        Return the wrapped view function with path, query, and request body parameters
-        annotated, and any decorators applied.
+        The handler function for the view. This method must be implemented in
+        subclasses and should contain the view's business logic.
+
+        Args:
+            *args (Any): Variable positional arguments.
+            **kwargs (Any): Variable keyword arguments.
 
         Returns:
-            ViewFunction: The wrapped view function.
+            Any: The response data.
         """
 
-        def wrapped_view_function(
-            request: django.http.HttpRequest,
-            path_parameters: Any = ninja.Path(default=None, include_in_schema=False),
-            query_parameters: Any = ninja.Query(default=None, include_in_schema=False),
-            request_body: Any = ninja.Body(default=None, include_in_schema=False),
-        ) -> Any:
-            return self.view_function(
-                request, path_parameters, query_parameters, request_body
-            )
+    def wrap_handler(self, handler: Callable[..., Any]) -> Callable[..., Any]:
+        @functools.wraps(handler)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            return handler(*args, **kwargs)
 
-        wrapped_view_function.__annotations__.update(
-            {
-                "path_parameters": self.path_parameters,
-                "query_parameters": self.query_parameters,
-                "request_body": self.request_body,
-            }
-        )
-        if self.view_function_name is not None:
-            wrapped_view_function.__name__ = self.view_function_name
+        if self.name is not None:
+            wrapper.__name__ = self.name
 
-        for decorator in reversed(self.decorators):
-            wrapped_view_function = decorator(wrapped_view_function)
-
-        return wrapped_view_function
+        return wrapper
 
     def get_api_viewset_class(self) -> Type["APIViewSet"]:
         """
@@ -320,9 +285,9 @@ class APIView:
 
     def set_api_viewset_class(self, api_viewset_class: Type["APIViewSet"]) -> None:
         """
-        Bind the view to a viewset class. This method sets the model and path
-        parameters type based on the viewset class. Can be overridden in subclasses
-        to provide additional behavior, like setting default values for the view.
+        Bind the view to a viewset class. This method sets the model based on the
+        viewset class if not already defined. Can be overridden in subclasses to
+        provide additional behavior, like setting default values for the view.
 
         Args:
             api_viewset_class (Type[APIViewSet]): The viewset class to bind to.
@@ -343,11 +308,16 @@ class APIView:
         if self.model is None:
             self.model = api_viewset_class.model
 
-        if self.path_parameters is None:
-            self._resolve_path_parameters_type()
+    def resolve_path_parameters(self) -> Optional[Type[pydantic.BaseModel]]:
+        """
+        Resolve the path parameters type based on the view's path and model class.
 
-    def _resolve_path_parameters_type(self) -> None:
-        if self.model is not None:
-            self.path_parameters = PathParametersTypeResolver.resolve(
-                path=self.path, model_class=self.model
-            )
+        Returns:
+            Optional[Type[pydantic.BaseModel]]: The path parameters type.
+        """
+        if self.model is None:
+            return None
+
+        return PathParametersTypeResolver.resolve(
+            path=self.path, model_class=self.model
+        )
