@@ -34,9 +34,8 @@ class ListView(APIView):
     creation of list endpoints.
 
     Args:
-        name (str | None, optional): View function name. Defaults to `None`.
-            If None, uses class attribute name in viewsets or "handler" for standalone
-            views (unless decorator-overridden).
+        name (str | None, optional): View function name. Defaults to `None`. If None,
+            uses class attribute name in viewsets or "handler" for standalone views.
         method (str, optional): The HTTP method for the view. Defaults to `"GET"`.
         path (str, optional): The URL path for the view. Defaults to `"/"`.
         response_status (int, optional): HTTP response status code. Defaults to `200`.
@@ -48,24 +47,19 @@ class ListView(APIView):
             Defaults to `None`.
         model (Type[django.db.models.Model] | None, optional): Associated Django model.
             Inherits from viewset if not provided. Defaults to `None`.
-        get_queryset (Callable | None, optional): A callable to retrieve the
-            queryset. By default, it gets all instances of the model without any
-            filtering `self.model.objects.get_queryset()`. Useful for customizing the
-            queryset retrieval logic, for example, for optimizing queries or handling
-            filters.
-            Should have the signature:
+        get_queryset (Callable | None, optional): Callable to retrieve the queryset.
+            Default uses `self.model.objects.get_queryset()`. Useful for selecting
+            related models or optimizing queries. Should have the signature:
             - `(request: HttpRequest, path_parameters: Optional[BaseModel]) -> QuerySet`
-        filter_queryset (Callable | None, optional): A callable to filter the
-            queryset. By default, if the query parameters is a `ninja.FilterSchema`,
-            it calls the `filter` method on the query parameters. Otherwise, it
-            filters the queryset based on the query parameters as keyword arguments:
+        filter_queryset (Callable | None, optional): Callable to filter the queryset.
+            Default uses `query_parameters.filter(queryset)` if `query_parameters` is a
+            `ninja.FilterSchema`, otherwise filters the queryset based on the query
+            parameters as keyword arguments:
             `queryset.filter(**query_parameters.dict(exclude_unset=True))`.
             Should have the signature:
             - `(queryset: QuerySet, query_parameters: Optional[BaseModel]) -> QuerySet`
-        pagination_class (Type[PaginationBase] | None, optional): The pagination
-            class to use for the view. Defaults to `LimitOffsetPagination`. If set,
-            the pagination will be applied to the response. Set to `None` to disable
-            pagination.
+        pagination_class (Type[PaginationBase] | None, optional): Pagination class.
+            Defaults to `LimitOffsetPagination`. If None, no pagination is applied.
         decorators (List[Callable] | None, optional): View function decorators
             (applied in reverse order). Defaults to `None`.
         operation_kwargs (Dict[str, Any] | None, optional): Additional operation

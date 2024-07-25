@@ -32,9 +32,8 @@ class CreateView(APIView):
     create endpoints.
 
     Args:
-        name (str | None, optional): View function name. Defaults to `None`.
-            If None, uses class attribute name in viewsets or "handler" for standalone
-            views (unless decorator-overridden).
+        name (str | None, optional): View function name. Defaults to `None`. If None,
+            uses class attribute name in viewsets or "handler" for standalone views.
         method (str): HTTP method. Defaults to `"POST"`.
         path (str): URL path. Defaults to `"/{id}"`.
         response_status (int, optional): HTTP response status code. Defaults to `201`.

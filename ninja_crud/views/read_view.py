@@ -31,9 +31,8 @@ class ReadView(APIView):
     in viewsets or as standalone views to simplify the creation of read endpoints.
 
     Args:
-        name (str | None, optional): View function name. Defaults to `None`.
-            If None, uses class attribute name in viewsets or "handler" for standalone
-            views (unless decorator-overridden).
+        name (str | None, optional): View function name. Defaults to `None`. If None,
+            uses class attribute name in viewsets or "handler" for standalone views.
         method (str, optional): The HTTP method for the view. Defaults to `"GET"`.
         path (str, optional): The URL path for the view. Defaults to `"/{id}"`.
         response_status (int, optional): HTTP response status code. Defaults to `200`.
