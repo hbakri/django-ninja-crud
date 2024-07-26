@@ -34,8 +34,8 @@ class DeleteView(APIView):
     Args:
         name (str | None, optional): View function name. Defaults to `None`. If None,
             uses class attribute name in viewsets or "handler" for standalone views.
-        method (str, optional): The HTTP method for the view. Defaults to `"DELETE"`.
-        path (str, optional): The URL path for the view. Defaults to `"/{id}"`.
+        methods (List[str], optional): HTTP methods. Defaults to `["DELETE"]`.
+        path (str, optional): URL path. Defaults to `"/{id}"`.
         response_status (int, optional): HTTP response status code. Defaults to `204`.
         response_body (Type | None, optional): Response body type. Defaults to `None`.
         model (Type[django.db.models.Model] | None, optional): Associated Django model.
@@ -89,7 +89,7 @@ class DeleteView(APIView):
     def __init__(
         self,
         name: Optional[str] = None,
-        method: str = "DELETE",
+        methods: Optional[List[str]] = None,
         path: str = "/{id}",
         response_status: int = 204,
         response_body: Optional[Type[Any]] = None,
@@ -105,7 +105,7 @@ class DeleteView(APIView):
     ) -> None:
         super().__init__(
             name=name,
-            method=method,
+            methods=methods or ["DELETE"],
             path=path,
             response_status=response_status,
             response_body=response_body,

@@ -17,7 +17,7 @@ class APIView(abc.ABC):
     Base class for creating declarative and reusable API views like components.
 
     This class provides a framework for defining API views with a declarative syntax
-    and minimal boilerplate code. It handles setting up the HTTP method, path, response
+    and minimal boilerplate code. It handles setting up the HTTP methods, path, response
     status/body, among other configurations.
 
     This class is intended to be subclassed, not used directly.
@@ -27,7 +27,7 @@ class APIView(abc.ABC):
     Args:
         name (str | None): View function name. If None, uses class attribute name in
             viewsets or "handler" for standalone views (unless decorator-overridden).
-        method (str): HTTP method.
+        methods (List[str]): HTTP methods.
         path (str): URL path.
         response_status (int): HTTP response status code.
         response_body (Type | None): Response body type.
@@ -61,7 +61,7 @@ class APIView(abc.ABC):
         ) -> None:
             super().__init__(
                 name=name,
-                method="GET",
+                methods=["GET"],
                 path="/{id}/reusable",
                 response_status=200,
                 response_body=response_body,
@@ -156,7 +156,7 @@ class APIView(abc.ABC):
     def __init__(
         self,
         name: Optional[str],
-        method: str,
+        methods: List[str],
         path: str,
         response_status: int,
         response_body: Optional[Type[Any]],
@@ -167,7 +167,7 @@ class APIView(abc.ABC):
         operation_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         self.name = name
-        self.method = method
+        self.methods = methods
         self.path = path
         self.response_status = response_status
         self.response_body = response_body
@@ -231,7 +231,7 @@ class APIView(abc.ABC):
         """
         return {
             "path": self.path,
-            "methods": [self.method],
+            "methods": self.methods,
             "view_func": functools.reduce(
                 lambda f, g: g(f),
                 reversed(self.decorators),
