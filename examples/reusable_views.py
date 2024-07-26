@@ -17,7 +17,7 @@ class ReusableReadView(APIView):
     ) -> None:
         super().__init__(
             name=name,
-            method="GET",
+            methods=["GET"],
             path="/{id}/reusable",
             response_status=200,
             response_body=response_body,

@@ -17,7 +17,7 @@ class TestAPIView(TestCase):
 
         self.api_view = ReusableAPIView(
             name="delete_item",
-            method="DELETE",
+            methods=["DELETE"],
             path="/{id}",
             response_status=204,
             response_body=None,

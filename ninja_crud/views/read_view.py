@@ -33,8 +33,8 @@ class ReadView(APIView):
     Args:
         name (str | None, optional): View function name. Defaults to `None`. If None,
             uses class attribute name in viewsets or "handler" for standalone views.
-        method (str, optional): The HTTP method for the view. Defaults to `"GET"`.
-        path (str, optional): The URL path for the view. Defaults to `"/{id}"`.
+        methods (List[str], optional): HTTP methods. Defaults to `["GET"]`.
+        path (str, optional): URL path. Defaults to `"/{id}"`.
         response_status (int, optional): HTTP response status code. Defaults to `200`.
         response_body (Type | None, optional): Response body type. Defaults to `None`.
             If None, uses the default response body of the viewset.
@@ -86,7 +86,7 @@ class ReadView(APIView):
     def __init__(
         self,
         name: Optional[str] = None,
-        method: str = "GET",
+        methods: Optional[List[str]] = None,
         path: str = "/{id}",
         response_status: int = 200,
         response_body: Optional[Type[Any]] = None,
@@ -100,7 +100,7 @@ class ReadView(APIView):
     ) -> None:
         super().__init__(
             name=name,
-            method=method,
+            methods=methods or ["GET"],
             path=path,
             response_status=response_status,
             response_body=response_body,
