@@ -60,8 +60,4 @@ select = [
 ]
 ignore = [
     "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
 ]
-
-[tool.ruff.lint.isort]
-known-local-folder = ["ninja_crud", "tests", "examples"]
