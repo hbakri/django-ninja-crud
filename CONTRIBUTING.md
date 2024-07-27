@@ -43,12 +43,12 @@ For an overview of how to contribute to open-source projects on GitHub, see [Git
 
 ## Running Tests
 
-After setting up your development environment, you can run tests to make sure everything is functioning as expected. To run the tests, use the following commands:
+After setting up your development environment, you can run tests to make sure
+everything is functioning as expected. To run the tests, use the following commands:
 
 ```bash
-export DJANGO_SETTINGS_MODULE=tests.test_settings
-python -m poetry run coverage run -m django test
-python -m poetry run coverage report
+coverage run -m django test --settings=tests.test_settings
+coverage report
 ```
 
 ## Coding and Commit Conventions
