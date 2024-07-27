@@ -1,7 +1,11 @@
-from typing import Any
+import uuid
+from typing import Any, Optional
 from unittest import mock
 
+import django.core.exceptions
+import ninja
 from django.test import TestCase
+from packaging import version
 
 from ninja_crud import views, viewsets
 from tests.test_app.models import Item
@@ -11,9 +15,7 @@ class TestAPIView(TestCase):
     def setUp(self):
         class ReusableAPIView(views.APIView):
             def handler(self, *args: Any, **kwargs: Any) -> Any:
-                """
-                This is a handler method.
-                """
+                """This is a handler method."""
 
         self.api_view = ReusableAPIView(
             name="delete_item",
@@ -75,3 +77,33 @@ class TestAPIView(TestCase):
 
         self.assertEqual(self.api_view.model, Item)
         self.assertIsNotNone(self.api_view.resolve_path_parameters())
+
+    def test_resolve_path_parameters(self):
+        self.api_view.path = "/{id}"
+        self.api_view.model = Item
+        path_parameters_type = self.api_view.resolve_path_parameters()
+        ninja_v1_2_0 = version.parse(ninja.__version__) >= version.parse("1.2.0")
+        expected_id_type = Optional[uuid.UUID] if ninja_v1_2_0 else uuid.UUID
+
+        self.assertEqual(
+            path_parameters_type.model_fields.get("id").annotation, expected_id_type
+        )
+
+        self.api_view.path = "/{collection_id}"
+        path_parameters_type = self.api_view.resolve_path_parameters()
+        self.assertEqual(
+            path_parameters_type.model_fields.get("collection_id").annotation, uuid.UUID
+        )
+
+        self.api_view.path = "/{collection_id}/items/{id}"
+        path_parameters_type = self.api_view.resolve_path_parameters()
+        self.assertEqual(
+            path_parameters_type.model_fields.get("collection_id").annotation, uuid.UUID
+        )
+        self.assertEqual(
+            path_parameters_type.model_fields.get("id").annotation, expected_id_type
+        )
+
+        with self.assertRaises(django.core.exceptions.FieldDoesNotExist):
+            self.api_view.path = "/{nonexistent_field}"
+            self.api_view.resolve_path_parameters()
