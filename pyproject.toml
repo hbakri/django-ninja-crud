@@ -41,12 +41,18 @@ django-rest-testing = { version = ">=0.1", optional = true }
 testing = ["django-rest-testing"]
 
 [tool.poetry.group.dev.dependencies]
-coverage = "^6.5.0"
+coverage = "^7.6.0"
 pre-commit = "^2.20.0"
 pydoc-markdown = "^4.8.2"
 pyyaml = "^6.0.1"
-python-frontmatter = "^1.0.1"
+python-frontmatter = "^1.1.0"
 django-rest-testing = "^0.1.0"
+
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING:",  # type hints
+    "except ImportError:"  # optional dependencies
+]
 
 [tool.ruff.lint]
 select = [

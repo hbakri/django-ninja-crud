@@ -1,6 +1,6 @@
 try:
     from rest_testing import *  # noqa
-except ImportError as e:  # pragma: no cover
+except ImportError:
     raise ImportError(
         """
 To use the testing module, you must install the `django-rest-testing` package.
@@ -15,4 +15,4 @@ Using Poetry:
 
 This will install both 'django-ninja-crud' and 'django-rest-testing' packages.
         """
-    ) from e
+    ) from None

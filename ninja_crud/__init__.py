@@ -4,5 +4,5 @@ try:
     import rest_testing as testing
 
     __all__ = ["views", "testing"]
-except ImportError:  # pragma: no cover
+except ImportError:
     __all__ = ["views"]
