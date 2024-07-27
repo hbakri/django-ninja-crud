@@ -8,7 +8,7 @@ import ninja.orm.fields
 import ninja.signature.utils
 import pydantic
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from ninja_crud.viewsets import APIViewSet
 
 

@@ -20,7 +20,7 @@ from typing_extensions import Annotated
 
 from ninja_crud.views.api_view import APIView
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from ninja_crud.viewsets import APIViewSet
 
 
