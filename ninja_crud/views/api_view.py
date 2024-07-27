@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Uni
 
 import django.db.models
 import ninja
+import ninja.orm.fields
+import ninja.signature.utils
 import pydantic
-
-from ninja_crud.views.helpers import PathParametersTypeResolver
 
 if TYPE_CHECKING:  # pragma: no cover
     from ninja_crud.viewsets import APIViewSet
@@ -310,14 +310,54 @@ class APIView(abc.ABC):
 
     def resolve_path_parameters(self) -> Optional[Type[pydantic.BaseModel]]:
         """
-        Resolve the path parameters type based on the view's path and model class.
+        Resolve path parameters to a pydantic model based on the view's path and model.
+
+        Designed for subclasses, this method enables dynamic path parameter handling
+        without explicit type specification. It supports any paths, like "/{name}",
+        "/{id}", or "/{related_model_id}", automatically resolving types from model
+        fields.
+
+        This feature *significantly* reduces boilerplate code and allows for easy
+        creation of reusable views with varied path structures, especially useful when
+        refactoring repetitive endpoints into an APIView subclass.
+
+        Utilizes Django Ninja utilities to extract and map path parameters to model
+        fields. Returns `None` if no parameters are found.
 
         Returns:
-            Optional[Type[pydantic.BaseModel]]: The path parameters type.
+            Optional[Type[pydantic.BaseModel]]: Path parameters pydantic model type.
+
+        Example:
+            For path `"/{department_id}/employees/{id}"` and `Employee` model:
+
+            ```python
+            class PathParameters(pydantic.BaseModel):
+                department_id: UUID
+                id: UUID
+            ```
+
+        Notes:
+            - Supports various Django field types (e.g., AutoField, CharField,
+                DateField, UUIDField).
+            - For ForeignKey, uses the primary key type of the related model.
+            - Supports both real field names (e.g., /{department_id}) and related
+                model names (e.g., /{department}).
+
+        Important:
+            Prefer simple types (strings, integers, UUIDs) for path parameters to
+            ensure proper URL formatting and web standard compatibility.
         """
         if self.model is None:
             return None
 
-        return PathParametersTypeResolver.resolve(
-            path=self.path, model_class=self.model
-        )
+        path_parameters_names = ninja.signature.utils.get_path_param_names(self.path)
+        if not path_parameters_names:
+            return None
+
+        field_definitions: Dict[str, Any] = {
+            path_parameter_name: ninja.orm.fields.get_schema_field(
+                field=self.model._meta.get_field(field_name=path_parameter_name),
+            )
+            for path_parameter_name in path_parameters_names
+        }
+        return pydantic.create_model("PathParameters", **field_definitions)
