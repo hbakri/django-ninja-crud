@@ -40,8 +40,6 @@ jobs:
         pip install packaging
 
     - name: Run tests with coverage
-      env:
-        DJANGO_SETTINGS_MODULE: tests.test_settings
       run: |
-        python -m coverage run -m django test
+        python -m coverage run -m django test --settings=tests.test_settings
         python -m coverage report --fail-under=100

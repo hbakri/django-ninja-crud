@@ -26,10 +26,8 @@ jobs:
         poetry install --no-root --all-extras
 
     - name: Run tests with coverage
-      env:
-        DJANGO_SETTINGS_MODULE: tests.test_settings
       run: |
-        poetry run coverage run -m django test
+        poetry run coverage run -m django test --settings=tests.test_settings
         poetry run coverage report
         poetry run coverage xml
 
