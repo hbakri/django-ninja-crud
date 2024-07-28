@@ -1,9 +1,10 @@
 import uuid
 from http import HTTPStatus
 
+from rest_testing import APITestCase, APIViewTestScenario
+
 from examples.models import Department, Employee
 from examples.schemas import EmployeeOut
-from ninja_crud.testing import APITestCase, APIViewTestScenario
 
 
 class TestEmployeeViewSet(APITestCase):

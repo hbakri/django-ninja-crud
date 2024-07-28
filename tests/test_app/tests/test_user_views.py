@@ -1,7 +1,8 @@
 from http import HTTPStatus
 from typing import List
 
-from ninja_crud.testing import APITestCase, APIViewTestScenario
+from rest_testing import APITestCase, APIViewTestScenario
+
 from tests.test_app.schemas import UserResponseBody
 from tests.test_app.tests.base_test_case import BaseTestCase
 
