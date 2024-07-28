@@ -206,6 +206,14 @@ needs without any limitations imposed by the main package.
 ## 📚 Documentation
 For more information, see the [documentation](https://django-ninja-crud.readme.io/).
 
+## 🌎 International Documentation
+
+- [中文文档](https://django-ninja.cn/django-ninja-crud/) (Chinese Documentation - Community Contributed)
+
+> [!WARNING]
+> Community-contributed translations may not always reflect the latest updates. For the
+> most accurate information, refer to the official English documentation.
+
 ## 🫶 Support
 First and foremost, a heartfelt thank you to the 400+ stargazers who have shown their
 support for this project!
