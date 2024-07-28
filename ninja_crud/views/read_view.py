@@ -135,7 +135,7 @@ class ReadView(APIView):
             raise ValueError("No model set for the view.")
 
         return self.model.objects.get(
-            **(path_parameters.dict() if path_parameters else {})
+            **(path_parameters.model_dump() if path_parameters else {})
         )
 
     def set_api_viewset_class(self, api_viewset_class: Type["APIViewSet"]) -> None:
