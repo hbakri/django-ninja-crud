@@ -5,11 +5,12 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "django-ninja-crud"
 version = "0.5.0"
-description = "Declarative Endpoints & Tests for RESTful APIs with Django Ninja."
+description = "Declarative Endpoints for RESTful APIs with Django Ninja."
 authors = ["Hicham Bakri <hicham.bakri76@gmail.com>"]
 maintainers = ["Hicham Bakri <hicham.bakri76@gmail.com>"]
 readme = "README.md"
 homepage = "https://github.com/hbakri/django-ninja-crud"
+repository = "https://github.com/hbakri/django-ninja-crud"
 license = "MIT"
 classifiers = [
     "Intended Audience :: Developers",
@@ -35,10 +36,6 @@ packages = [{ include = "ninja_crud" },]
 python = ">=3.8,<4.0"
 django = ">=4.2"
 django-ninja = ">=1.0"
-django-rest-testing = { version = ">=0.1", optional = true }
-
-[tool.poetry.extras]
-testing = ["django-rest-testing"]
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^7.6.0"
@@ -51,7 +48,6 @@ django-rest-testing = "^0.1.0"
 [tool.coverage.report]
 exclude_also = [
     "if TYPE_CHECKING:",  # type hints
-    "except ImportError:"  # optional dependencies
 ]
 
 [tool.ruff.lint]
