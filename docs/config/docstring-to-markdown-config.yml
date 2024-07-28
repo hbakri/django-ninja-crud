@@ -12,8 +12,6 @@ modules:
     output_path: "views/UpdateView.md"
   - input_path: "views/delete_view"
     output_path: "views/DeleteView.md"
-  - input_path: "views/helpers/path_parameters_type_resolver"
-    output_path: "views/helpers/PathParametersTypeResolver.md"
 
   # -------------------- Viewsets ---------------------
   - input_path: "viewsets/api_viewset"
