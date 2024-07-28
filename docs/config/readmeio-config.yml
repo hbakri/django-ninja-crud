@@ -69,13 +69,6 @@ docs:
     hidden: false
     order: 5
     path: "docs/reference/views/DeleteView.md"
-  - title: "PathParametersTypeResolver"
-    slug: "path-parameters-type-resolver"
-    excerpt: "Detailed examination of the PathParametersTypeResolver in Django Ninja CRUD"
-    categorySlug: "views"
-    hidden: false
-    order: 6
-    path: "docs/reference/views/helpers/PathParametersTypeResolver.md"
 
   # -------------------- Viewsets ---------------------
   - title: "APIViewSet"
