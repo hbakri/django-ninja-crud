@@ -55,7 +55,7 @@ class ListView(APIView):
             Default uses `query_parameters.filter(queryset)` if `query_parameters` is a
             `ninja.FilterSchema`, otherwise filters the queryset based on the query
             parameters as keyword arguments:
-            `queryset.filter(**query_parameters.dict(exclude_unset=True))`.
+            `queryset.filter(**query_parameters.model_dump(exclude_unset=True))`.
             Should have the signature:
             - `(queryset: QuerySet, query_parameters: Optional[BaseModel]) -> QuerySet`
         pagination_class (Type[PaginationBase] | None, optional): Pagination class.
@@ -170,7 +170,9 @@ class ListView(APIView):
             if isinstance(query_parameters, FilterSchema):
                 queryset = query_parameters.filter(queryset)
             else:
-                queryset = queryset.filter(**query_parameters.dict(exclude_unset=True))
+                queryset = queryset.filter(
+                    **query_parameters.model_dump(exclude_unset=True)
+                )
         return queryset
 
     def set_api_viewset_class(self, api_viewset_class: Type["APIViewSet"]) -> None:
