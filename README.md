@@ -13,12 +13,12 @@
 framework that revolutionizes the way you build APIs with
 [**Django Ninja**](https://github.com/vitalik/django-ninja). It empowers
 developers to create highly customizable, reusable, and modular API views,
-ranging from basic **CRUD** ([**C**reate, **R**ead, **U**pdate, **D**elete](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete))
+ranging from basic [**CRUD** _(**C**reate, **R**ead, **U**pdate, **D**elete)_](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete)
 operations to complex custom endpoints, all with minimal boilerplate code.
 
-Inspired by DRF's [ModelViewSet](https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset)
+Inspired by DRF's [**ModelViewSet**](https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset)
 but evolving beyond its limitations, Django Ninja CRUD adopts a
-[composition-over-inheritance](https://en.wikipedia.org/wiki/Composition_over_inheritance)
+[**composition-over-inheritance**](https://en.wikipedia.org/wiki/Composition_over_inheritance)
 approach for true modularity.
 
 ## 🌞 Key Features
