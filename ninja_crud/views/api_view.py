@@ -1,4 +1,5 @@
 import abc
+import asyncio
 import functools
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
@@ -18,7 +19,8 @@ class APIView(abc.ABC):
 
     This class provides a framework for defining API views with a declarative syntax
     and minimal boilerplate code. It handles setting up the HTTP methods, path, response
-    status/body, among other configurations.
+    status/body, among other configurations. It supports both synchronous and
+    asynchronous handlers, allowing for flexible view implementations.
 
     This class is intended to be subclassed, not used directly.
     By subclassing, you can create custom API views that leverage the provided
@@ -41,13 +43,15 @@ class APIView(abc.ABC):
     Examples:
 
     Thanks to the flexibility of `APIView`, you can create a wide variety of views
-    with minimal boilerplate code. Here is an example of how you can create a simple
-    reusable read view supporting only models with a UUID primary key:
+    with minimal boilerplate code. Here are examples of how you can create simple
+    reusable read views supporting only models with a UUID primary key, in both
+    synchronous and asynchronous variants:
+
+    Synchronous Example:
     ```python
-    # examples/reusable_views.py
-    from uuid import UUID
     from typing import Optional, Type
-    from pydantic import BaseModel
+    from uuid import UUID
+    import pydantic
     from django.http import HttpRequest
     from django.db import models
     from ninja_crud.views import APIView
@@ -57,7 +61,7 @@ class APIView(abc.ABC):
             self,
             name: Optional[str] = None,
             model: Optional[Type[models.Model]] = None,
-            response_body: Optional[Type[BaseModel]] = None,
+            response_body: Optional[Type[pydantic.BaseModel]] = None,
         ) -> None:
             super().__init__(
                 name=name,
@@ -72,7 +76,29 @@ class APIView(abc.ABC):
             return self.model.objects.get(id=id)
     ```
 
-    You can then directly use the view but first, let's create a simple django model:
+    Asynchronous Example:
+    ```python
+    class ReusableAsyncReadView(APIView):
+        def __init__(
+            self,
+            name: Optional[str] = None,
+            model: Optional[Type[models.Model]] = None,
+            response_body: Optional[Type[pydantic.BaseModel]] = None,
+        ) -> None:
+            super().__init__(
+                name=name,
+                methods=["GET"],
+                path="/{id}/reusable/async",
+                response_status=200,
+                response_body=response_body,
+                model=model,
+            )
+
+        async def handler(self, request: HttpRequest, id: UUID) -> models.Model:
+            return await self.model.objects.aget(id=id)
+    ```
+
+    You can then use these views with a simple Django model:
     ```python
     # examples/models.py
     import uuid
@@ -83,7 +109,7 @@ class APIView(abc.ABC):
         title = models.CharField(max_length=100, unique=True)
     ```
 
-    Next, we need of course a `ninja.Schema` for serializing the response body:
+    And a `ninja.Schema` for serializing the response body:
     ```python
     # examples/schemas.py
     from uuid import UUID
@@ -94,15 +120,14 @@ class APIView(abc.ABC):
         name: str
     ```
 
-    Now, we can declaratively create an endpoint using the `ReusableReadView` class
-    we defined earlier in order to read a model instance:
+    Now, you can declaratively create endpoints using these view classes:
     ```python
     # examples/views.py
-    from ninja import NinjaAPI, Router
+    from ninja import NinjaAPI
 
     from examples.models import Department
     from examples.schemas import DepartmentOut
-    from examples.reusable_views import ReusableReadView
+    from examples.reusable_views import ReusableReadView, ReusableAsyncReadView
 
     api = NinjaAPI()
 
@@ -112,17 +137,14 @@ class APIView(abc.ABC):
         response_body=DepartmentOut
     ).add_view_to(api)
 
-    # or `add_view_to` can be called with a router instance
-    router = Router()
-
-    ReusableReadView(
-        name="read_department",
+    ReusableAsyncReadView(
+        name="read_department_async",
         model=Department,
         response_body=DepartmentOut
-    ).add_view_to(router)
+    ).add_view_to(api)
     ```
 
-    Or, you can create a viewset in order to group related views together:
+    Or, you can create a viewset to group related views:
     ```python
     # examples/views.py
     from ninja import NinjaAPI
@@ -130,7 +152,7 @@ class APIView(abc.ABC):
 
     from examples.models import Department
     from examples.schemas import DepartmentOut
-    from examples.reusable_views import ReusableReadView
+    from examples.reusable_views import ReusableReadView, ReusableAsyncReadView
 
     api = NinjaAPI()
 
@@ -138,9 +160,10 @@ class APIView(abc.ABC):
         api = api
         model = Department
         read_department = ReusableReadView(response_body=DepartmentOut)
+        read_department_async = ReusableAsyncReadView(response_body=DepartmentOut)
     ```
 
-    And then, you can add api in the urls.py:
+    Finally, add the API to your URL configuration:
     ```python
     # examples/urls.py
     from django.urls import path
@@ -151,6 +174,10 @@ class APIView(abc.ABC):
         path("departments/", department_api.urls),
     ]
     ```
+
+    This setup provides both synchronous and asynchronous endpoints for reading
+    department data, demonstrating the flexibility of the APIView class in handling
+    different types of request handlers.
     """
 
     def __init__(
@@ -235,7 +262,7 @@ class APIView(abc.ABC):
             "view_func": functools.reduce(
                 lambda f, g: g(f),
                 reversed(self.decorators),
-                self.wrap_handler(self.handler),
+                self.create_standalone_handler(self.handler),
             ),
             "response": {self.response_status: self.response_body},
             **self.operation_kwargs,
@@ -247,23 +274,46 @@ class APIView(abc.ABC):
         The handler function for the view. This method must be implemented in
         subclasses and should contain the view's business logic.
 
+        This method can be implemented as either a synchronous or an asynchronous
+        function, depending on the needs of the specific view. The APIView class
+        will automatically adapt to the chosen implementation.
+
+        For synchronous implementation:
+        def handler(self, request: HttpRequest, ...) -> Any:
+            # Synchronous logic here
+
+        For asynchronous implementation:
+        async def handler(self, request: HttpRequest, ...) -> Any:
+            # Asynchronous logic here
+
         Args:
             *args (Any): Variable positional arguments.
             **kwargs (Any): Variable keyword arguments.
 
         Returns:
-            Any: The response data.
+            Any: The response data. This can be a simple value, a model instance,
+                 or any other data that can be serialized by Django Ninja.
         """
 
-    def wrap_handler(self, handler: Callable[..., Any]) -> Callable[..., Any]:
-        @functools.wraps(handler)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            return handler(*args, **kwargs)
+    def create_standalone_handler(
+        self, method: Callable[..., Any]
+    ) -> Callable[..., Any]:
+        @functools.wraps(method)
+        async def async_handler(*args: Any, **kwargs: Any) -> Any:
+            return await method(*args, **kwargs)
+
+        @functools.wraps(method)
+        def sync_handler(*args: Any, **kwargs: Any) -> Any:
+            return method(*args, **kwargs)
+
+        standalone_handler = (
+            async_handler if asyncio.iscoroutinefunction(method) else sync_handler
+        )
 
         if self.name is not None:
-            wrapper.__name__ = self.name
+            standalone_handler.__name__ = self.name
 
-        return wrapper
+        return standalone_handler
 
     def get_api_viewset_class(self) -> Type["APIViewSet"]:
         """

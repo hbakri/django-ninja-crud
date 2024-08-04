@@ -2,14 +2,12 @@ from typing import List
 
 from ninja import Router
 
+from examples import reusable_views
 from examples.models import Department, Employee
-from examples.reusable_views import ReusableReadView
 from examples.schemas import DepartmentIn, DepartmentOut, EmployeeIn, EmployeeOut
 from ninja_crud import views, viewsets
 
 router = Router()
-
-ReusableReadView(model=Department, response_body=DepartmentOut).add_view_to(router)
 
 
 class DepartmentViewSet(viewsets.APIViewSet):
@@ -38,4 +36,13 @@ class DepartmentViewSet(viewsets.APIViewSet):
         init_model=lambda request, path_parameters: Employee(
             department_id=path_parameters.id
         ),
+    )
+
+    reusable_read_department = reusable_views.ReusableReadView(
+        model=Department,
+        response_body=DepartmentOut,
+    )
+    reusable_async_read_department = reusable_views.ReusableAsyncReadView(
+        model=Department,
+        response_body=DepartmentOut,
     )

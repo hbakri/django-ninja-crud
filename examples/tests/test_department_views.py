@@ -56,7 +56,7 @@ class TestDepartmentViewSet(APITestCase):
     def test_read_department(self):
         self.assertScenariosSucceed(
             method="GET",
-            path="/api/departments/{id}/reusable",
+            path="/api/departments/{id}",
             scenarios=[
                 APIViewTestScenario(
                     path_parameters={"id": self.department_1.id},
@@ -155,6 +155,48 @@ class TestDepartmentViewSet(APITestCase):
                     path_parameters={"id": self.department_1.id},
                     request_body={"first_name": "first_name"},
                     expected_response_status=HTTPStatus.BAD_REQUEST,
+                ),
+            ],
+        )
+
+    def test_reusable_read_department(self):
+        self.assertScenariosSucceed(
+            method="GET",
+            path="/api/departments/{id}/reusable",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.department_1.id},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=DepartmentOut,
+                    expected_response_body={
+                        "id": str(self.department_1.id),
+                        "title": self.department_1.title,
+                    },
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
+                ),
+            ],
+        )
+
+    def test_reusable_async_read_department(self):
+        self.assertScenariosSucceed(
+            method="GET",
+            path="/api/departments/{id}/reusable/async",
+            scenarios=[
+                APIViewTestScenario(
+                    path_parameters={"id": self.department_1.id},
+                    expected_response_status=HTTPStatus.OK,
+                    expected_response_body_type=DepartmentOut,
+                    expected_response_body={
+                        "id": str(self.department_1.id),
+                        "title": self.department_1.title,
+                    },
+                ),
+                APIViewTestScenario(
+                    path_parameters={"id": uuid.uuid4()},
+                    expected_response_status=HTTPStatus.NOT_FOUND,
                 ),
             ],
         )
