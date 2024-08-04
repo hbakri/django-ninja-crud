@@ -18,7 +18,7 @@ class ReusableReadView(APIView):
         super().__init__(
             name=name,
             methods=["GET"],
-            path="/{id}/reusable",  # Not clashing with "/{id}" path of ReadView
+            path="/{id}/reusable",
             response_status=200,
             response_body=response_body,
             model=model,
@@ -38,7 +38,7 @@ class ReusableAsyncReadView(APIView):
         super().__init__(
             name=name,
             methods=["GET"],
-            path="/{id}/reusable/async",  # Not clashing with "/{id}" path of ReadView
+            path="/{id}/reusable/async",
             response_status=200,
             response_body=response_body,
             model=model,
