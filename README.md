@@ -197,11 +197,10 @@ For more information, see the [documentation](https://django-ninja-crud.readme.i
 
 ## 🌎 International Documentation
 
-- [中文文档](https://django-ninja.cn/django-ninja-crud/) (Chinese Documentation - Community Contributed)
+- [Chinese Documentation](https://django-ninja.cn/django-ninja-crud/) (Community Contributed)
 
 > [!WARNING]
-> Community-contributed translations may not always reflect the latest updates. For the
-> most accurate information, refer to the official English documentation.
+> Community-contributed translations may not always reflect the latest updates.
 
 ## 🫶 Support
 First and foremost, a heartfelt thank you to the 400+ stargazers who have shown their
