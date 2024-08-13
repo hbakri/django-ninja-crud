@@ -21,7 +21,7 @@ Inspired by DRF's [**ModelViewSet**](https://www.django-rest-framework.org/api-g
 # 📝 Requirements
 
 [![Python versions](https://img.shields.io/pypi/pyversions/django-ninja-crud.svg?color=306998&label=python&logo=python&logoColor=white)](https://github.com/python/cpython)
-[![Django versions](https://img.shields.io/badge/4.2_%7C_5.0-blue?color=0C4B33&label=django&logo=django&logoColor=white)](https://github.com/django/django)
+[![Django versions](https://img.shields.io/badge/4.2_%7C_5.0_%7C_5.1-blue?color=0C4B33&label=django&logo=django&logoColor=white)](https://github.com/django/django)
 [![Django Ninja versions](https://img.shields.io/badge/1.0_%7C_1.1_%7C_1.2-blue?color=black&label=django-ninja&logo=fastapi&logoColor=white)](https://github.com/vitalik/django-ninja)
 
 # ⚒️ Installation
