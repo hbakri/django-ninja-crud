@@ -2,7 +2,7 @@
 [![Tests](https://github.com/hbakri/django-ninja-crud/actions/workflows/tests.yml/badge.svg)](https://github.com/hbakri/django-ninja-crud/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/hbakri/django-ninja-crud/main.svg?label=coverage&logo=codecov&logoColor=white)](https://codecov.io/gh/hbakri/django-ninja-crud)
 [![PyPI Version](https://img.shields.io/pypi/v/django-ninja-crud?color=g&logo=pypi&logoColor=white)](https://pypi.org/project/django-ninja-crud/)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/django-ninja-crud)](https://pypistats.org/packages/django-ninja-crud)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/django-ninja-crud?logo=esri&logoColor=white)](https://pypistats.org/packages/django-ninja-crud)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/hbakri/django-ninja-crud/blob/main/LICENSE)
 [![MyPy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://github.com/python/mypy)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -34,7 +34,7 @@ Inspired by DRF's [**ModelViewSet**](https://www.django-rest-framework.org/api-g
 
 [![Python versions](https://img.shields.io/pypi/pyversions/django-ninja-crud.svg?color=306998&label=python&logo=python&logoColor=white)](https://github.com/python/cpython)
 [![Django versions](https://img.shields.io/badge/4.2_%7C_5.0_%7C_5.1-blue?color=0C4B33&label=django&logo=django&logoColor=white)](https://github.com/django/django)
-[![Django Ninja versions](https://img.shields.io/badge/1.0_%7C_1.1_%7C_1.2-blue?color=black&label=django-ninja&logo=fastapi&logoColor=white)](https://github.com/vitalik/django-ninja)
+[![Django Ninja versions](https://img.shields.io/badge/1.0_%7C_1.1_%7C_1.2_%7C_1.3-blue?color=black&label=django-ninja&logo=fastapi&logoColor=white)](https://github.com/vitalik/django-ninja)
 
 ## ⚒️ Installation
 ```bash
