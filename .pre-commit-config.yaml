@@ -10,11 +10,10 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.4
+    rev: v0.6.5
     hooks:
       - id: ruff
-        args:
-          - --fix
+        args: [--fix]
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -22,9 +21,7 @@ repos:
     hooks:
       - id: mypy
         files: ^ninja_crud/
-        args:
-          - --ignore-missing-imports
-          - --strict
+        args: [--ignore-missing-imports, --strict]
         additional_dependencies: ['types-PyYAML', 'django-stubs', 'pydantic']
 
 ci:
