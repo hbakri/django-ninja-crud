@@ -7,7 +7,7 @@
 [![MyPy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://github.com/python/mypy)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-![Django Ninja CRUD](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/docs/assets/images/django-ninja-crud-cover.JPG)
+![Django Ninja CRUD Cover](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/docs/assets/images/django-ninja-crud-cover.JPG)
 
 **Django Ninja CRUD** introduces [**modularity**](https://en.wikipedia.org/wiki/Modular_programming) to API development with [**Django Ninja**](https://github.com/vitalik/django-ninja), revolutionizing how APIs are built and maintained at scale while avoiding repetition. It empowers developers to create reusable, [**composable**](https://en.wikipedia.org/wiki/Composability) API views ranging from built-in [**CRUD** (**C**reate, **R**ead, **U**pdate, **D**elete)](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations to complex custom endpoints, supporting both sync and async implementations, all with minimal boilerplate code.
 
@@ -19,6 +19,8 @@
 - **Powerful Viewset Composition**: Use views independently or compose them into `APIViewSet` for grouped, related views sharing attributes. Design versatile APIs supporting multiple instances of the same view type—perfect for API versioning, or alternative representations.
 
 - **Seamless Django Ninja Integration**: Enhance your existing Django Ninja project without changing its structure. Gradually adopt declarative views to clean up your codebase and boost development efficiency.
+
+![Django Ninja CRUD Code](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/docs/assets/images/django-ninja-crud-code.JPG)
 
 > [!NOTE]
 > As shared in my [DjangoCON Europe 2024 talk](https://www.youtube.com/watch?v=r8yRxZPcy9k&t=1168s),
