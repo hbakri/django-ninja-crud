@@ -1,6 +1,7 @@
 import abc
 import asyncio
 import functools
+import typing
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 import django.db.models
@@ -404,10 +405,15 @@ class APIView(abc.ABC):
         if not path_parameters_names:
             return None
 
-        field_definitions: Dict[str, Any] = {
-            path_parameter_name: ninja.orm.fields.get_schema_field(
-                field=self.model._meta.get_field(field_name=path_parameter_name),
+        schema_fields: Dict[str, Any] = {}
+        for field_name in path_parameters_names:
+            model_field = self.model._meta.get_field(field_name)
+            schema_field = ninja.orm.fields.get_schema_field(field=model_field)[0]
+            schema_fields[field_name] = (
+                typing.get_args(schema_field)[0]
+                if typing.get_origin(schema_field) is Union
+                else schema_field,
+                ...,
             )
-            for path_parameter_name in path_parameters_names
-        }
-        return pydantic.create_model("PathParameters", **field_definitions)
+
+        return pydantic.create_model("PathParameters", **schema_fields)
