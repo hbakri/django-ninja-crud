@@ -1,11 +1,9 @@
 import uuid
-from typing import Any, Optional
+from typing import Any
 from unittest import mock
 
 import django.core.exceptions
-import ninja
 from django.test import TestCase
-from packaging import version
 
 from ninja_crud import views, viewsets
 from tests.test_app.models import Item
@@ -82,11 +80,8 @@ class TestAPIView(TestCase):
         self.api_view.path = "/{id}"
         self.api_view.model = Item
         path_parameters_type = self.api_view.resolve_path_parameters()
-        ninja_v1_2_0 = version.parse(ninja.__version__) >= version.parse("1.2.0")
-        expected_id_type = Optional[uuid.UUID] if ninja_v1_2_0 else uuid.UUID
-
         self.assertEqual(
-            path_parameters_type.model_fields.get("id").annotation, expected_id_type
+            path_parameters_type.model_fields.get("id").annotation, uuid.UUID
         )
 
         self.api_view.path = "/{collection_id}"
@@ -101,7 +96,7 @@ class TestAPIView(TestCase):
             path_parameters_type.model_fields.get("collection_id").annotation, uuid.UUID
         )
         self.assertEqual(
-            path_parameters_type.model_fields.get("id").annotation, expected_id_type
+            path_parameters_type.model_fields.get("id").annotation, uuid.UUID
         )
 
         with self.assertRaises(django.core.exceptions.FieldDoesNotExist):
