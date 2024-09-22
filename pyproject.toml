@@ -4,8 +4,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "django-ninja-crud"
-version = "0.6.1"
-description = "Declarative Endpoints for RESTful APIs with Django Ninja."
+version = "0.6.2"
+description = "🧩 Modular, composable API views for scalable Django Ninja projects, with built-in CRUD."
 authors = ["Hicham Bakri <hicham.bakri76@gmail.com>"]
 maintainers = ["Hicham Bakri <hicham.bakri76@gmail.com>"]
 readme = "README.md"
