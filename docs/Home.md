@@ -1,13 +1,11 @@
 # The Django Ninja CRUD Documentation
 
-![Django Ninja CRUD](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/docs/assets/images/django-ninja-crud-cover.png)
+![Django Ninja CRUD Cover](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/docs/assets/images/django-ninja-crud-cover.JPG)
 
-**Django Ninja CRUD** is a [**declarative**](https://en.wikipedia.org/wiki/Declarative_programming) framework that revolutionizes the way you build APIs with [**Django Ninja**](https://github.com/vitalik/django-ninja). It empowers developers to create highly customizable, reusable, and modular API views, ranging from basic [**CRUD** _(**C**reate, **R**ead, **U**pdate, **D**elete)_](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations to complex custom endpoints, all with minimal boilerplate code.
-
-Inspired by DRF's [**ModelViewSet**](https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset) but evolving beyond its limitations, Django Ninja CRUD adopts a [**composition-over-inheritance**](https://en.wikipedia.org/wiki/Composition_over_inheritance) approach for true modularity.
+**Django Ninja CRUD** introduces [**modularity**](https://en.wikipedia.org/wiki/Modular_programming) to API development with [**Django Ninja**](https://github.com/vitalik/django-ninja), revolutionizing how APIs are built and maintained at scale while avoiding repetition. It empowers developers to create reusable, [**composable**](https://en.wikipedia.org/wiki/Composability) API views ranging from built-in [**CRUD** (**C**reate, **R**ead, **U**pdate, **D**elete)](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations to complex custom endpoints, supporting both sync and async implementations, all with minimal boilerplate code.
 
 ## 🌞 Key Features
-- **Declarative Views**: Easily extend `APIView` to create reusable components for repeated business logic. Define views by stating intent, with unrestricted function signatures supporting both sync and async implementations.
+- **Modular Views**: Easily extend `APIView` to create reusable components for repeated business logic. Define views by stating intent, with unrestricted function signatures supporting both sync and async implementations.
 
 - **Flexible Built-in CRUD Views**: Pre-built, customizable `ListView`, `CreateView`, `ReadView`, `UpdateView`, and `DeleteView` views. Use as-is, customize, or use as blueprints for your own implementations. Supports any path parameters, pagination, filtering, decorators, and more.
 
@@ -15,12 +13,15 @@ Inspired by DRF's [**ModelViewSet**](https://www.django-rest-framework.org/api-g
 
 - **Seamless Django Ninja Integration**: Enhance your existing Django Ninja project without changing its structure. Gradually adopt declarative views to clean up your codebase and boost development efficiency.
 
+![Django Ninja CRUD Code](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/docs/assets/images/django-ninja-crud-code.JPG)
+
 > [!NOTE]
-> As I shared in my [DjangoCON Europe 2024 talk](https://www.youtube.com/watch?v=r8yRxZPcy9k&t=1168s),
-> Django Ninja CRUD emerged from countless hours of wrestling with repetitive code.
-> It's driven by a vision to make Django API development not just more efficient,
-> but truly intuitive and enjoyable. I hope it revolutionizes your development
-> experience as profoundly as it has mine.
+> As shared in my [DjangoCON Europe 2024 talk](https://www.youtube.com/watch?v=r8yRxZPcy9k&t=1168s),
+> Django Ninja CRUD emerged from countless hours of wrestling with repetitive, complex
+> and hard-to-maintain APIs. My vision is to address those common pain points by
+> providing a declarative and modular approach, making API development not just more
+> efficient, but truly intuitive and enjoyable. I hope it revolutionizes your
+> development experience as it has mine.
 
 ## 🫶 Support
 First and foremost, a heartfelt thank you to the 400+ stargazers who have shown their
