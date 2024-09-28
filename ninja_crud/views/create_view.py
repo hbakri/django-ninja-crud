@@ -1,14 +1,5 @@
 from types import FunctionType
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Type,
-    cast,
-)
+from typing import Any, Callable, Dict, List, Optional, Type, cast
 
 from django.db.models import ManyToManyField, Model
 from django.http import HttpRequest
@@ -17,9 +8,6 @@ from pydantic import BaseModel
 from typing_extensions import Annotated
 
 from ninja_crud.views.api_view import APIView
-
-if TYPE_CHECKING:
-    from ninja_crud.viewsets import APIViewSet
 
 
 class CreateView(APIView):
@@ -169,35 +157,31 @@ class CreateView(APIView):
     def _default_init_model(
         self, request: HttpRequest, path_parameters: Optional[BaseModel]
     ) -> Model:
-        if self.model is None:
-            raise ValueError("No model set for the view.")
+        return cast(Type[Model], self.model)()
 
-        return self.model()
-
-    @staticmethod
-    def _default_pre_save(request: HttpRequest, instance: Model) -> None:
+    def _default_pre_save(self, request: HttpRequest, instance: Model) -> None:
         instance.full_clean()
 
-    @staticmethod
-    def _default_post_save(request: HttpRequest, instance: Model) -> None:
+    def _default_post_save(self, request: HttpRequest, instance: Model) -> None:
         pass
 
-    def set_api_viewset_class(self, api_viewset_class: Type["APIViewSet"]) -> None:
-        """
-        Bind the view to a viewset class.
+    def as_operation(self) -> Dict[str, Any]:
+        if self.api_viewset_class:
+            self.model = self.model or self.api_viewset_class.model
+            self.path_parameters = (
+                self.path_parameters or self.resolve_path_parameters()
+            )
+            self.request_body = (
+                self.request_body or self.api_viewset_class.default_request_body
+            )
+            self.response_body = (
+                self.response_body or self.api_viewset_class.default_response_body
+            )
 
-        This method sets the model and path parameters type based on the viewset class,
-        and assigns the request body and response body from the viewset class's
-        `default_request_body` and `default_response_body`, respectively, if they are
-        not already set.
+        if not self.model:
+            raise ValueError(
+                f"Unable to determine model for view {self.name}. "
+                "Please set a model either on the view or on its associated viewset."
+            )
 
-        Note:
-            This method is called internally and automatically by the viewset when
-            defining views as class attributes. It should not be called manually.
-        """
-        super().set_api_viewset_class(api_viewset_class)
-        self.path_parameters = self.path_parameters or self.resolve_path_parameters()
-        self.request_body = self.request_body or api_viewset_class.default_request_body
-        self.response_body = (
-            self.response_body or api_viewset_class.default_response_body
-        )
+        return super().as_operation()

@@ -119,7 +119,6 @@ class APIViewSet:
             key=lambda view_member: list(cls.__dict__).index(view_member[0]),
         )
         for name, view in ordered_view_members:
-            if view.name is None:
-                view.name = name
-            view.set_api_viewset_class(cls)
+            view.name = view.name or name
+            view.api_viewset_class = cls
             view.add_view_to(api_or_router)

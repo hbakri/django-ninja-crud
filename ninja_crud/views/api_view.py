@@ -316,48 +316,18 @@ class APIView(abc.ABC):
 
         return standalone_handler
 
-    def get_api_viewset_class(self) -> Type["APIViewSet"]:
-        """
-        Get the viewset class that the view is associated with, if the view is of
-        course bound to a viewset class.
-
-        Returns:
-            Type[APIViewSet]: The viewset class.
-
-        Raises:
-            ValueError: If the view is not bound to a viewset class.
-        """
-        if self._api_viewset_class is None:
-            raise ValueError(
-                f"Viewset class not bound to {self.__class__.__name__}. "
-                "Please bind a viewset class before calling this method."
-            )
+    @property
+    def api_viewset_class(self) -> Optional[Type["APIViewSet"]]:
         return self._api_viewset_class
 
-    def set_api_viewset_class(self, api_viewset_class: Type["APIViewSet"]) -> None:
-        """
-        Bind the view to a viewset class. This method sets the model based on the
-        viewset class if not already defined. Can be overridden in subclasses to
-        provide additional behavior, like setting default values for the view.
-
-        Args:
-            api_viewset_class (Type[APIViewSet]): The viewset class to bind to.
-
-        Raises:
-            ValueError: If the view is already bound to a viewset class.
-
-        Note:
-            This method is called internally and automatically by the viewset when
-            defining views as class attributes. It should not be called manually.
-        """
-        if self._api_viewset_class is not None:
+    @api_viewset_class.setter
+    def api_viewset_class(self, api_viewset_class: Type["APIViewSet"]) -> None:
+        if self._api_viewset_class:
             raise ValueError(
-                f"{self.__class__.__name__} is already bound to a viewset class."
+                f"View '{self.name}' is already bound to a viewset. "
+                "Views cannot be reassigned once they are bound."
             )
         self._api_viewset_class = api_viewset_class
-
-        if self.model is None:
-            self.model = api_viewset_class.model
 
     def resolve_path_parameters(self) -> Optional[Type[pydantic.BaseModel]]:
         """
