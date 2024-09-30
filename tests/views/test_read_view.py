@@ -32,7 +32,7 @@ class TestReadView(TestCase):
     def test_default_get_model_without_model(self):
         read_view = views.ReadView()
         with self.assertRaises(ValueError):
-            read_view._default_get_model(HttpRequest(), None)
+            read_view.as_operation()
 
     def test_default_get_model(self):
         path_parameters = self.PathParameters(id=self.item.id)
@@ -58,6 +58,7 @@ class TestReadView(TestCase):
             default_request_body = ItemIn
             default_response_body = ItemOut
 
-        read_view.set_api_viewset_class(ItemViewSet)
+        read_view.api_viewset_class = ItemViewSet
+        read_view.as_operation()
         self.assertEqual(read_view.model, Item)
         self.assertEqual(read_view.response_body, ItemOut)

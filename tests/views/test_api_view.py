@@ -1,5 +1,5 @@
 import uuid
-from typing import Any
+from typing import Any, Dict
 from unittest import mock
 
 import django.core.exceptions
@@ -14,6 +14,11 @@ class TestAPIView(TestCase):
         class ReusableAPIView(views.APIView):
             def handler(self, *args: Any, **kwargs: Any) -> Any:
                 """This is a handler method."""
+
+            def as_operation(self) -> Dict[str, Any]:
+                if self.api_viewset_class and not self.model:
+                    self.model = self.api_viewset_class.model
+                return super().as_operation()
 
         self.api_view = ReusableAPIView(
             name="delete_item",
@@ -64,15 +69,14 @@ class TestAPIView(TestCase):
         class ViewSet(viewsets.APIViewSet):
             model = Item
 
-        with self.assertRaises(ValueError):
-            _ = self.api_view.get_api_viewset_class()
-
-        self.api_view.set_api_viewset_class(ViewSet)
-        self.assertEqual(self.api_view.get_api_viewset_class(), ViewSet)
+        self.assertIsNone(self.api_view.api_viewset_class)
+        self.api_view.api_viewset_class = ViewSet
+        self.assertEqual(self.api_view.api_viewset_class, ViewSet)
 
         with self.assertRaises(ValueError):
-            self.api_view.set_api_viewset_class(ViewSet)
+            self.api_view.api_viewset_class = ViewSet
 
+        self.api_view.as_operation()
         self.assertEqual(self.api_view.model, Item)
         self.assertIsNotNone(self.api_view.resolve_path_parameters())
 

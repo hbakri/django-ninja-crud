@@ -29,7 +29,7 @@ class TestListView(TestCase):
     def test_default_get_queryset_without_model(self):
         list_view = views.ListView()
         with self.assertRaises(ValueError):
-            list_view._default_get_queryset(HttpRequest(), None)
+            list_view.as_operation()
 
     def test_default_get_queryset(self):
         queryset = self.list_view._default_get_queryset(HttpRequest(), None)
@@ -80,6 +80,7 @@ class TestListView(TestCase):
             default_request_body = ItemIn
             default_response_body = ItemOut
 
-        list_view.set_api_viewset_class(ItemViewSet)
+        list_view.api_viewset_class = ItemViewSet
+        list_view.as_operation()
         self.assertEqual(list_view.model, Item)
         self.assertEqual(list_view.response_body, List[ItemOut])
