@@ -109,16 +109,16 @@ class CreateView(APIView):
             path=path,
             response_status=response_status,
             response_body=response_body,
-            model=model,
             decorators=decorators,
             operation_kwargs=operation_kwargs,
         )
+        self.model = model
         self.decorators.append(self._update_handler_annotations)
-        self.path_parameters = path_parameters or self.resolve_path_parameters()
+        self.path_parameters = path_parameters or self.resolve_path_parameters(model)
         self.request_body = request_body
         self.init_model = init_model or self._default_init_model
-        self.pre_save = pre_save or self._default_pre_save
-        self.post_save = post_save or self._default_post_save
+        self.pre_save = pre_save or (lambda request, instance: instance.full_clean())
+        self.post_save = post_save or (lambda request, instance: None)
 
     def handler(
         self,
@@ -159,17 +159,11 @@ class CreateView(APIView):
     ) -> Model:
         return cast(Type[Model], self.model)()
 
-    def _default_pre_save(self, request: HttpRequest, instance: Model) -> None:
-        instance.full_clean()
-
-    def _default_post_save(self, request: HttpRequest, instance: Model) -> None:
-        pass
-
     def as_operation(self) -> Dict[str, Any]:
         if self.api_viewset_class:
             self.model = self.model or self.api_viewset_class.model
-            self.path_parameters = (
-                self.path_parameters or self.resolve_path_parameters()
+            self.path_parameters = self.path_parameters or self.resolve_path_parameters(
+                self.model
             )
             self.request_body = (
                 self.request_body or self.api_viewset_class.default_request_body

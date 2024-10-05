@@ -12,6 +12,8 @@ from tests.test_app.models import Item
 class TestAPIView(TestCase):
     def setUp(self):
         class ReusableAPIView(views.APIView):
+            model = None
+
             def handler(self, *args: Any, **kwargs: Any) -> Any:
                 """This is a handler method."""
 
@@ -78,24 +80,24 @@ class TestAPIView(TestCase):
 
         self.api_view.as_operation()
         self.assertEqual(self.api_view.model, Item)
-        self.assertIsNotNone(self.api_view.resolve_path_parameters())
+        self.assertIsNotNone(self.api_view.resolve_path_parameters(model=Item))
 
     def test_resolve_path_parameters(self):
         self.api_view.path = "/{id}"
         self.api_view.model = Item
-        path_parameters_type = self.api_view.resolve_path_parameters()
+        path_parameters_type = self.api_view.resolve_path_parameters(model=Item)
         self.assertEqual(
             path_parameters_type.model_fields.get("id").annotation, uuid.UUID
         )
 
         self.api_view.path = "/{collection_id}"
-        path_parameters_type = self.api_view.resolve_path_parameters()
+        path_parameters_type = self.api_view.resolve_path_parameters(model=Item)
         self.assertEqual(
             path_parameters_type.model_fields.get("collection_id").annotation, uuid.UUID
         )
 
         self.api_view.path = "/{collection_id}/items/{id}"
-        path_parameters_type = self.api_view.resolve_path_parameters()
+        path_parameters_type = self.api_view.resolve_path_parameters(model=Item)
         self.assertEqual(
             path_parameters_type.model_fields.get("collection_id").annotation, uuid.UUID
         )
@@ -105,4 +107,4 @@ class TestAPIView(TestCase):
 
         with self.assertRaises(django.core.exceptions.FieldDoesNotExist):
             self.api_view.path = "/{nonexistent_field}"
-            self.api_view.resolve_path_parameters()
+            self.api_view.resolve_path_parameters(model=Item)

@@ -21,8 +21,8 @@ class ReusableReadView(APIView):
             path="/{id}/reusable",
             response_status=200,
             response_body=response_body,
-            model=model,
         )
+        self.model = model
 
     def handler(self, request: HttpRequest, id: UUID) -> models.Model:
         return self.model.objects.get(id=id)
@@ -41,8 +41,8 @@ class ReusableAsyncReadView(APIView):
             path="/{id}/reusable/async",
             response_status=200,
             response_body=response_body,
-            model=model,
         )
+        self.model = model
 
     async def handler(self, request: HttpRequest, id: UUID) -> models.Model:
         return await self.model.objects.aget(id=id)

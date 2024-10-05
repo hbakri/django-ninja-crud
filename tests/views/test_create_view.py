@@ -25,7 +25,7 @@ class TestCreateView(TestCase):
             create_view.as_operation()
 
     def test_default_init_model(self):
-        model_instance = self.create_view._default_init_model(HttpRequest(), None)
+        model_instance = self.create_view.init_model(HttpRequest(), None)
 
         self.assertIsInstance(model_instance, Collection)
         with self.assertRaises(ObjectDoesNotExist):

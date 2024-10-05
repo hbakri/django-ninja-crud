@@ -97,15 +97,15 @@ class DeleteView(APIView):
             path=path,
             response_status=response_status,
             response_body=response_body,
-            model=model,
             decorators=decorators,
             operation_kwargs=operation_kwargs,
         )
+        self.model = model
         self.decorators.append(self._update_handler_annotations)
-        self.path_parameters = path_parameters or self.resolve_path_parameters()
+        self.path_parameters = path_parameters or self.resolve_path_parameters(model)
         self.get_model = get_model or self._default_get_model
-        self.pre_delete = pre_delete or self._default_pre_delete
-        self.post_delete = post_delete or self._default_post_delete
+        self.pre_delete = pre_delete or (lambda request, instance: None)
+        self.post_delete = post_delete or (lambda request, instance: None)
 
     def handler(
         self,
@@ -133,17 +133,11 @@ class DeleteView(APIView):
             **(path_parameters.model_dump() if path_parameters else {})
         )
 
-    def _default_pre_delete(self, request: HttpRequest, instance: Model) -> None:
-        pass
-
-    def _default_post_delete(self, request: HttpRequest, instance: Model) -> None:
-        pass
-
     def as_operation(self) -> Dict[str, Any]:
         if self.api_viewset_class:
             self.model = self.model or self.api_viewset_class.model
-            self.path_parameters = (
-                self.path_parameters or self.resolve_path_parameters()
+            self.path_parameters = self.path_parameters or self.resolve_path_parameters(
+                self.model
             )
 
         if not self.model:
