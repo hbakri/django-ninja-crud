@@ -108,12 +108,12 @@ class ListView(APIView):
             path=path,
             response_status=response_status,
             response_body=response_body,
-            model=model,
             decorators=decorators,
             operation_kwargs=operation_kwargs,
         )
+        self.model = model
         self.decorators.append(self._update_handler_annotations)
-        self.path_parameters = path_parameters or self.resolve_path_parameters()
+        self.path_parameters = path_parameters or self.resolve_path_parameters(model)
         self.query_parameters = query_parameters
         self.get_queryset = get_queryset or self._default_get_queryset
         self.filter_queryset = filter_queryset or self._default_filter_queryset
@@ -150,20 +150,19 @@ class ListView(APIView):
     def _default_filter_queryset(
         self, queryset: QuerySet[Model], query_parameters: Optional[BaseModel]
     ) -> QuerySet[Model]:
-        if query_parameters is not None:
-            if isinstance(query_parameters, FilterSchema):
-                queryset = query_parameters.filter(queryset)
-            else:
-                queryset = queryset.filter(
-                    **query_parameters.model_dump(exclude_unset=True)
-                )
+        if isinstance(query_parameters, FilterSchema):
+            queryset = query_parameters.filter(queryset)
+        elif isinstance(query_parameters, BaseModel):
+            queryset = queryset.filter(
+                **query_parameters.model_dump(exclude_unset=True)
+            )
         return queryset
 
     def as_operation(self) -> Dict[str, Any]:
         if self.api_viewset_class:
             self.model = self.model or self.api_viewset_class.model
-            self.path_parameters = (
-                self.path_parameters or self.resolve_path_parameters()
+            self.path_parameters = self.path_parameters or self.resolve_path_parameters(
+                self.model
             )
             self.response_body = (
                 self.response_body or List[self.api_viewset_class.default_response_body]  # type: ignore[name-defined]

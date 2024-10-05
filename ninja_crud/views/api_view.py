@@ -34,8 +34,6 @@ class APIView(abc.ABC):
         path (str): URL path.
         response_status (int): HTTP response status code.
         response_body (Type | None): Response body type.
-        model (Type[django.db.models.Model] | None, optional): Associated Django model.
-            Inherits from viewset if not provided. Defaults to `None`.
         decorators (List[Callable] | None, optional): View function decorators
             (applied in reverse order). Defaults to `None`.
         operation_kwargs (Dict[str, Any] | None, optional): Additional operation
@@ -48,7 +46,7 @@ class APIView(abc.ABC):
     reusable read views supporting only models with a UUID primary key, in both
     synchronous and asynchronous variants:
 
-    Synchronous Example:
+    Synchronous:
     ```python
     from typing import Optional, Type
     from uuid import UUID
@@ -57,7 +55,7 @@ class APIView(abc.ABC):
     from django.db import models
     from ninja_crud.views import APIView
 
-    class ReusableReadView(APIView):
+    class ReadView(APIView):
         def __init__(
             self,
             name: Optional[str] = None,
@@ -67,19 +65,19 @@ class APIView(abc.ABC):
             super().__init__(
                 name=name,
                 methods=["GET"],
-                path="/{id}/reusable",
+                path="/{id}",
                 response_status=200,
                 response_body=response_body,
-                model=model,
             )
+            self.model = model
 
         def handler(self, request: HttpRequest, id: UUID) -> models.Model:
             return self.model.objects.get(id=id)
     ```
 
-    Asynchronous Example:
+    Asynchronous:
     ```python
-    class ReusableAsyncReadView(APIView):
+    class AsyncReadView(APIView):
         def __init__(
             self,
             name: Optional[str] = None,
@@ -89,11 +87,11 @@ class APIView(abc.ABC):
             super().__init__(
                 name=name,
                 methods=["GET"],
-                path="/{id}/reusable/async",
+                path="/async/{id}",
                 response_status=200,
                 response_body=response_body,
-                model=model,
             )
+            self.model = model
 
         async def handler(self, request: HttpRequest, id: UUID) -> models.Model:
             return await self.model.objects.aget(id=id)
@@ -128,17 +126,17 @@ class APIView(abc.ABC):
 
     from examples.models import Department
     from examples.schemas import DepartmentOut
-    from examples.reusable_views import ReusableReadView, ReusableAsyncReadView
+    from examples.reusable_views import ReadView, AsyncReadView
 
     api = NinjaAPI()
 
-    ReusableReadView(
+    ReadView(
         name="read_department",
         model=Department,
         response_body=DepartmentOut
     ).add_view_to(api)
 
-    ReusableAsyncReadView(
+    AsyncReadView(
         name="read_department_async",
         model=Department,
         response_body=DepartmentOut
@@ -153,15 +151,16 @@ class APIView(abc.ABC):
 
     from examples.models import Department
     from examples.schemas import DepartmentOut
-    from examples.reusable_views import ReusableReadView, ReusableAsyncReadView
+    from examples.reusable_views import ReadView, AsyncReadView
 
     api = NinjaAPI()
 
     class DepartmentViewSet(APIViewSet):
         api = api
         model = Department
-        read_department = ReusableReadView(response_body=DepartmentOut)
-        read_department_async = ReusableAsyncReadView(response_body=DepartmentOut)
+
+        read_department = ReadView(response_body=DepartmentOut)
+        async_read_department = AsyncReadView(response_body=DepartmentOut)
     ```
 
     Finally, add the API to your URL configuration:
@@ -188,7 +187,6 @@ class APIView(abc.ABC):
         path: str,
         response_status: int,
         response_body: Optional[Type[Any]],
-        model: Optional[Type[django.db.models.Model]] = None,
         decorators: Optional[
             List[Callable[[Callable[..., Any]], Callable[..., Any]]]
         ] = None,
@@ -199,7 +197,6 @@ class APIView(abc.ABC):
         self.path = path
         self.response_status = response_status
         self.response_body = response_body
-        self.model = model
         self.decorators = decorators or []
         self.operation_kwargs = operation_kwargs or {}
         self._api_viewset_class: Optional[Type[APIViewSet]] = None
@@ -220,11 +217,11 @@ class APIView(abc.ABC):
 
         from examples.models import Department
         from examples.schemas import DepartmentOut
-        from examples.reusable_views import ReusableReadView
+        from examples.reusable_views import ReadView
 
         router = Router()
 
-        ReusableReadView(Department, DepartmentOut).add_view_to(router)
+        ReadView(Department, DepartmentOut).add_view_to(router)
         ```
         """
         if isinstance(api_or_router, ninja.NinjaAPI):
@@ -249,11 +246,11 @@ class APIView(abc.ABC):
 
         from examples.models import Department
         from examples.schemas import DepartmentOut
-        from examples.reusable_views import ReusableReadView
+        from examples.reusable_views import ReadView
 
         router = Router()
 
-        read_department = ReusableReadView(Department, DepartmentOut)
+        read_department = ReadView(Department, DepartmentOut)
         router.add_api_operation(**read_department.as_operation())
         ```
         """
@@ -329,7 +326,9 @@ class APIView(abc.ABC):
             )
         self._api_viewset_class = api_viewset_class
 
-    def resolve_path_parameters(self) -> Optional[Type[pydantic.BaseModel]]:
+    def resolve_path_parameters(
+        self, model: Optional[Type[django.db.models.Model]]
+    ) -> Optional[Type[pydantic.BaseModel]]:
         """
         Resolve path parameters to a pydantic model based on the view's path and model.
 
@@ -344,6 +343,9 @@ class APIView(abc.ABC):
 
         Utilizes Django Ninja utilities to extract and map path parameters to model
         fields. Returns `None` if no parameters are found.
+
+        Args:
+            model (Optional[Type[django.db.models.Model]]): The associated Django model.
 
         Returns:
             Optional[Type[pydantic.BaseModel]]: Path parameters pydantic model type.
@@ -368,7 +370,7 @@ class APIView(abc.ABC):
             Prefer simple types (strings, integers, UUIDs) for path parameters to
             ensure proper URL formatting and web standard compatibility.
         """
-        if self.model is None:
+        if model is None:
             return None
 
         path_parameters_names = ninja.signature.utils.get_path_param_names(self.path)
@@ -377,7 +379,7 @@ class APIView(abc.ABC):
 
         schema_fields: Dict[str, Any] = {}
         for field_name in path_parameters_names:
-            model_field = self.model._meta.get_field(field_name)
+            model_field = model._meta.get_field(field_name)
             schema_field = ninja.orm.fields.get_schema_field(field=model_field)[0]
             schema_fields[field_name] = (
                 typing.get_args(schema_field)[0]
