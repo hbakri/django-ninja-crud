@@ -41,7 +41,7 @@ django-ninja = ">=1.0"
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^7.6.0"
-pre-commit = "^2.20.0"
+pre-commit = "^3.5.0"
 pydoc-markdown = "^4.8.2"
 pyyaml = "^6.0.1"
 python-frontmatter = "^1.1.0"
