@@ -2,13 +2,15 @@ import abc
 import asyncio
 import functools
 import typing
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Type, Union
 
 import django.db.models
 import ninja
 import ninja.orm.fields
 import ninja.signature.utils
 import pydantic
+
+from ninja_crud.views.types import Decorator
 
 if TYPE_CHECKING:
     from ninja_crud.viewsets import APIViewSet
@@ -28,12 +30,12 @@ class APIView(abc.ABC):
     functionality, enabling you to refactor common view logic into reusable components.
 
     Args:
+        path (str): URL path.
+        methods (list[str] | set[str]): HTTP methods.
+        response_body (Type | None): Response body type.
+        response_status (int): HTTP response status code.
         name (str | None): View function name. If None, uses class attribute name in
             viewsets or "handler" for standalone views (unless decorator-overridden).
-        methods (List[str]): HTTP methods.
-        path (str): URL path.
-        response_status (int): HTTP response status code.
-        response_body (Type | None): Response body type.
         decorators (List[Callable] | None, optional): View function decorators
             (applied in reverse order). Defaults to `None`.
         operation_kwargs (Dict[str, Any] | None, optional): Additional operation
@@ -182,21 +184,20 @@ class APIView(abc.ABC):
 
     def __init__(
         self,
-        name: Optional[str],
-        methods: List[str],
         path: str,
-        response_status: int,
+        methods: Union[List[str], Set[str]],
+        *,
         response_body: Optional[Type[Any]],
-        decorators: Optional[
-            List[Callable[[Callable[..., Any]], Callable[..., Any]]]
-        ] = None,
+        response_status: int,
+        name: Optional[str] = None,
+        decorators: Optional[List[Decorator]] = None,
         operation_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
-        self.name = name
-        self.methods = methods
         self.path = path
-        self.response_status = response_status
+        self.methods = methods
         self.response_body = response_body
+        self.response_status = response_status
+        self.name = name
         self.decorators = decorators or []
         self.operation_kwargs = operation_kwargs or {}
         self._api_viewset_class: Optional[Type[APIViewSet]] = None
