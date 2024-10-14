@@ -40,8 +40,8 @@ class APIView(abc.ABC):
             It could be any valid Pydantic *field* type. So, it doesn't have to
             be a Pydantic model, it could be other things, like a `list`, `dict`,
             etc. Defaults to `NOT_SET`.
-        status_code (int | None): The default status code to be used for the response.
-            Defaults to `None`.
+        status_code (int | None, optional): The default status code to be used for the
+            response. Defaults to `None`.
         name (str | None, optional): View function name. If None, uses class attribute
             name in viewsets or "handler" for standalone views (unless decorator-overridden).
         decorators (List[Callable] | None, optional): View function decorators
