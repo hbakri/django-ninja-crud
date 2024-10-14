@@ -90,8 +90,8 @@ class ReadView(APIView):
             name=name,
             methods=methods or ["GET"],
             path=path,
-            response_status=response_status,
-            response_body=response_body,
+            status_code=response_status,
+            response_schema=response_body,
             decorators=decorators,
             operation_kwargs=operation_kwargs,
         )
@@ -129,8 +129,8 @@ class ReadView(APIView):
             self.path_parameters = self.path_parameters or self.resolve_path_parameters(
                 self.model
             )
-            self.response_body = (
-                self.response_body or self.api_viewset_class.default_response_body
+            self.response_schema = (
+                self.response_schema or self.api_viewset_class.default_response_body
             )
 
         if not self.model:

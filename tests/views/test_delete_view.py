@@ -61,4 +61,4 @@ class TestDeleteView(TestCase):
         delete_view.api_viewset_class = ItemViewSet
         delete_view.as_operation()
         self.assertEqual(delete_view.model, Item)
-        self.assertEqual(delete_view.response_body, None)
+        self.assertEqual(delete_view.response_schema, None)

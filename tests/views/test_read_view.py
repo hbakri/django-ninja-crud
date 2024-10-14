@@ -61,4 +61,4 @@ class TestReadView(TestCase):
         read_view.api_viewset_class = ItemViewSet
         read_view.as_operation()
         self.assertEqual(read_view.model, Item)
-        self.assertEqual(read_view.response_body, ItemOut)
+        self.assertEqual(read_view.response_schema, ItemOut)

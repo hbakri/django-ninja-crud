@@ -1,26 +1,19 @@
-from typing import Optional, Type
+from typing import Any, Optional, Type
 from uuid import UUID
 
-import pydantic
 from django.db import models
 from django.http import HttpRequest
+from ninja.constants import NOT_SET
 
 from ninja_crud.views import APIView
 
 
 class ReusableReadView(APIView):
     def __init__(
-        self,
-        name: Optional[str] = None,
-        model: Optional[Type[models.Model]] = None,
-        response_body: Optional[Type[pydantic.BaseModel]] = None,
+        self, response_schema: Any = NOT_SET, model: Optional[Type[models.Model]] = None
     ) -> None:
         super().__init__(
-            name=name,
-            methods=["GET"],
-            path="/{id}/reusable",
-            response_status=200,
-            response_body=response_body,
+            "/{id}/reusable", methods=["GET"], response_schema=response_schema
         )
         self.model = model
 
@@ -30,17 +23,10 @@ class ReusableReadView(APIView):
 
 class ReusableAsyncReadView(APIView):
     def __init__(
-        self,
-        name: Optional[str] = None,
-        model: Optional[Type[models.Model]] = None,
-        response_body: Optional[Type[pydantic.BaseModel]] = None,
+        self, response_schema: Any = NOT_SET, model: Optional[Type[models.Model]] = None
     ) -> None:
         super().__init__(
-            name=name,
-            methods=["GET"],
-            path="/{id}/reusable/async",
-            response_status=200,
-            response_body=response_body,
+            "/{id}/reusable/async", methods=["GET"], response_schema=response_schema
         )
         self.model = model
 

@@ -54,4 +54,4 @@ class TestCreateView(TestCase):
         create_view.as_operation()
         self.assertEqual(create_view.model, Collection)
         self.assertEqual(create_view.request_body, CollectionIn)
-        self.assertEqual(create_view.response_body, CollectionOut)
+        self.assertEqual(create_view.response_schema, CollectionOut)

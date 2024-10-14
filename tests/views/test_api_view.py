@@ -26,8 +26,8 @@ class TestAPIView(TestCase):
             name="delete_item",
             methods=["DELETE"],
             path="/{id}",
-            response_status=204,
-            response_body=None,
+            status_code=204,
+            response_schema=None,
         )
 
     def test_as_operation(self):

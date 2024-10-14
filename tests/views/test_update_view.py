@@ -67,4 +67,4 @@ class TestUpdateView(TestCase):
         update_view.as_operation()
         self.assertEqual(update_view.model, Item)
         self.assertEqual(update_view.request_body, ItemIn)
-        self.assertEqual(update_view.response_body, ItemOut)
+        self.assertEqual(update_view.response_schema, ItemOut)
