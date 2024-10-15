@@ -34,14 +34,19 @@ class APIView(abc.ABC):
         path (str): The URL path to be used for this *path operation*. It can contain
             path parameters in the format `{parameter_name}`. For example, `"/{id}"`.
         methods (list[str] | set[str]): The HTTP methods that this view should handle.
-            For example, `["GET"]` or `{"GET", "POST"}`. Supports enums like
-            `http.HTTPMethod`.
+            For example, `["GET"]` or `{"GET", "POST"}`. It can also receive StrEnum
+            values, such as Python's [`http.HTTPMethod`](https://docs.python.org/3/library/http.html#http.HTTPMethod).
         response_schema (Any, optional): The type to use for the response.
             It could be any valid Pydantic *field* type. So, it doesn't have to
             be a Pydantic model, it could be other things, like a `list`, `dict`,
             etc. Defaults to `NOT_SET`.
-        status_code (int | None, optional): The default status code to be used for the
-            response. Supports enums like `http.HTTPStatus`. Defaults to `None`.
+        status_code (int, optional): The default status code to be used for the
+            response. It can alternatively also receive an `IntEnum`, such as Python's
+            [`http.HTTPStatus`](https://docs.python.org/3/library/http.html#http.HTTPStatus).
+            Defaults to `200`.
+        responses (dict[int, Any] | None, optional): Additional responses that could be
+            returned by this *path operation*. The key is the status code, and the value
+            is the response schema. Defaults to `None`.
         name (str | None, optional): The name of the view function, used by the OpenAPI
             documentation. If not provided, defaults to the class attribute name if
             the view is part of a viewset. Defaults to `None`.
@@ -208,7 +213,8 @@ class APIView(abc.ABC):
         methods: Union[List[str], Set[str]],
         *,
         response_schema: Any = NOT_SET,
-        status_code: Optional[int] = None,
+        status_code: int = 200,
+        responses: Optional[Dict[int, Any]] = None,
         name: Optional[str] = None,
         decorators: Optional[List[Decorator]] = None,
         operation_kwargs: Optional[Dict[str, Any]] = None,
@@ -217,6 +223,7 @@ class APIView(abc.ABC):
         self.methods = methods
         self.response_schema = response_schema
         self.status_code = status_code
+        self.responses = responses or {}
         self.name = name
         self.decorators = decorators or []
         self.operation_kwargs = operation_kwargs or {}
@@ -283,9 +290,9 @@ class APIView(abc.ABC):
                 reversed(self.decorators),
                 self.create_standalone_handler(self.handler),
             ),
-            "response": {self.status_code: self.response_schema}
-            if self.status_code
-            else self.response_schema,
+            "response": {self.status_code: self.response_schema, **self.responses}
+            if self.response_schema is not NOT_SET
+            else (self.responses or NOT_SET),
             **self.operation_kwargs,
         }
 
