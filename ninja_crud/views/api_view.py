@@ -41,12 +41,13 @@ class APIView(abc.ABC):
             be a Pydantic model, it could be other things, like a `list`, `dict`,
             etc. Defaults to `NOT_SET`.
         status_code (int | None, optional): The default status code to be used for the
-            response. Defaults to `None`.
-        name (str | None, optional): View function name. If None, uses class attribute
-            name in viewsets or "handler" for standalone views (unless decorator-overridden).
-        decorators (List[Callable] | None, optional): View function decorators
+            response. Supports enums like `http.HTTPStatus`. Defaults to `None`.
+        name (str | None, optional): The name of the view function, used by the OpenAPI
+            documentation. If not provided, defaults to the class attribute name if
+            the view is part of a viewset. Defaults to `None`.
+        decorators (list[Callable] | None, optional): View function decorators
             (applied in reverse order). Defaults to `None`.
-        operation_kwargs (Dict[str, Any] | None, optional): Additional operation
+        operation_kwargs (dict[str, Any] | None, optional): Additional operation
             keyword arguments. Defaults to `None`.
 
     Examples:
@@ -84,7 +85,7 @@ class APIView(abc.ABC):
         def handler(self, request: HttpRequest, id: UUID) -> models.Model:
             return self.model.objects.get(id=id)
 
-        # Optional: Inherit model from viewset if not provided and used in viewset
+        # Optional: Allow model to be inherited from viewset if not provided
         def as_operation(self) -> Dict[str, Any]:
             if self.api_viewset_class:
                 self.model = self.model or self.api_viewset_class.model
@@ -111,7 +112,7 @@ class APIView(abc.ABC):
         async def handler(self, request: HttpRequest, id: UUID) -> models.Model:
             return await self.model.objects.aget(id=id)
 
-        # Optional: Inherit model from viewset if not provided and used in viewset
+        # Optional: Allow model to be inherited from viewset if not provided
         def as_operation(self) -> Dict[str, Any]:
             if self.api_viewset_class:
                 self.model = self.model or self.api_viewset_class.model
