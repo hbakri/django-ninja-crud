@@ -9,6 +9,7 @@ import ninja
 import ninja.orm.fields
 import ninja.signature.utils
 import pydantic
+from ninja.constants import NOT_SET
 
 from ninja_crud.views.types import Decorator
 
@@ -30,15 +31,23 @@ class APIView(abc.ABC):
     functionality, enabling you to refactor common view logic into reusable components.
 
     Args:
-        path (str): URL path.
-        methods (list[str] | set[str]): HTTP methods.
-        response_body (Type | None): Response body type.
-        response_status (int): HTTP response status code.
-        name (str | None): View function name. If None, uses class attribute name in
-            viewsets or "handler" for standalone views (unless decorator-overridden).
-        decorators (List[Callable] | None, optional): View function decorators
+        path (str): The URL path to be used for this *path operation*. It can contain
+            path parameters in the format `{parameter_name}`. For example, `"/{id}"`.
+        methods (list[str] | set[str]): The HTTP methods that this view should handle.
+            For example, `["GET"]` or `{"GET", "POST"}`. Supports enums like
+            `http.HTTPMethod`.
+        response_schema (Any, optional): The type to use for the response.
+            It could be any valid Pydantic *field* type. So, it doesn't have to
+            be a Pydantic model, it could be other things, like a `list`, `dict`,
+            etc. Defaults to `NOT_SET`.
+        status_code (int | None, optional): The default status code to be used for the
+            response. Supports enums like `http.HTTPStatus`. Defaults to `None`.
+        name (str | None, optional): The name of the view function, used by the OpenAPI
+            documentation. If not provided, defaults to the class attribute name if
+            the view is part of a viewset. Defaults to `None`.
+        decorators (list[Callable] | None, optional): View function decorators
             (applied in reverse order). Defaults to `None`.
-        operation_kwargs (Dict[str, Any] | None, optional): Additional operation
+        operation_kwargs (dict[str, Any] | None, optional): Additional operation
             keyword arguments. Defaults to `None`.
 
     Examples:
@@ -50,31 +59,37 @@ class APIView(abc.ABC):
 
     Synchronous:
     ```python
-    from typing import Optional, Type
+    from typing import Optional, Type, Dict, Any
     from uuid import UUID
     import pydantic
     from django.http import HttpRequest
     from django.db import models
+    from ninja.constants import NOT_SET
     from ninja_crud.views import APIView
 
     class ReadView(APIView):
         def __init__(
             self,
-            name: Optional[str] = None,
+            response_schema: Any = NOT_SET,
             model: Optional[Type[models.Model]] = None,
-            response_body: Optional[Type[pydantic.BaseModel]] = None,
+            name: Optional[str] = None,
         ) -> None:
             super().__init__(
-                name=name,
+                "/{id}",
                 methods=["GET"],
-                path="/{id}",
-                response_status=200,
-                response_body=response_body,
+                response_schema=response_schema,
+                name=name,
             )
             self.model = model
 
         def handler(self, request: HttpRequest, id: UUID) -> models.Model:
             return self.model.objects.get(id=id)
+
+        # Optional: Allow model to be inherited from viewset if not provided
+        def as_operation(self) -> Dict[str, Any]:
+            if self.api_viewset_class:
+                self.model = self.model or self.api_viewset_class.model
+            return super().as_operation()
     ```
 
     Asynchronous:
@@ -82,21 +97,26 @@ class APIView(abc.ABC):
     class AsyncReadView(APIView):
         def __init__(
             self,
-            name: Optional[str] = None,
+            response_schema: Any = NOT_SET,
             model: Optional[Type[models.Model]] = None,
-            response_body: Optional[Type[pydantic.BaseModel]] = None,
+            name: Optional[str] = None,
         ) -> None:
             super().__init__(
-                name=name,
+                "/async/{id}",
                 methods=["GET"],
-                path="/async/{id}",
-                response_status=200,
-                response_body=response_body,
+                response_schema=response_schema,
+                name=name,
             )
             self.model = model
 
         async def handler(self, request: HttpRequest, id: UUID) -> models.Model:
             return await self.model.objects.aget(id=id)
+
+        # Optional: Allow model to be inherited from viewset if not provided
+        def as_operation(self) -> Dict[str, Any]:
+            if self.api_viewset_class:
+                self.model = self.model or self.api_viewset_class.model
+            return super().as_operation()
     ```
 
     You can then use these views with a simple Django model:
@@ -135,13 +155,13 @@ class APIView(abc.ABC):
     ReadView(
         name="read_department",
         model=Department,
-        response_body=DepartmentOut
+        response_schema=DepartmentOut
     ).add_view_to(api)
 
     AsyncReadView(
         name="read_department_async",
         model=Department,
-        response_body=DepartmentOut
+        response_schema=DepartmentOut
     ).add_view_to(api)
     ```
 
@@ -161,8 +181,8 @@ class APIView(abc.ABC):
         api = api
         model = Department
 
-        read_department = ReadView(response_body=DepartmentOut)
-        async_read_department = AsyncReadView(response_body=DepartmentOut)
+        read_department = ReadView(response_schema=DepartmentOut)
+        async_read_department = AsyncReadView(response_schema=DepartmentOut)
     ```
 
     Finally, add the API to your URL configuration:
@@ -187,16 +207,16 @@ class APIView(abc.ABC):
         path: str,
         methods: Union[List[str], Set[str]],
         *,
-        response_body: Optional[Type[Any]],
-        response_status: int,
+        response_schema: Any = NOT_SET,
+        status_code: Optional[int] = None,
         name: Optional[str] = None,
         decorators: Optional[List[Decorator]] = None,
         operation_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         self.path = path
         self.methods = methods
-        self.response_body = response_body
-        self.response_status = response_status
+        self.response_schema = response_schema
+        self.status_code = status_code
         self.name = name
         self.decorators = decorators or []
         self.operation_kwargs = operation_kwargs or {}
@@ -263,7 +283,9 @@ class APIView(abc.ABC):
                 reversed(self.decorators),
                 self.create_standalone_handler(self.handler),
             ),
-            "response": {self.response_status: self.response_body},
+            "response": {self.status_code: self.response_schema}
+            if self.status_code
+            else self.response_schema,
             **self.operation_kwargs,
         }
 

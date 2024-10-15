@@ -95,8 +95,8 @@ class DeleteView(APIView):
             name=name,
             methods=methods or ["DELETE"],
             path=path,
-            response_status=response_status,
-            response_body=response_body,
+            status_code=response_status,
+            response_schema=response_body,
             decorators=decorators,
             operation_kwargs=operation_kwargs,
         )

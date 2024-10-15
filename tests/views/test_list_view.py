@@ -83,4 +83,4 @@ class TestListView(TestCase):
         list_view.api_viewset_class = ItemViewSet
         list_view.as_operation()
         self.assertEqual(list_view.model, Item)
-        self.assertEqual(list_view.response_body, List[ItemOut])
+        self.assertEqual(list_view.response_schema, List[ItemOut])

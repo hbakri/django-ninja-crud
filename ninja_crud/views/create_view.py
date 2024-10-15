@@ -107,8 +107,8 @@ class CreateView(APIView):
             name=name,
             methods=methods or ["POST"],
             path=path,
-            response_status=response_status,
-            response_body=response_body,
+            status_code=response_status,
+            response_schema=response_body,
             decorators=decorators,
             operation_kwargs=operation_kwargs,
         )
@@ -168,8 +168,8 @@ class CreateView(APIView):
             self.request_body = (
                 self.request_body or self.api_viewset_class.default_request_body
             )
-            self.response_body = (
-                self.response_body or self.api_viewset_class.default_response_body
+            self.response_schema = (
+                self.response_schema or self.api_viewset_class.default_response_body
             )
 
         if not self.model:

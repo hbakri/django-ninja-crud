@@ -40,9 +40,9 @@ class DepartmentViewSet(viewsets.APIViewSet):
 
     reusable_read_department = reusable_views.ReusableReadView(
         model=Department,
-        response_body=DepartmentOut,
+        response_schema=DepartmentOut,
     )
     reusable_async_read_department = reusable_views.ReusableAsyncReadView(
         model=Department,
-        response_body=DepartmentOut,
+        response_schema=DepartmentOut,
     )
