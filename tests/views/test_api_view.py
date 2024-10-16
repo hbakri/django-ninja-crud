@@ -3,6 +3,8 @@ from typing import Any, Dict
 from unittest import mock
 
 import django.core.exceptions
+import ninja.constants
+import pydantic
 from django.test import TestCase
 
 from ninja_crud import views, viewsets
@@ -108,3 +110,51 @@ class TestAPIView(TestCase):
         with self.assertRaises(django.core.exceptions.FieldDoesNotExist):
             self.api_view.path = "/{nonexistent_field}"
             self.api_view.resolve_path_parameters(model=Item)
+
+    def test_resolve_response(self):
+        model_1 = pydantic.create_model("Model1", field_1=(str, ...))
+        model_2 = pydantic.create_model("Model2", field_2=(int, ...))
+
+        class CustomAPIView(views.APIView):
+            def handler(self, *args: Any, **kwargs: Any) -> Any:
+                """This is a handler method."""
+
+        api_view = CustomAPIView(path="/{id}", methods=["GET"])
+        self.assertEqual(api_view.as_operation()["response"], ninja.constants.NOT_SET)
+
+        api_view = CustomAPIView(path="/{id}", methods=["GET"], response_schema=model_1)
+        self.assertEqual(api_view.as_operation()["response"], {200: model_1})
+
+        api_view = CustomAPIView(path="/{id}", methods=["DELETE"], status_code=204)
+        self.assertEqual(api_view.as_operation()["response"], {204: None})
+
+        api_view = CustomAPIView(
+            path="/{id}", methods=["GET"], responses={200: model_1, 201: model_2}
+        )
+        self.assertEqual(
+            api_view.as_operation()["response"], {200: model_1, 201: model_2}
+        )
+
+        api_view = CustomAPIView(
+            path="/{id}", methods=["GET"], response_schema=model_1, status_code=200
+        )
+        self.assertEqual(api_view.as_operation()["response"], {200: model_1})
+
+        api_view = CustomAPIView(
+            path="/{id}", methods=["DELETE"], status_code=204, responses={404: str}
+        )
+        self.assertEqual(api_view.as_operation()["response"], {204: None, 404: str})
+
+        api_view = CustomAPIView(
+            path="/{id}", methods=["GET"], response_schema=model_1, responses={404: str}
+        )
+        self.assertEqual(api_view.as_operation()["response"], {200: model_1, 404: str})
+
+        api_view = CustomAPIView(
+            path="/{id}",
+            methods=["GET"],
+            response_schema=model_1,
+            status_code=201,
+            responses={404: str},
+        )
+        self.assertEqual(api_view.as_operation()["response"], {201: model_1, 404: str})
