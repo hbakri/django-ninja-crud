@@ -39,11 +39,11 @@ class APIView(abc.ABC):
         response_schema (Any, optional): The type to use for the response.
             It could be any valid Pydantic *field* type. So, it doesn't have to
             be a Pydantic model, it could be other things, like a `list`, `dict`,
-            etc. Defaults to `NOT_SET`.
-        status_code (int, optional): The default status code to be used for the
+            etc. Defaults to `ninja.constants.NOT_SET`.
+        status_code (int | None, optional): The default status code to be used for the
             response. It can alternatively also receive an `IntEnum`, such as Python's
             [`http.HTTPStatus`](https://docs.python.org/3/library/http.html#http.HTTPStatus).
-            Defaults to `200`.
+            Defaults to `None`.
         responses (dict[int, Any] | None, optional): Additional responses that could be
             returned by this *path operation*. The key is the status code, and the value
             is the response schema. Defaults to `None`.
@@ -213,7 +213,7 @@ class APIView(abc.ABC):
         methods: Union[List[str], Set[str]],
         *,
         response_schema: Any = NOT_SET,
-        status_code: int = 200,
+        status_code: Optional[int] = None,
         responses: Optional[Dict[int, Any]] = None,
         name: Optional[str] = None,
         decorators: Optional[List[Decorator]] = None,
@@ -282,6 +282,13 @@ class APIView(abc.ABC):
         router.add_api_operation(**read_department.as_operation())
         ```
         """
+        responses: Dict[int, Any] = {}
+        if self.response_schema is not NOT_SET:
+            responses[self.status_code or 200] = self.response_schema
+        elif self.status_code is not None:
+            responses[self.status_code] = None
+
+        responses.update(self.responses)
         return {
             "path": self.path,
             "methods": self.methods,
@@ -290,9 +297,7 @@ class APIView(abc.ABC):
                 reversed(self.decorators),
                 self.create_standalone_handler(self.handler),
             ),
-            "response": {self.status_code: self.response_schema, **self.responses}
-            if self.response_schema is not NOT_SET
-            else (self.responses or NOT_SET),
+            "response": responses or NOT_SET,
             **self.operation_kwargs,
         }
 
