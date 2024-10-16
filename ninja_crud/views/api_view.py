@@ -36,17 +36,18 @@ class APIView(abc.ABC):
         methods (list[str] | set[str]): The HTTP methods that this view should handle.
             For example, `["GET"]` or `{"GET", "POST"}`. It can also receive StrEnum
             values, such as Python's [`http.HTTPMethod`](https://docs.python.org/3/library/http.html#http.HTTPMethod).
-        response_schema (Any, optional): The type to use for the response.
-            It could be any valid Pydantic *field* type. So, it doesn't have to
-            be a Pydantic model, it could be other things, like a `list`, `dict`,
-            etc. Defaults to `ninja.constants.NOT_SET`.
-        status_code (int | None, optional): The default status code to be used for the
-            response. It can alternatively also receive an `IntEnum`, such as Python's
-            [`http.HTTPStatus`](https://docs.python.org/3/library/http.html#http.HTTPStatus).
-            Defaults to `None`.
+        response_schema (Any, optional): The type to use for the primary response.
+            It can be any valid Pydantic field type, including Pydantic models,
+            primitive types, or complex structures like `list` or `dict`.
+            Defaults to `ninja.constants.NOT_SET`.
+        status_code (int | None, optional): The default status code for the primary
+            response. Can be an integer or an `IntEnum` (e.g., Python's
+            [`http.HTTPStatus`](https://docs.python.org/3/library/http.html#http.HTTPStatus)).
+            If not specified, defaults to `200` when a response_schema is provided.
         responses (dict[int, Any] | None, optional): Additional responses that could be
             returned by this *path operation*. The key is the status code, and the value
-            is the response schema. Defaults to `None`.
+            is the response schema. These are merged with the primary response.
+            Defaults to `None`.
         name (str | None, optional): The name of the view function, used by the OpenAPI
             documentation. If not provided, defaults to the class attribute name if
             the view is part of a viewset. Defaults to `None`.
@@ -59,14 +60,14 @@ class APIView(abc.ABC):
 
     Thanks to the flexibility of `APIView`, you can create a wide variety of views
     with minimal boilerplate code. Here are examples of how you can create simple
-    reusable read views supporting only models with a UUID primary key, in both
+    reusable read views supporting models with a UUID primary key, in both
     synchronous and asynchronous variants:
 
     Synchronous:
     ```python
-    from typing import Optional, Type, Dict, Any
+    from typing import Optional, Type, Any
     from uuid import UUID
-    import pydantic
+
     from django.http import HttpRequest
     from django.db import models
     from ninja.constants import NOT_SET
@@ -80,21 +81,16 @@ class APIView(abc.ABC):
             name: Optional[str] = None,
         ) -> None:
             super().__init__(
-                "/{id}",
+                path="/{id}",
                 methods=["GET"],
                 response_schema=response_schema,
+                status_code=200,
                 name=name,
             )
             self.model = model
 
         def handler(self, request: HttpRequest, id: UUID) -> models.Model:
             return self.model.objects.get(id=id)
-
-        # Optional: Allow model to be inherited from viewset if not provided
-        def as_operation(self) -> Dict[str, Any]:
-            if self.api_viewset_class:
-                self.model = self.model or self.api_viewset_class.model
-            return super().as_operation()
     ```
 
     Asynchronous:
@@ -107,24 +103,19 @@ class APIView(abc.ABC):
             name: Optional[str] = None,
         ) -> None:
             super().__init__(
-                "/async/{id}",
+                path="/async/{id}",
                 methods=["GET"],
                 response_schema=response_schema,
+                status_code=200,
                 name=name,
             )
             self.model = model
 
         async def handler(self, request: HttpRequest, id: UUID) -> models.Model:
             return await self.model.objects.aget(id=id)
-
-        # Optional: Allow model to be inherited from viewset if not provided
-        def as_operation(self) -> Dict[str, Any]:
-            if self.api_viewset_class:
-                self.model = self.model or self.api_viewset_class.model
-            return super().as_operation()
     ```
 
-    You can then use these views with a simple Django model:
+    You can then use these views with a simple Django `models.Model`:
     ```python
     # examples/models.py
     import uuid
@@ -164,7 +155,7 @@ class APIView(abc.ABC):
     ).add_view_to(api)
 
     AsyncReadView(
-        name="read_department_async",
+        name="async_read_department",
         model=Department,
         response_schema=DepartmentOut
     ).add_view_to(api)
@@ -188,18 +179,6 @@ class APIView(abc.ABC):
 
         read_department = ReadView(response_schema=DepartmentOut)
         async_read_department = AsyncReadView(response_schema=DepartmentOut)
-    ```
-
-    Finally, add the API to your URL configuration:
-    ```python
-    # examples/urls.py
-    from django.urls import path
-
-    from examples.views import api as department_api
-
-    urlpatterns = [
-        path("departments/", department_api.urls),
-    ]
     ```
 
     This setup provides both synchronous and asynchronous endpoints for reading
