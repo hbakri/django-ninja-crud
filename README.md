@@ -1,10 +1,10 @@
 # Django Ninja CRUD
 [![Tests](https://github.com/hbakri/django-ninja-crud/actions/workflows/tests.yml/badge.svg)](https://github.com/hbakri/django-ninja-crud/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/hbakri/django-ninja-crud/main.svg?label=coverage&logo=codecov&logoColor=white)](https://codecov.io/gh/hbakri/django-ninja-crud)
-[![PyPI Version](https://img.shields.io/pypi/v/django-ninja-crud?color=g&logo=pypi&logoColor=white)](https://pypi.org/project/django-ninja-crud/)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/django-ninja-crud?logo=esri&logoColor=white)](https://pypistats.org/packages/django-ninja-crud)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/hbakri/django-ninja-crud/blob/main/LICENSE)
-[![MyPy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://github.com/python/mypy)
+[![PyPI - Version](https://img.shields.io/pypi/v/django-ninja-crud?color=g&logo=pypi&logoColor=white)](https://pypi.org/project/django-ninja-crud/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/django-ninja-crud?logo=esri&logoColor=white)](https://pypistats.org/packages/django-ninja-crud)
+[![PyPI - License](https://img.shields.io/pypi/l/django-ninja-crud)](https://github.com/hbakri/django-ninja-crud/blob/main/LICENSE)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 ![Django Ninja CRUD Cover](https://raw.githubusercontent.com/hbakri/django-ninja-crud/main/docs/assets/images/django-ninja-crud-cover.JPG)

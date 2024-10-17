@@ -1,51 +1,60 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[tool.hatch.build.targets.wheel]
+packages = ["src/ninja_crud"]
+
+[project]
 name = "django-ninja-crud"
 version = "0.6.2"
 description = "🧩 Modular, composable API views for scalable Django Ninja projects, with built-in CRUD."
-authors = ["Hicham Bakri <hicham.bakri76@gmail.com>"]
-maintainers = ["Hicham Bakri <hicham.bakri76@gmail.com>"]
 readme = "README.md"
-homepage = "https://github.com/hbakri/django-ninja-crud"
-repository = "https://github.com/hbakri/django-ninja-crud"
-license = "MIT"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [{name = "Hicham Bakri", email = "hicham.bakri76@gmail.com"}]
+maintainers = [{name = "Hicham Bakri", email = "hicham.bakri76@gmail.com"}]
+keywords = ["django", "ninja", "crud", "api", "rest", "framework", "asyncio", "async"]
 classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Development Status :: 4 - Beta",
     "Topic :: Software Development",
     "Topic :: Software Development :: Libraries",
-    "Topic :: Software Development :: Testing",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Framework :: Django",
     "Framework :: Django :: 4.2",
     "Framework :: Django :: 5.0",
     "Framework :: Django :: 5.1",
     "Framework :: AsyncIO",
+    "Framework :: Pydantic",
     "Typing :: Typed",
 ]
-packages = [{ include = "ninja_crud" },]
+dependencies = [
+    "django>=4.2",
+    "django-ninja>=1.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.8,<4.0"
-django = ">=4.2"
-django-ninja = ">=1.0"
+[project.urls]
+Homepage = "https://github.com/hbakri/django-ninja-crud"
+Repository = "https://github.com/hbakri/django-ninja-crud"
+Documentation = "https://django-ninja-crud.readme.io"
 
-[tool.poetry.group.dev.dependencies]
-coverage = "^7.6.0"
-pre-commit = "^3.5.0"
-pydoc-markdown = "^4.8.2"
-pyyaml = "^6.0.1"
-python-frontmatter = "^1.1.0"
-django-rest-testing = "^0.1.0"
+[tool.uv]
+dev-dependencies = [
+    "coverage>=7.6.0,<8.0",
+    "pre-commit>=3.5.0,<4.0",
+    "pydoc-markdown>=4.8.2,<5.0",
+    "pyyaml>=6.0.1,<7.0",
+    "python-frontmatter>=1.1.0,<2.0",
+    "django-rest-testing>=0.1.0,<0.2",
+]
 
 [tool.coverage.report]
 exclude_also = [
