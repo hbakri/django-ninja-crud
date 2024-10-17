@@ -19,7 +19,6 @@ jobs:
       with:
         version: "latest"
         enable-cache: true
-        cache-dependency-glob: "uv.lock"
 
     - name: Set up Python
       uses: actions/setup-python@v5
