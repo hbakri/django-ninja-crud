@@ -50,5 +50,5 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        coverage run -m django test --settings=tests.test_settings
-        coverage report --fail-under=100
+        uv run --no-project coverage run -m django test --settings=tests.test_settings
+        uv run --no-project coverage report --fail-under=100
