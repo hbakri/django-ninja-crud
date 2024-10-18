@@ -42,6 +42,7 @@ jobs:
     - name: Install dependencies
       run: |
         uv venv
+        uv pip freeze
         uv pip install coverage[toml]
         uv pip install django==${{ matrix.django-version }}
         uv pip install django-ninja==${{ matrix.django-ninja-version }}
