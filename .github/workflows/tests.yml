@@ -42,13 +42,13 @@ jobs:
     - name: Install dependencies
       run: |
         uv venv
-        uv pip freeze
         uv pip install coverage[toml]
         uv pip install django==${{ matrix.django-version }}
         uv pip install django-ninja==${{ matrix.django-ninja-version }}
         uv pip install django-rest-testing==${{ matrix.django-rest-testing }}
+        uv pip install -e .
 
     - name: Run tests with coverage
       run: |
-        uv run coverage run -m django test --settings=tests.test_settings
-        uv run coverage report --fail-under=100
+        coverage run -m django test --settings=tests.test_settings
+        coverage report --fail-under=100
