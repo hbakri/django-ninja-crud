@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+import ninja
 from django.core.exceptions import (
     FieldError,
     ObjectDoesNotExist,
@@ -16,6 +17,7 @@ from tests.test_app.views.item_views import router as item_router
 from tests.test_app.views.user_views import router as user_router
 from tests.test_authentication import TokenBearer
 
+print("ninja.__version__", ninja.__version__)
 api = NinjaAPI(urls_namespace="api")
 api.add_router(
     "collections", collection_router, auth=TokenBearer(), tags=["collections"]
