@@ -29,7 +29,7 @@ def convert_docstrings_to_markdown(
         absolute_input_path = os.path.join(os.getcwd(), input_path)
         subprocess.run(
             [
-                "poetry",
+                "uv",
                 "run",
                 "pydoc-markdown",
                 "-m",
