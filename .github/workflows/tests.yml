@@ -29,6 +29,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
@@ -36,14 +41,14 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install coverage[toml]
-        pip install django==${{ matrix.django-version }}
-        pip install django-ninja==${{ matrix.django-ninja-version }}
-        pip install django-rest-testing==${{ matrix.django-rest-testing }}
-        pip install packaging
+        uv venv
+        uv pip install coverage[toml]
+        uv pip install django==${{ matrix.django-version }}
+        uv pip install django-ninja==${{ matrix.django-ninja-version }}
+        uv pip install django-rest-testing==${{ matrix.django-rest-testing }}
+        uv pip install -e .
 
     - name: Run tests with coverage
       run: |
-        python -m coverage run -m django test --settings=tests.test_settings
-        python -m coverage report --fail-under=100
+        uv run --no-project coverage run -m django test --settings=tests.test_settings
+        uv run --no-project coverage report --fail-under=100
