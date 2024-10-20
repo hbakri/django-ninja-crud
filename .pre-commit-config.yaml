@@ -20,7 +20,7 @@ repos:
     rev: v1.11.2
     hooks:
       - id: mypy
-        files: ^ninja_crud/
+        files: ^src/
         args: [--ignore-missing-imports, --strict]
         additional_dependencies: ['types-PyYAML', 'django-stubs', 'pydantic']
 
