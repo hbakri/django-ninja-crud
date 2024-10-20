@@ -1,5 +1,3 @@
-from typing import List
-
 from ninja import Router
 
 from examples import reusable_views
@@ -27,7 +25,7 @@ class DepartmentViewSet(viewsets.APIViewSet):
         get_queryset=lambda request, path_parameters: Employee.objects.filter(
             department_id=path_parameters.id
         ),
-        response_body=List[EmployeeOut],
+        response_body=list[EmployeeOut],
     )
     create_employee = views.CreateView(
         path="/{id}/employees/",

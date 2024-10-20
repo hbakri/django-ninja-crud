@@ -1,5 +1,3 @@
-from typing import List
-
 from django.contrib.auth.models import User
 from ninja import Router
 
@@ -19,7 +17,7 @@ class UserViewSet(APIViewSet):
 
     list_users = views.ListView(
         query_parameters=UserQueryParameters,
-        response_body=List[UserResponseBody],
+        response_body=list[UserResponseBody],
         pagination_class=None,
     )
     create_user = views.CreateView(

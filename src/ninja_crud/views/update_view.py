@@ -1,13 +1,13 @@
 from types import FunctionType
-from typing import Any, Callable, Dict, List, Optional, Type, cast
+from typing import Annotated, Any, Callable, cast
 
 from django.db.models import ManyToManyField, Model
 from django.http import HttpRequest
 from ninja.params.functions import Body, Path
 from pydantic import BaseModel
-from typing_extensions import Annotated
 
 from ninja_crud.views.api_view import APIView
+from ninja_crud.views.types import Decorator, ModelGetter, ModelHook
 
 
 class UpdateView(APIView):
@@ -22,31 +22,30 @@ class UpdateView(APIView):
     Args:
         name (str | None, optional): View function name. Defaults to `None`. If None,
             uses class attribute name in viewsets or "handler" for standalone views.
-        methods (List[str], optional): HTTP methods. Defaults to `["PUT"]`.
+        methods (list[str] | set[str], optional): HTTP methods. Defaults to `["PUT"]`.
         path (str, optional): URL path. Defaults to `"/{id}"`.
         response_status (int, optional): HTTP response status code. Defaults to `200`.
-        response_body (Type | None, optional): Response body type. Defaults to `None`.
+        response_body (Any, optional): Response body type. Defaults to `None`.
             If None, uses the default response body of the viewset.
-        model (Type[django.db.models.Model] | None, optional): Associated Django model.
+        model (type[django.db.models.Model], optional): Associated Django model.
             Inherits from viewset if not provided. Defaults to `None`.
-        path_parameters (Type[BaseModel] | None, optional): Path parameters type.
+        path_parameters (type[BaseModel], optional): Path parameters type.
             Defaults to `None`. If not provided, resolved from the path and model.
-        request_body (Type[BaseModel] | None, optional): The request body type.
-            Defaults to `None`. If None, uses the default request body of the viewset.
-        get_model (Callable | None, optional): Retrieves model instance. Default uses
-            path parameters (e.g., `self.model.objects.get(id=path_parameters.id)`
+        request_body (Any, optional): The request body type. Defaults to `None`.
+            If None, uses the default request body of the viewset.
+        get_model ((HttpRequest, BaseModel | None) -> Model, optional): Retrieves model
+            instance. Default uses path parameters (e.g., `self.model.objects.get(id=path_parameters.id)`
             for `/{id}` path). Useful for customizing model retrieval logic.
             Should have the signature:
-            - `(request: HttpRequest, path_parameters: Optional[BaseModel]) -> Model`
-        pre_save (Callable | None, optional): Pre-save operations on the model instance.
-            Default calls `full_clean` on the instance. Should have the signature:
-            - `(request: HttpRequest, instance: Model) -> None`
-        post_save (Callable | None, optional): Post-save operations on the model instance.
-            Default does nothing. Should have the signature:
-            - `(request: HttpRequest, instance: Model) -> None`
-        decorators (List[Callable] | None, optional): View function decorators
+            - `(request: HttpRequest, path_parameters: BaseModel | None) -> Model`
+        pre_save ((HttpRequest, Model) -> None, optional): Pre-save operations on the
+            model instance. Does a [full_clean](https://docs.djangoproject.com/en/stable/ref/models/instances/#django.db.models.Model.full_clean)
+            by default.
+        post_save ((HttpRequest, Model) -> None, optional): Post-save operations on the
+            model instance. Does nothing by default.
+        decorators (list[Callable], optional): View function decorators
             (applied in reverse order). Defaults to `None`.
-        operation_kwargs (Dict[str, Any] | None, optional): Additional operation
+        operation_kwargs (dict[str, Any], optional): Additional operation
             keyword arguments. Defaults to `None`.
 
     Example:
@@ -87,21 +86,19 @@ class UpdateView(APIView):
 
     def __init__(
         self,
-        name: Optional[str] = None,
-        methods: Optional[List[str]] = None,
+        name: str | None = None,
+        methods: list[str] | set[str] | None = None,
         path: str = "/{id}",
         response_status: int = 200,
-        response_body: Optional[Type[Any]] = None,
-        model: Optional[Type[Model]] = None,
-        path_parameters: Optional[Type[BaseModel]] = None,
-        request_body: Optional[Type[BaseModel]] = None,
-        get_model: Optional[Callable[[HttpRequest, Optional[BaseModel]], Model]] = None,
-        pre_save: Optional[Callable[[HttpRequest, Model], None]] = None,
-        post_save: Optional[Callable[[HttpRequest, Model], None]] = None,
-        decorators: Optional[
-            List[Callable[[Callable[..., Any]], Callable[..., Any]]]
-        ] = None,
-        operation_kwargs: Optional[Dict[str, Any]] = None,
+        response_body: Any = None,
+        model: type[Model] | None = None,
+        path_parameters: type[BaseModel] | None = None,
+        request_body: type[BaseModel] | None = None,
+        get_model: ModelGetter | None = None,
+        pre_save: ModelHook | None = None,
+        post_save: ModelHook | None = None,
+        decorators: list[Decorator] | None = None,
+        operation_kwargs: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             name=name,
@@ -114,7 +111,7 @@ class UpdateView(APIView):
         )
         self.model = model
         self.decorators.append(self._update_handler_annotations)
-        self.path_parameters = path_parameters or self.resolve_path_parameters(model)
+        self.path_parameters = path_parameters
         self.request_body = request_body
         self.get_model = get_model or self._default_get_model
         self.pre_save = pre_save or (lambda request, instance: instance.full_clean())
@@ -123,7 +120,7 @@ class UpdateView(APIView):
     def handler(
         self,
         request: HttpRequest,
-        path_parameters: Optional[BaseModel],
+        path_parameters: BaseModel | None,
         request_body: BaseModel,
     ) -> Model:
         instance = self.get_model(request, path_parameters)
@@ -150,18 +147,15 @@ class UpdateView(APIView):
         return handler
 
     def _default_get_model(
-        self, request: HttpRequest, path_parameters: Optional[BaseModel]
+        self, request: HttpRequest, path_parameters: BaseModel | None
     ) -> Model:
-        return cast(Type[Model], self.model).objects.get(
+        return cast(type[Model], self.model).objects.get(
             **(path_parameters.model_dump() if path_parameters else {})
         )
 
-    def as_operation(self) -> Dict[str, Any]:
+    def as_operation(self) -> dict[str, Any]:
         if self.api_viewset_class:
             self.model = self.model or self.api_viewset_class.model
-            self.path_parameters = self.path_parameters or self.resolve_path_parameters(
-                self.model
-            )
             self.request_body = (
                 self.request_body or self.api_viewset_class.default_request_body
             )
@@ -174,5 +168,7 @@ class UpdateView(APIView):
                 f"Unable to determine model for view {self.name}. "
                 "Please set a model either on the view or on its associated viewset."
             )
-
+        self.path_parameters = self.path_parameters or self.resolve_path_parameters(
+            self.model
+        )
         return super().as_operation()

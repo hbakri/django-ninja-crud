@@ -1,5 +1,4 @@
 from functools import wraps
-from typing import List
 
 from django.core.exceptions import PermissionDenied
 from ninja import Router
@@ -51,7 +50,7 @@ class ItemViewSet(APIViewSet):
         get_queryset=lambda request, path_parameters: Tag.objects.filter(
             items__id=path_parameters.id
         ),
-        response_body=List[TagOut],
+        response_body=list[TagOut],
     )
 
 

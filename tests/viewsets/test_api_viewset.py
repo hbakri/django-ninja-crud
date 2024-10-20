@@ -1,4 +1,3 @@
-from typing import List
 from unittest import mock
 
 import ninja
@@ -43,7 +42,7 @@ class TestAPIViewSet(TestCase):
                     path="/",
                     methods=["GET"],
                     view_func=mock.ANY,
-                    response={200: List[self.CollectionViewSet.default_response_body]},
+                    response={200: list[self.CollectionViewSet.default_response_body]},
                 ),
                 mock.call(
                     path="/",
@@ -66,7 +65,7 @@ class TestAPIViewSet(TestCase):
                     path="/",
                     methods=["GET"],
                     view_func=mock.ANY,
-                    response={200: List[self.CollectionViewSet.default_response_body]},
+                    response={200: list[self.CollectionViewSet.default_response_body]},
                 ),
                 mock.call(
                     path="/",
@@ -97,7 +96,7 @@ class TestAPIViewSet(TestCase):
                     path="/",
                     methods=["GET"],
                     view_func=mock.ANY,
-                    response={200: List[CollectionViewSet.default_response_body]},
+                    response={200: list[CollectionViewSet.default_response_body]},
                 ),
                 mock.call(
                     path="/",
@@ -127,7 +126,7 @@ class TestAPIViewSet(TestCase):
                     path="/",
                     methods=["GET"],
                     view_func=mock.ANY,
-                    response={200: List[CollectionViewSet.default_response_body]},
+                    response={200: list[CollectionViewSet.default_response_body]},
                 ),
                 mock.call(
                     path="/",

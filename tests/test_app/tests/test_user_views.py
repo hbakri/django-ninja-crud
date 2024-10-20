@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from typing import List
 
 from rest_testing import APITestCase, APIViewTestScenario
 
@@ -15,7 +14,7 @@ class TestUserViewSet(APITestCase, BaseTestCase):
             scenarios=[
                 APIViewTestScenario(
                     expected_response_status=HTTPStatus.OK,
-                    expected_response_body_type=List[UserResponseBody],
+                    expected_response_body_type=list[UserResponseBody],
                 ),
             ],
         )

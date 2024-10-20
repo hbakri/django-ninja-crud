@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Dict
+from typing import Any
 from unittest import mock
 
 import django.core.exceptions
@@ -19,7 +19,7 @@ class TestAPIView(TestCase):
             def handler(self, *args: Any, **kwargs: Any) -> Any:
                 """This is a handler method."""
 
-            def as_operation(self) -> Dict[str, Any]:
+            def as_operation(self) -> dict[str, Any]:
                 if self.api_viewset_class and not self.model:
                     self.model = self.api_viewset_class.model
                 return super().as_operation()

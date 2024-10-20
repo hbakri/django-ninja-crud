@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Optional, Type, Union
+from typing import Any
 
 import django.db.models
 import ninja
@@ -21,18 +21,18 @@ class APIViewSet:
     attribute to the `NinjaAPI` or `Router` instance, respectively, or call the
     `add_views_to` method manually after the class is defined.
 
-    Attributes:
-        api (Optional[ninja.NinjaAPI], optional): The `NinjaAPI` instance to which
-            views are registered if provided. Defaults to None.
-        router (Optional[ninja.Router], optional): The `Router` instance to which
-            views are registered if provided. Defaults to None.
-        model (Optional[Type[django.db.models.Model]], optional): The Django model
-            associated with the viewset. This can be used to automatically resolve
-            path parameters and other model-specific configurations. Defaults to None.
-        default_request_body (Optional[Type[pydantic.BaseModel]], optional): The
-            default request body schema used for views in the viewset. Defaults to None.
-        default_response_body (Optional[Type[Any]], optional): The default response
+    Class Args:
+        api (ninja.NinjaAPI, optional): The `NinjaAPI` instance to which views are
+            registered if provided. Defaults to None.
+        router (ninja.Router, optional): The `Router` instance to which views are
+            registered if provided. Defaults to None.
+        model (type[django.db.models.Model], optional): The Django model associated
+            with the viewset. This can be used to automatically resolve path parameters
+            and other model-specific configurations. Defaults to None.
+        default_request_body (type[pydantic.BaseModel], optional): The default request
             body schema used for views in the viewset. Defaults to None.
+        default_response_body (Any, optional): The default response body schema used
+            for views in the viewset. Defaults to None.
 
     Example:
     ```python
@@ -50,7 +50,7 @@ class APIViewSet:
         router = router
         model = Department
 
-        list_departments = views.ListView(response_body=List[DepartmentOut])
+        list_departments = views.ListView(response_body=list[DepartmentOut])
         create_department = views.CreateView(
             request_body=DepartmentIn,
             response_body=DepartmentOut,
@@ -83,12 +83,12 @@ class APIViewSet:
     ```
     """
 
-    api: Optional[ninja.NinjaAPI] = None
-    router: Optional[ninja.Router] = None
+    api: ninja.NinjaAPI | None = None
+    router: ninja.Router | None = None
 
-    model: Optional[Type[django.db.models.Model]] = None
-    default_request_body: Optional[Type[pydantic.BaseModel]] = None
-    default_response_body: Optional[Type[Any]] = None
+    model: type[django.db.models.Model] | None = None
+    default_request_body: type[pydantic.BaseModel] | None = None
+    default_response_body: Any = None
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -99,7 +99,7 @@ class APIViewSet:
             cls.add_views_to(cls.router)
 
     @classmethod
-    def add_views_to(cls, api_or_router: Union[ninja.NinjaAPI, ninja.Router]) -> None:
+    def add_views_to(cls, api_or_router: ninja.NinjaAPI | ninja.Router) -> None:
         """
         Automatically registers all API views defined as class attributes with the
         provided `NinjaAPI` or `Router` instance.

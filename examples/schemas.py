@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Generic, List, Optional, TypeVar
+from typing import Generic, Optional, TypeVar
 from uuid import UUID
 
 from ninja import Schema
@@ -32,5 +32,5 @@ T = TypeVar("T")
 
 
 class Paged(Schema, Generic[T]):
-    items: List[T]
+    items: list[T]
     count: int
