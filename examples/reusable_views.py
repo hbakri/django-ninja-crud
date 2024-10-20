@@ -1,4 +1,4 @@
-from typing import Any, Optional, Type
+from typing import Any, Optional
 from uuid import UUID
 
 from django.db import models
@@ -10,7 +10,7 @@ from ninja_crud.views import APIView
 
 class ReusableReadView(APIView):
     def __init__(
-        self, response_schema: Any = NOT_SET, model: Optional[Type[models.Model]] = None
+        self, response_schema: Any = NOT_SET, model: Optional[type[models.Model]] = None
     ) -> None:
         super().__init__(
             "/{id}/reusable", methods=["GET"], response_schema=response_schema
@@ -23,7 +23,7 @@ class ReusableReadView(APIView):
 
 class ReusableAsyncReadView(APIView):
     def __init__(
-        self, response_schema: Any = NOT_SET, model: Optional[Type[models.Model]] = None
+        self, response_schema: Any = NOT_SET, model: Optional[type[models.Model]] = None
     ) -> None:
         super().__init__(
             "/{id}/reusable/async", methods=["GET"], response_schema=response_schema

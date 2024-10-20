@@ -1,5 +1,3 @@
-from typing import List
-
 from django.contrib.auth.models import User
 from django.db.models import QuerySet
 from django.http import HttpRequest
@@ -22,7 +20,7 @@ class TestListView(TestCase):
         self.item1 = Item.objects.create(name="item1", collection=self.collection)
         self.item2 = Item.objects.create(name="item2", collection=self.collection)
         self.list_view = views.ListView(
-            response_body=List[ItemOut],
+            response_body=list[ItemOut],
             model=Item,
         )
 
@@ -83,4 +81,4 @@ class TestListView(TestCase):
         list_view.api_viewset_class = ItemViewSet
         list_view.as_operation()
         self.assertEqual(list_view.model, Item)
-        self.assertEqual(list_view.response_schema, List[ItemOut])
+        self.assertEqual(list_view.response_schema, list[ItemOut])

@@ -1,4 +1,4 @@
-from typing import Generic, List, Optional, TypeVar
+from typing import Generic, Optional, TypeVar
 from uuid import UUID
 
 from django.db.models import Q, QuerySet
@@ -15,7 +15,7 @@ class Representable(Schema):
 
 
 class OrderByFilter(FilterSchema):
-    order_by: Optional[List[str]] = None
+    order_by: Optional[list[str]] = None
 
     def filter_order_by(self, value) -> Q:
         return Q()
@@ -59,7 +59,7 @@ class UserRequestBody(Schema):
     username: str
     email: str
     password: str
-    groups: Optional[List[int]] = None
+    groups: Optional[list[int]] = None
 
 
 class UserResponseBody(Schema):
@@ -76,5 +76,5 @@ T = TypeVar("T")
 
 
 class Paged(Schema, Generic[T]):
-    items: List[T]
+    items: list[T]
     count: int
