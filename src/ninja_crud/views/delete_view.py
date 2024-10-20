@@ -1,5 +1,5 @@
 from types import FunctionType
-from typing import Annotated, Any, Callable, cast
+from typing import Annotated, Any, Callable, Optional, Union, cast
 
 from django.db.models import Model
 from django.http import HttpRequest
@@ -35,7 +35,7 @@ class DeleteView(APIView):
             instance. Default uses path parameters (e.g., `self.model.objects.get(id=path_parameters.id)`
             for `/{id}` path). Useful for customizing model retrieval logic.
             Should have the signature:
-            - `(request: HttpRequest, path_parameters: BaseModel | None) -> Model`
+            - `(request: HttpRequest, path_parameters: Optional[BaseModel]) -> Model`
         pre_delete ((HttpRequest, Model) -> None, optional): A callable to perform
             pre-delete operations on the model instance. Does nothing by default.
             Useful for additional operations before deleting the instance.
@@ -73,18 +73,18 @@ class DeleteView(APIView):
 
     def __init__(
         self,
-        name: str | None = None,
-        methods: list[str] | set[str] | None = None,
+        name: Optional[str] = None,
+        methods: Union[list[str], set[str], None] = None,
         path: str = "/{id}",
         response_status: int = 204,
         response_body: Any = None,
-        model: type[Model] | None = None,
-        path_parameters: type[BaseModel] | None = None,
-        get_model: ModelGetter | None = None,
-        pre_delete: ModelHook | None = None,
-        post_delete: ModelHook | None = None,
-        decorators: list[Decorator] | None = None,
-        operation_kwargs: dict[str, Any] | None = None,
+        model: Optional[type[Model]] = None,
+        path_parameters: Optional[type[BaseModel]] = None,
+        get_model: Optional[ModelGetter] = None,
+        pre_delete: Optional[ModelHook] = None,
+        post_delete: Optional[ModelHook] = None,
+        decorators: Optional[list[Decorator]] = None,
+        operation_kwargs: Optional[dict[str, Any]] = None,
     ) -> None:
         super().__init__(
             name=name,
@@ -105,7 +105,7 @@ class DeleteView(APIView):
     def handler(
         self,
         request: HttpRequest,
-        path_parameters: BaseModel | None,
+        path_parameters: Optional[BaseModel],
     ) -> None:
         instance = self.get_model(request, path_parameters)
         self.pre_delete(request, instance)
@@ -122,7 +122,7 @@ class DeleteView(APIView):
         return handler
 
     def _default_get_model(
-        self, request: HttpRequest, path_parameters: BaseModel | None
+        self, request: HttpRequest, path_parameters: Optional[BaseModel]
     ) -> Model:
         return cast(type[Model], self.model).objects.get(
             **(path_parameters.model_dump() if path_parameters else {})

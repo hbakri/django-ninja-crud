@@ -2,7 +2,7 @@ import abc
 import asyncio
 import functools
 import typing
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 import django.db.models
 import ninja
@@ -78,7 +78,7 @@ class APIView(abc.ABC):
             self,
             response_schema: Any = NOT_SET,
             model: type[models.Model] | None = None,
-            name: str | None = None,
+            name: Optional[str] = None,
         ) -> None:
             super().__init__(
                 path="/{id}",
@@ -100,7 +100,7 @@ class APIView(abc.ABC):
             self,
             response_schema: Any = NOT_SET,
             model: type[models.Model] | None = None,
-            name: str | None = None,
+            name: Optional[str] = None,
         ) -> None:
             super().__init__(
                 path="/async/{id}",
@@ -189,14 +189,14 @@ class APIView(abc.ABC):
     def __init__(
         self,
         path: str,
-        methods: list[str] | set[str],
+        methods: Union[list[str], set[str]],
         *,
         response_schema: Any = NOT_SET,
-        status_code: int | None = None,
-        responses: dict[int, Any] | None = None,
-        name: str | None = None,
-        decorators: list[Decorator] | None = None,
-        operation_kwargs: dict[str, Any] | None = None,
+        status_code: Optional[int] = None,
+        responses: Optional[dict[int, Any]] = None,
+        name: Optional[str] = None,
+        decorators: Optional[list[Decorator]] = None,
+        operation_kwargs: Optional[dict[str, Any]] = None,
     ) -> None:
         self.path = path
         self.methods = methods
@@ -206,9 +206,9 @@ class APIView(abc.ABC):
         self.name = name
         self.decorators = decorators or []
         self.operation_kwargs = operation_kwargs or {}
-        self._api_viewset_class: type[APIViewSet] | None = None
+        self._api_viewset_class: Optional[type[APIViewSet]] = None
 
-    def add_view_to(self, api_or_router: ninja.NinjaAPI | ninja.Router) -> None:
+    def add_view_to(self, api_or_router: Union[ninja.NinjaAPI, ninja.Router]) -> None:
         """
         Add the view to an API or router. This method is here for convenience and
         allows you to add the view to an API or router without having to manually
@@ -328,7 +328,7 @@ class APIView(abc.ABC):
         return standalone_handler
 
     @property
-    def api_viewset_class(self) -> type["APIViewSet"] | None:
+    def api_viewset_class(self) -> Optional[type["APIViewSet"]]:
         return self._api_viewset_class
 
     @api_viewset_class.setter
@@ -342,7 +342,7 @@ class APIView(abc.ABC):
 
     def resolve_path_parameters(
         self, model: type[django.db.models.Model]
-    ) -> type[pydantic.BaseModel] | None:
+    ) -> Optional[type[pydantic.BaseModel]]:
         """
         Resolve path parameters to a pydantic model based on the view's path and model.
 

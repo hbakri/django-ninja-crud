@@ -1,5 +1,5 @@
 import inspect
-from typing import Any
+from typing import Any, Optional, Union
 
 import django.db.models
 import ninja
@@ -83,11 +83,11 @@ class APIViewSet:
     ```
     """
 
-    api: ninja.NinjaAPI | None = None
-    router: ninja.Router | None = None
+    api: Optional[ninja.NinjaAPI] = None
+    router: Optional[ninja.Router] = None
 
-    model: type[django.db.models.Model] | None = None
-    default_request_body: type[pydantic.BaseModel] | None = None
+    model: Optional[type[django.db.models.Model]] = None
+    default_request_body: Optional[type[pydantic.BaseModel]] = None
     default_response_body: Any = None
 
     def __init_subclass__(cls) -> None:
@@ -99,7 +99,7 @@ class APIViewSet:
             cls.add_views_to(cls.router)
 
     @classmethod
-    def add_views_to(cls, api_or_router: ninja.NinjaAPI | ninja.Router) -> None:
+    def add_views_to(cls, api_or_router: Union[ninja.NinjaAPI, ninja.Router]) -> None:
         """
         Automatically registers all API views defined as class attributes with the
         provided `NinjaAPI` or `Router` instance.
