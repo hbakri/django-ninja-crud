@@ -10,14 +10,11 @@ Decorator = Callable[[Callable[..., Any]], Callable[..., Any]]
 ModelHook = Callable[[HttpRequest, Model], None]
 AsyncModelHook = Callable[[HttpRequest, Model], Awaitable[None]]
 
-PathParameters = BaseModel | None
-QueryParameters = BaseModel | None
+ModelGetter = Callable[[HttpRequest, BaseModel | None], Model]
+AsyncModelGetter = Callable[[HttpRequest, BaseModel | None], Awaitable[Model]]
 
-ModelGetter = Callable[[HttpRequest, PathParameters], Model]
-AsyncModelGetter = Callable[[HttpRequest, PathParameters], Awaitable[Model]]
-
-QuerySetGetter = Callable[[HttpRequest, PathParameters], QuerySet[Model]]
-QuerySetFilter = Callable[[QuerySet[Model], QueryParameters], QuerySet[Model]]
+QuerySetGetter = Callable[[HttpRequest, BaseModel | None], QuerySet[Model]]
 AsyncQuerySetGetter = Callable[
-    [HttpRequest, PathParameters], Awaitable[QuerySet[Model]]
+    [HttpRequest, BaseModel | None], Awaitable[QuerySet[Model]]
 ]
+QuerySetFilter = Callable[[QuerySet[Model], BaseModel | None], QuerySet[Model]]
