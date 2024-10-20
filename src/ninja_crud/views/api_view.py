@@ -384,9 +384,6 @@ class APIView(abc.ABC):
             Prefer simple types (strings, integers, UUIDs) for path parameters to
             ensure proper URL formatting and web standard compatibility.
         """
-        if model is None:
-            return None
-
         path_parameters_names = ninja.signature.utils.get_path_param_names(self.path)
         if not path_parameters_names:
             return None
