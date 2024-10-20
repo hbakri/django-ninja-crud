@@ -1,8 +1,7 @@
 import abc
 import asyncio
 import functools
-import typing
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union, get_args, get_origin
 
 import django.db.models
 import ninja
@@ -393,8 +392,8 @@ class APIView(abc.ABC):
             model_field = model._meta.get_field(field_name)
             schema_field = ninja.orm.fields.get_schema_field(field=model_field)[0]
             schema_fields[field_name] = (
-                typing.get_args(schema_field)[0]
-                if typing.get_origin(schema_field) is typing.Union
+                get_args(schema_field)[0]
+                if get_origin(schema_field) is Union
                 else schema_field,
                 ...,
             )
