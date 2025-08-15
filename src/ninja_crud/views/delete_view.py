@@ -75,7 +75,7 @@ class DeleteView(APIView):
         self,
         name: Optional[str] = None,
         methods: Union[list[str], set[str], None] = None,
-        path: str = "/{id}",
+        path: str = "/{int:id}",
         response_status: int = 204,
         response_body: Any = None,
         model: Optional[type[Model]] = None,
