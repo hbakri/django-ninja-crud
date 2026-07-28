@@ -32,7 +32,7 @@ class TestDeleteView(TestCase):
     def test_default_get_model_without_model(self):
         delete_view = views.DeleteView()
         with self.assertRaises(ValueError):
-            delete_view.as_operation()
+            delete_view._prepare_operation()
 
     def test_default_get_model(self):
         path_parameters = self.PathParameters(id=self.item.id)
@@ -45,7 +45,7 @@ class TestDeleteView(TestCase):
 
     def test_default_view_function(self):
         path_parameters = self.PathParameters(id=self.item.id)
-        self.delete_view.handler(HttpRequest(), path_parameters)
+        self.delete_view.endpoint(HttpRequest(), path_parameters)
 
         with self.assertRaises(ObjectDoesNotExist):
             Item.objects.get(id=self.item.id)
@@ -59,6 +59,6 @@ class TestDeleteView(TestCase):
             default_response_body = ItemOut
 
         delete_view.api_viewset_class = ItemViewSet
-        delete_view.as_operation()
+        delete_view._prepare_operation()
         self.assertEqual(delete_view.model, Item)
         self.assertEqual(delete_view.response_schema, None)

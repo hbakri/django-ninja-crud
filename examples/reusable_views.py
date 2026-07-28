@@ -12,12 +12,10 @@ class ReusableReadView(APIView):
     def __init__(
         self, response_schema: Any = NOT_SET, model: Optional[type[models.Model]] = None
     ) -> None:
-        super().__init__(
-            "/{id}/reusable", methods=["GET"], response_schema=response_schema
-        )
+        super().__init__(["GET"], "/{id}/reusable", response_schema=response_schema)
         self.model = model
 
-    def handler(self, request: HttpRequest, id: UUID) -> models.Model:
+    def endpoint(self, request: HttpRequest, id: UUID) -> models.Model:
         return self.model.objects.get(id=id)
 
 
@@ -26,9 +24,9 @@ class ReusableAsyncReadView(APIView):
         self, response_schema: Any = NOT_SET, model: Optional[type[models.Model]] = None
     ) -> None:
         super().__init__(
-            "/{id}/reusable/async", methods=["GET"], response_schema=response_schema
+            ["GET"], "/{id}/reusable/async", response_schema=response_schema
         )
         self.model = model
 
-    async def handler(self, request: HttpRequest, id: UUID) -> models.Model:
+    async def endpoint(self, request: HttpRequest, id: UUID) -> models.Model:
         return await self.model.objects.aget(id=id)

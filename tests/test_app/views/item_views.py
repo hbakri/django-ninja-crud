@@ -54,4 +54,4 @@ class ItemViewSet(APIViewSet):
     )
 
 
-ItemViewSet.add_views_to(router)
+ItemViewSet().register(router)

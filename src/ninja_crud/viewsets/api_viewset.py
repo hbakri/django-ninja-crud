@@ -1,124 +1,40 @@
-import inspect
-from typing import Any, Optional, Union
+from typing import ClassVar, Optional, Union
 
-import django.db.models
 import ninja
-import pydantic
 
-from ninja_crud import views
+from ninja_crud.views import APIView
 
 
 class APIViewSet:
     """
-    Declarative class for grouping related API views together in Django Ninja.
+    Groups related API views and handles their registration in Django Ninja.
 
-    This class simplifies the process of registering multiple API views for a single
-    model by allowing you to define them as class attributes. It provides a framework
-    for grouping related views together and automatically registers these views with
-    the API or router when the class is defined.
+    APIViewSet provides a declarative way to define and organize related API views.
+    Views can be defined as class attributes and are automatically registered with
+    the specified router. The viewset supports nested viewsets, inheritance of
+    attributes from parent viewsets, and flexible view configuration.
 
-    To register views with an API or router, you can either set the `api` or `router`
-    attribute to the `NinjaAPI` or `Router` instance, respectively, or call the
-    `add_views_to` method manually after the class is defined.
-
-    Class Args:
-        api (ninja.NinjaAPI, optional): The `NinjaAPI` instance to which views are
-            registered if provided. Defaults to None.
-        router (ninja.Router, optional): The `Router` instance to which views are
-            registered if provided. Defaults to None.
-        model (type[django.db.models.Model], optional): The Django model associated
-            with the viewset. This can be used to automatically resolve path parameters
-            and other model-specific configurations. Defaults to None.
-        default_request_body (type[pydantic.BaseModel], optional): The default request
-            body schema used for views in the viewset. Defaults to None.
-        default_response_body (Any, optional): The default response body schema used
-            for views in the viewset. Defaults to None.
-
-    Example:
-    ```python
-    from ninja import Router
-    from ninja_crud import views, viewsets
-
-    from examples.models import Department
-    from examples.schemas import DepartmentIn, DepartmentOut
-
-    router = Router()
-
-
-    # Example usage with a `Router` instance as class attribute:
-    class DepartmentViewSet(viewsets.APIViewSet):
-        router = router
-        model = Department
-
-        list_departments = views.ListView(response_body=list[DepartmentOut])
-        create_department = views.CreateView(
-            request_body=DepartmentIn,
-            response_body=DepartmentOut,
-        )
-        read_department = views.ReadView(response_body=DepartmentOut)
-        update_department = views.UpdateView(
-            request_body=DepartmentIn,
-            response_body=DepartmentOut,
-        )
-        delete_department = views.DeleteView()
-
-
-    # Other example usage with refactored request and response bodies:
-    class DepartmentViewSet(viewsets.APIViewSet):
-        router = router
-        model = Department
-        default_request_body = DepartmentIn
-        default_response_body = DepartmentOut
-
-        list_departments = views.ListView()
-        create_department = views.CreateView()
-        read_department = views.ReadView()
-        update_department = views.UpdateView()
-        delete_department = views.DeleteView()
-
-
-    # If you don't want to use the class attribute approach, you can call the
-    # `add_views_to` method manually after the class is defined:
-    DepartmentViewSet.add_views_to(router)
-    ```
+    Class Attributes:
+        router (Union[ninja.NinjaAPI, ninja.Router], optional): Router for view
+            registration. Views register automatically if provided.
+        parent (APIViewSet, optional): Parent viewset for attribute inheritance.
     """
 
-    api: Optional[ninja.NinjaAPI] = None
-    router: Optional[ninja.Router] = None
-
-    model: Optional[type[django.db.models.Model]] = None
-    default_request_body: Optional[type[pydantic.BaseModel]] = None
-    default_response_body: Any = None
+    router: ClassVar[Optional[Union[ninja.NinjaAPI, ninja.Router]]] = None
+    parent: Optional["APIViewSet"] = None
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        if hasattr(cls, "api") and cls.api is not None:
-            cls.add_views_to(cls.api)
-        elif hasattr(cls, "router") and cls.router is not None:
-            cls.add_views_to(cls.router)
+        if cls.router:
+            cls().register(cls.router)
 
-    @classmethod
-    def add_views_to(cls, api_or_router: Union[ninja.NinjaAPI, ninja.Router]) -> None:
-        """
-        Automatically registers all API views defined as class attributes with the
-        provided `NinjaAPI` or `Router` instance.
-
-        This method iterates over all class attributes and registers any that are
-        instances of `APIView` with the provided `NinjaAPI` or `Router` instance, by
-        calling the `add_view_to` method on each view.
-        """
-        view_members = {
-            name: member
-            for name, member in inspect.getmembers(cls)
-            if isinstance(member, views.APIView)
-        }
-
-        ordered_view_members = sorted(
-            view_members.items(),
-            key=lambda view_member: list(cls.__dict__).index(view_member[0]),
-        )
-        for name, view in ordered_view_members:
-            view.name = view.name or name
-            view.api_viewset_class = cls
-            view.add_view_to(api_or_router)
+    def register(self, router: Union[ninja.NinjaAPI, ninja.Router]) -> None:
+        for name, attribute in (vars(self.__class__) | vars(self)).items():
+            if isinstance(attribute, APIView):
+                attribute.operation_name = attribute.operation_name or name
+                attribute.parent = self
+                attribute.register(router)
+            elif isinstance(attribute, APIViewSet) and name != "parent":
+                attribute.parent = self
+                attribute.register(router)

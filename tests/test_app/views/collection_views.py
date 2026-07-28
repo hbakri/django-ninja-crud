@@ -75,4 +75,4 @@ class CollectionViewSet(APIViewSet):
     )
 
 
-CollectionViewSet.add_views_to(router)
+CollectionViewSet().register(router)

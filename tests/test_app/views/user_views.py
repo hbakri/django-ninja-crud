@@ -30,4 +30,4 @@ class UserViewSet(APIViewSet):
     delete_user = views.DeleteView()
 
 
-UserViewSet.add_views_to(router)
+UserViewSet().register(router)

@@ -1,108 +1,89 @@
-from types import FunctionType
-from typing import Annotated, Any, Callable, Optional, Union, cast
+from typing import Annotated, Any, Optional, Union, cast
 
-from django.db.models import Model
+from django.db import models
 from django.http import HttpRequest
+from ninja import NinjaAPI, Router
+from ninja.constants import NOT_SET
 from ninja.params.functions import Path
 from pydantic import BaseModel
 
+from ninja_crud.views import utils
 from ninja_crud.views.api_view import APIView
 from ninja_crud.views.types import Decorator, ModelGetter, ModelHook
 
 
 class DeleteView(APIView):
-    """
-    Declarative class-based view for deleting a model instance in Django Ninja.
-
-    This class provides a standard implementation for a delete view, which retrieves
-    a single model instance based on the path parameters and deletes it. It is
-    intended to be used in viewsets or as standalone views to simplify the creation
-    of delete endpoints.
-
-    Args:
-        name (str | None, optional): View function name. Defaults to `None`. If None,
-            uses class attribute name in viewsets or "handler" for standalone views.
-        methods (list[str] | set[str], optional): HTTP methods. Defaults to `["DELETE"]`.
-        path (str, optional): URL path. Defaults to `"/{id}"`.
-        response_status (int, optional): HTTP response status code. Defaults to `204`.
-        response_body (Any, optional): Response body type. Defaults to `None`.
-            If None, uses the default response body of the viewset.
-        model (type[django.db.models.Model], optional): Associated Django model.
-            Inherits from viewset if not provided. Defaults to `None`.
-        path_parameters (type[BaseModel], optional): Path parameters type.
-            Defaults to `None`. If not provided, resolved from the path and model.
-        get_model ((HttpRequest, BaseModel | None) -> Model, optional): Retrieves model
-            instance. Default uses path parameters (e.g., `self.model.objects.get(id=path_parameters.id)`
-            for `/{id}` path). Useful for customizing model retrieval logic.
-            Should have the signature:
-            - `(request: HttpRequest, path_parameters: Optional[BaseModel]) -> Model`
-        pre_delete ((HttpRequest, Model) -> None, optional): A callable to perform
-            pre-delete operations on the model instance. Does nothing by default.
-            Useful for additional operations before deleting the instance.
-        post_delete ((HttpRequest, Model) -> None, optional): A callable to perform
-            post-delete operations on the model instance. By default, it does nothing.
-            Useful for additional operations after deleting the instance.
-        decorators (list[Callable], optional): View function decorators
-            (applied in reverse order). Defaults to `None`.
-        operation_kwargs (dict[str, Any], optional): Additional operation
-            keyword arguments. Defaults to `None`.
-
-    Example:
-    ```python
-    from ninja import NinjaAPI
-    from ninja_crud import views, viewsets
-
-    from examples.models import Department
-
-    api = NinjaAPI()
-
-    # Usage as a class attribute in a viewset:
-    class DepartmentViewSet(viewsets.APIViewSet):
-        api = api
-        model = Department
-
-        delete_department = views.DeleteView()
-
-    # Usage as a standalone view:
-    views.DeleteView(
-        name="delete_department",
-        model=Department
-    ).add_view_to(api)
-    ```
-    """
-
     def __init__(
         self,
-        name: Optional[str] = None,
-        methods: Union[list[str], set[str], None] = None,
+        *,
+        # Path configuration
         path: str = "/{id}",
-        response_status: int = 204,
-        response_body: Any = None,
-        model: Optional[type[Model]] = None,
-        path_parameters: Optional[type[BaseModel]] = None,
+        path_schema: Optional[type[BaseModel]] = None,
+        methods: Optional[list[str]] = None,
+        # Model configuration
+        model: Optional[type[models.Model]] = None,
         get_model: Optional[ModelGetter] = None,
+        # Operation hooks
         pre_delete: Optional[ModelHook] = None,
         post_delete: Optional[ModelHook] = None,
+        # Response configuration
+        response_schema: Any = NOT_SET,
+        status_code: Optional[int] = None,
+        responses: Optional[dict[int, Any]] = None,
+        response_schema_by_alias: bool = False,
+        response_schema_exclude_unset: bool = False,
+        response_schema_exclude_defaults: bool = False,
+        response_schema_exclude_none: bool = False,
+        # Security and performance
+        auth: Any = NOT_SET,
+        throttle: Any = NOT_SET,
         decorators: Optional[list[Decorator]] = None,
-        operation_kwargs: Optional[dict[str, Any]] = None,
+        # URL configuration
+        url_name: Optional[str] = None,
+        # OpenAPI documentation
+        operation_name: Optional[str] = None,
+        operation_id: Optional[str] = None,
+        summary: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[list[str]] = None,
+        deprecated: Optional[bool] = None,
+        include_in_schema: bool = True,
+        openapi_extra: Optional[dict[str, Any]] = None,
     ) -> None:
         super().__init__(
-            name=name,
-            methods=methods or ["DELETE"],
             path=path,
-            status_code=response_status,
-            response_schema=response_body,
+            methods=methods or ["DELETE"],
+            response_schema=response_schema,
+            status_code=status_code,
+            responses=responses,
+            auth=auth,
+            throttle=throttle,
             decorators=decorators,
-            operation_kwargs=operation_kwargs,
+            operation_name=operation_name,
+            operation_id=operation_id,
+            summary=summary,
+            description=description,
+            tags=tags,
+            deprecated=deprecated,
+            response_schema_by_alias=response_schema_by_alias,
+            response_schema_exclude_unset=response_schema_exclude_unset,
+            response_schema_exclude_defaults=response_schema_exclude_defaults,
+            response_schema_exclude_none=response_schema_exclude_none,
+            url_name=url_name,
+            include_in_schema=include_in_schema,
+            openapi_extra=openapi_extra,
         )
         self.model = model
-        self.decorators.append(self._update_handler_annotations)
-        self.path_parameters = path_parameters
-        self.get_model = get_model or self._default_get_model
+        self.path_schema = path_schema
+        self.get_model = get_model or (
+            lambda request, path_parameters: cast(
+                type[models.Model], self.model
+            ).objects.get(**(path_parameters.model_dump() if self.path_schema else {}))
+        )
         self.pre_delete = pre_delete or (lambda request, instance: None)
         self.post_delete = post_delete or (lambda request, instance: None)
 
-    def handler(
+    def endpoint(
         self,
         request: HttpRequest,
         path_parameters: Optional[BaseModel],
@@ -112,32 +93,29 @@ class DeleteView(APIView):
         instance.delete()
         self.post_delete(request, instance)
 
-    def _update_handler_annotations(
-        self, handler: Callable[..., Any]
-    ) -> Callable[..., Any]:
-        annotations = cast(FunctionType, handler).__annotations__
-        annotations["path_parameters"] = Annotated[
-            self.path_parameters, Path(default=None, include_in_schema=False)
-        ]
-        return handler
+    def register(self, router: Union[NinjaAPI, Router]) -> None:
+        self._inherit_parent_attributes()
+        self._validate_attributes()
+        self._build_path_schema()
+        self._update_endpoint_type_hints()
+        super().register(router)
 
-    def _default_get_model(
-        self, request: HttpRequest, path_parameters: Optional[BaseModel]
-    ) -> Model:
-        return cast(type[Model], self.model).objects.get(
-            **(path_parameters.model_dump() if path_parameters else {})
-        )
+    def _inherit_parent_attributes(self) -> None:
+        if self.parent:
+            self.model = self.model or getattr(self.parent, "model", None)
 
-    def as_operation(self) -> dict[str, Any]:
-        if self.api_viewset_class:
-            self.model = self.model or self.api_viewset_class.model
-
+    def _validate_attributes(self) -> None:
         if not self.model:
             raise ValueError(
-                f"Unable to determine model for view {self.name}. "
-                "Please set a model either on the view or on its associated viewset."
+                f"Model required for view {self.__class__.__name__}. "
+                f"Set 'model' on the view or its parent."
             )
-        self.path_parameters = self.path_parameters or self.resolve_path_parameters(
-            self.model
-        )
-        return super().as_operation()
+
+    def _build_path_schema(self) -> None:
+        if not self.path_schema:
+            self.path_schema = utils.build_path_schema(self.path, self.model)
+
+    def _update_endpoint_type_hints(self) -> None:
+        self.endpoint.__annotations__["path_parameters"] = Annotated[
+            self.path_schema, Path(default=None, include_in_schema=False)
+        ]

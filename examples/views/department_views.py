@@ -14,6 +14,10 @@ class DepartmentViewSet(viewsets.APIViewSet):
     default_request_body = DepartmentIn
     default_response_body = DepartmentOut
 
+    crud_viewset = viewsets.CRUDViewSet(
+        model=Department, body_schema=DepartmentIn, response_schema=DepartmentOut
+    )
+
     list_departments = views.ListView()
     create_department = views.CreateView()
     read_department = views.ReadView()

@@ -22,7 +22,7 @@ class TestCreateView(TestCase):
     def test_default_init_model_without_model(self):
         create_view = views.CreateView()
         with self.assertRaises(ValueError):
-            create_view.as_operation()
+            create_view._prepare_operation()
 
     def test_default_init_model(self):
         model_instance = self.create_view.init_model(HttpRequest(), None)
@@ -36,7 +36,7 @@ class TestCreateView(TestCase):
             instance, "created_by", self.user
         )
         request_body = CollectionIn(name="new-collection")
-        new_instance = self.create_view.handler(HttpRequest(), None, request_body)
+        new_instance = self.create_view.endpoint(HttpRequest(), None, request_body)
 
         self.assertIsInstance(new_instance, Collection)
         self.assertIsNotNone(new_instance.id)
@@ -51,7 +51,7 @@ class TestCreateView(TestCase):
             default_response_body = CollectionOut
 
         create_view.api_viewset_class = CollectionViewSet
-        create_view.as_operation()
+        create_view._prepare_operation()
         self.assertEqual(create_view.model, Collection)
         self.assertEqual(create_view.request_body, CollectionIn)
         self.assertEqual(create_view.response_schema, CollectionOut)

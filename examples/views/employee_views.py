@@ -17,4 +17,4 @@ class EmployeeViewSet(viewsets.APIViewSet):
     delete_employee = views.DeleteView()
 
 
-EmployeeViewSet.add_views_to(router)
+EmployeeViewSet().register(router)

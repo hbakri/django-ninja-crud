@@ -6,8 +6,10 @@ import django.core.exceptions
 import ninja.constants
 import pydantic
 from django.test import TestCase
+from ninja.constants import NOT_SET
 
 from ninja_crud import views, viewsets
+from ninja_crud.views import utils
 from tests.test_app.models import Item
 
 
@@ -16,16 +18,16 @@ class TestAPIView(TestCase):
         class ReusableAPIView(views.APIView):
             model = None
 
-            def handler(self, *args: Any, **kwargs: Any) -> Any:
-                """This is a handler method."""
+            def endpoint(self, *args: Any, **kwargs: Any) -> Any:
+                """This is a endpoint method."""
 
-            def as_operation(self) -> dict[str, Any]:
+            def _prepare_operation(self) -> dict[str, Any]:
                 if self.api_viewset_class and not self.model:
                     self.model = self.api_viewset_class.model
-                return super().as_operation()
+                return super()._prepare_operation()
 
         self.api_view = ReusableAPIView(
-            name="delete_item",
+            operation_name="delete_item",
             methods=["DELETE"],
             path="/{id}",
             status_code=204,
@@ -37,9 +39,23 @@ class TestAPIView(TestCase):
             "path": "/{id}",
             "methods": ["DELETE"],
             "view_func": mock.ANY,
+            "auth": NOT_SET,
+            "throttle": NOT_SET,
             "response": {204: None},
+            "operation_id": None,
+            "summary": None,
+            "description": None,
+            "tags": None,
+            "deprecated": None,
+            "by_alias": False,
+            "exclude_unset": False,
+            "exclude_defaults": False,
+            "exclude_none": False,
+            "url_name": None,
+            "include_in_schema": True,
+            "openapi_extra": None,
         }
-        actual_operation = self.api_view.as_operation()
+        actual_operation = self.api_view._prepare_operation()
 
         self.assertEqual(expected_operation, actual_operation)
 
@@ -54,11 +70,11 @@ class TestAPIView(TestCase):
 
         self.api_view.decorators = [decorator_1, decorator_2] + self.api_view.decorators
 
-        view_func = self.api_view.as_operation()["view_func"]
+        view_func = self.api_view._prepare_operation()["view_func"]
 
         self.assertEqual(
             view_func.__name__,
-            f"decorator_1_decorator_2_{self.api_view.name}",
+            f"decorator_1_decorator_2_{self.api_view.operation_name}",
         )
         self.assertEqual(
             view_func.__annotations__,
@@ -80,26 +96,26 @@ class TestAPIView(TestCase):
         with self.assertRaises(ValueError):
             self.api_view.api_viewset_class = ViewSet
 
-        self.api_view.as_operation()
+        self.api_view._prepare_operation()
         self.assertEqual(self.api_view.model, Item)
-        self.assertIsNotNone(self.api_view.resolve_path_parameters(model=Item))
+        self.assertIsNotNone(utils.build_path_schema(self.api_view.path, model=Item))
 
     def test_resolve_path_parameters(self):
         self.api_view.path = "/{id}"
         self.api_view.model = Item
-        path_parameters_type = self.api_view.resolve_path_parameters(model=Item)
+        path_parameters_type = utils.build_path_schema(self.api_view.path, model=Item)
         self.assertEqual(
             path_parameters_type.model_fields.get("id").annotation, uuid.UUID
         )
 
         self.api_view.path = "/{collection_id}"
-        path_parameters_type = self.api_view.resolve_path_parameters(model=Item)
+        path_parameters_type = utils.build_path_schema(self.api_view.path, model=Item)
         self.assertEqual(
             path_parameters_type.model_fields.get("collection_id").annotation, uuid.UUID
         )
 
         self.api_view.path = "/{collection_id}/items/{id}"
-        path_parameters_type = self.api_view.resolve_path_parameters(model=Item)
+        path_parameters_type = utils.build_path_schema(self.api_view.path, model=Item)
         self.assertEqual(
             path_parameters_type.model_fields.get("collection_id").annotation, uuid.UUID
         )
@@ -109,46 +125,52 @@ class TestAPIView(TestCase):
 
         with self.assertRaises(django.core.exceptions.FieldDoesNotExist):
             self.api_view.path = "/{nonexistent_field}"
-            self.api_view.resolve_path_parameters(model=Item)
+            utils.build_path_schema(self.api_view.path, model=Item)
 
     def test_resolve_response(self):
         model_1 = pydantic.create_model("Model1", field_1=(str, ...))
         model_2 = pydantic.create_model("Model2", field_2=(int, ...))
 
         class CustomAPIView(views.APIView):
-            def handler(self, *args: Any, **kwargs: Any) -> Any:
-                """This is a handler method."""
+            def endpoint(self, *args: Any, **kwargs: Any) -> Any:
+                """This is a endpoint method."""
 
         api_view = CustomAPIView(path="/{id}", methods=["GET"])
-        self.assertEqual(api_view.as_operation()["response"], ninja.constants.NOT_SET)
+        self.assertEqual(
+            api_view._prepare_operation()["response"], ninja.constants.NOT_SET
+        )
 
         api_view = CustomAPIView(path="/{id}", methods=["GET"], response_schema=model_1)
-        self.assertEqual(api_view.as_operation()["response"], {200: model_1})
+        self.assertEqual(api_view._prepare_operation()["response"], {200: model_1})
 
         api_view = CustomAPIView(path="/{id}", methods=["DELETE"], status_code=204)
-        self.assertEqual(api_view.as_operation()["response"], {204: None})
+        self.assertEqual(api_view._prepare_operation()["response"], {204: None})
 
         api_view = CustomAPIView(
             path="/{id}", methods=["GET"], responses={200: model_1, 201: model_2}
         )
         self.assertEqual(
-            api_view.as_operation()["response"], {200: model_1, 201: model_2}
+            api_view._prepare_operation()["response"], {200: model_1, 201: model_2}
         )
 
         api_view = CustomAPIView(
             path="/{id}", methods=["GET"], response_schema=model_1, status_code=200
         )
-        self.assertEqual(api_view.as_operation()["response"], {200: model_1})
+        self.assertEqual(api_view._prepare_operation()["response"], {200: model_1})
 
         api_view = CustomAPIView(
             path="/{id}", methods=["DELETE"], status_code=204, responses={404: str}
         )
-        self.assertEqual(api_view.as_operation()["response"], {204: None, 404: str})
+        self.assertEqual(
+            api_view._prepare_operation()["response"], {204: None, 404: str}
+        )
 
         api_view = CustomAPIView(
             path="/{id}", methods=["GET"], response_schema=model_1, responses={404: str}
         )
-        self.assertEqual(api_view.as_operation()["response"], {200: model_1, 404: str})
+        self.assertEqual(
+            api_view._prepare_operation()["response"], {200: model_1, 404: str}
+        )
 
         api_view = CustomAPIView(
             path="/{id}",
@@ -157,4 +179,6 @@ class TestAPIView(TestCase):
             status_code=201,
             responses={404: str},
         )
-        self.assertEqual(api_view.as_operation()["response"], {201: model_1, 404: str})
+        self.assertEqual(
+            api_view._prepare_operation()["response"], {201: model_1, 404: str}
+        )

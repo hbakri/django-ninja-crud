@@ -33,7 +33,7 @@ class TestUpdateView(TestCase):
     def test_default_get_model_without_model(self):
         update_view = views.UpdateView()
         with self.assertRaises(ValueError):
-            update_view.as_operation()
+            update_view._prepare_operation()
 
     def test_default_get_model(self):
         path_parameters = self.PathParameters(id=self.item.id)
@@ -47,7 +47,7 @@ class TestUpdateView(TestCase):
     def test_default_view_function(self):
         path_parameters = self.PathParameters(id=self.item.id)
         request_body = ItemIn(name="updated-item")
-        updated_instance = self.update_view.handler(
+        updated_instance = self.update_view.endpoint(
             HttpRequest(), path_parameters, request_body
         )
 
@@ -64,7 +64,7 @@ class TestUpdateView(TestCase):
             default_response_body = ItemOut
 
         update_view.api_viewset_class = ItemViewSet
-        update_view.as_operation()
+        update_view._prepare_operation()
         self.assertEqual(update_view.model, Item)
         self.assertEqual(update_view.request_body, ItemIn)
         self.assertEqual(update_view.response_schema, ItemOut)

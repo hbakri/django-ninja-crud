@@ -2,6 +2,7 @@ from unittest import mock
 
 import ninja
 from django.test import TestCase
+from ninja.constants import NOT_SET
 from pydantic import BaseModel
 
 from ninja_crud import views, viewsets
@@ -34,7 +35,7 @@ class TestAPIViewSet(TestCase):
         mock_api.default_router = mock.Mock(spec=ninja.Router)
         mock_api.default_router.add_api_operation = mock.Mock()
 
-        self.CollectionViewSet.add_views_to(mock_api)
+        self.CollectionViewSet().register(mock_api)
 
         mock_api.default_router.add_api_operation.assert_has_calls(
             [
@@ -42,13 +43,41 @@ class TestAPIViewSet(TestCase):
                     path="/",
                     methods=["GET"],
                     view_func=mock.ANY,
+                    auth=NOT_SET,
+                    throttle=NOT_SET,
                     response={200: list[self.CollectionViewSet.default_response_body]},
+                    operation_id=None,
+                    summary=None,
+                    description=None,
+                    tags=None,
+                    deprecated=None,
+                    by_alias=False,
+                    exclude_unset=False,
+                    exclude_defaults=False,
+                    exclude_none=False,
+                    url_name=None,
+                    include_in_schema=True,
+                    openapi_extra=None,
                 ),
                 mock.call(
                     path="/",
                     methods=["POST"],
                     view_func=mock.ANY,
+                    auth=NOT_SET,
+                    throttle=NOT_SET,
                     response={201: self.CollectionViewSet.default_response_body},
+                    operation_id=None,
+                    summary=None,
+                    description=None,
+                    tags=None,
+                    deprecated=None,
+                    by_alias=False,
+                    exclude_unset=False,
+                    exclude_defaults=False,
+                    exclude_none=False,
+                    url_name=None,
+                    include_in_schema=True,
+                    openapi_extra=None,
                 ),
             ]
         )
@@ -57,7 +86,7 @@ class TestAPIViewSet(TestCase):
         mock_router = mock.Mock(spec=ninja.Router)
         mock_router.add_api_operation = mock.Mock()
 
-        self.CollectionViewSet.add_views_to(mock_router)
+        self.CollectionViewSet().register(mock_router)
 
         mock_router.add_api_operation.assert_has_calls(
             [
@@ -65,13 +94,41 @@ class TestAPIViewSet(TestCase):
                     path="/",
                     methods=["GET"],
                     view_func=mock.ANY,
+                    auth=NOT_SET,
+                    throttle=NOT_SET,
                     response={200: list[self.CollectionViewSet.default_response_body]},
+                    operation_id=None,
+                    summary=None,
+                    description=None,
+                    tags=None,
+                    deprecated=None,
+                    by_alias=False,
+                    exclude_unset=False,
+                    exclude_defaults=False,
+                    exclude_none=False,
+                    url_name=None,
+                    include_in_schema=True,
+                    openapi_extra=None,
                 ),
                 mock.call(
                     path="/",
                     methods=["POST"],
                     view_func=mock.ANY,
+                    auth=NOT_SET,
+                    throttle=NOT_SET,
                     response={201: self.CollectionViewSet.default_response_body},
+                    operation_id=None,
+                    summary=None,
+                    description=None,
+                    tags=None,
+                    deprecated=None,
+                    by_alias=False,
+                    exclude_unset=False,
+                    exclude_defaults=False,
+                    exclude_none=False,
+                    url_name=None,
+                    include_in_schema=True,
+                    openapi_extra=None,
                 ),
             ]
         )
@@ -96,13 +153,41 @@ class TestAPIViewSet(TestCase):
                     path="/",
                     methods=["GET"],
                     view_func=mock.ANY,
+                    auth=NOT_SET,
+                    throttle=NOT_SET,
                     response={200: list[CollectionViewSet.default_response_body]},
+                    operation_id=None,
+                    summary=None,
+                    description=None,
+                    tags=None,
+                    deprecated=None,
+                    by_alias=False,
+                    exclude_unset=False,
+                    exclude_defaults=False,
+                    exclude_none=False,
+                    url_name=None,
+                    include_in_schema=True,
+                    openapi_extra=None,
                 ),
                 mock.call(
                     path="/",
                     methods=["POST"],
                     view_func=mock.ANY,
+                    auth=NOT_SET,
+                    throttle=NOT_SET,
                     response={201: CollectionViewSet.default_response_body},
+                    operation_id=None,
+                    summary=None,
+                    description=None,
+                    tags=None,
+                    deprecated=None,
+                    by_alias=False,
+                    exclude_unset=False,
+                    exclude_defaults=False,
+                    exclude_none=False,
+                    url_name=None,
+                    include_in_schema=True,
+                    openapi_extra=None,
                 ),
             ]
         )
@@ -126,13 +211,41 @@ class TestAPIViewSet(TestCase):
                     path="/",
                     methods=["GET"],
                     view_func=mock.ANY,
+                    auth=NOT_SET,
+                    throttle=NOT_SET,
                     response={200: list[CollectionViewSet.default_response_body]},
+                    operation_id=None,
+                    summary=None,
+                    description=None,
+                    tags=None,
+                    deprecated=None,
+                    by_alias=False,
+                    exclude_unset=False,
+                    exclude_defaults=False,
+                    exclude_none=False,
+                    url_name=None,
+                    include_in_schema=True,
+                    openapi_extra=None,
                 ),
                 mock.call(
                     path="/",
                     methods=["POST"],
                     view_func=mock.ANY,
+                    auth=NOT_SET,
+                    throttle=NOT_SET,
                     response={201: CollectionViewSet.default_response_body},
+                    operation_id=None,
+                    summary=None,
+                    description=None,
+                    tags=None,
+                    deprecated=None,
+                    by_alias=False,
+                    exclude_unset=False,
+                    exclude_defaults=False,
+                    exclude_none=False,
+                    url_name=None,
+                    include_in_schema=True,
+                    openapi_extra=None,
                 ),
             ]
         )
