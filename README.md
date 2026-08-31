@@ -53,6 +53,7 @@ First, we define a simple `Department` model:
 # examples/models.py
 from django.db import models
 
+
 class Department(models.Model):
     title = models.CharField(max_length=255, unique=True)
 ```
@@ -64,9 +65,11 @@ Next, we define schemas for input and output:
 # examples/schemas.py
 from ninja import Schema
 
+
 # For creating/updating departments
 class DepartmentIn(Schema):
     title: str
+
 
 # For retrieving department data
 class DepartmentOut(Schema):
@@ -89,16 +92,22 @@ from examples.schemas import DepartmentIn, DepartmentOut
 
 api = NinjaAPI()
 
+
 class DepartmentViewSet(viewsets.APIViewSet):
     api = api
     model = Department
 
     # Define all CRUD operations with minimal code
     list_departments = views.ListView(response_body=List[DepartmentOut])
-    create_department = views.CreateView(request_body=DepartmentIn, response_body=DepartmentOut)
+    create_department = views.CreateView(
+        request_body=DepartmentIn, response_body=DepartmentOut
+    )
     read_department = views.ReadView(response_body=DepartmentOut)
-    update_department = views.UpdateView(request_body=DepartmentIn, response_body=DepartmentOut)
+    update_department = views.UpdateView(
+        request_body=DepartmentIn, response_body=DepartmentOut
+    )
     delete_department = views.DeleteView()
+
 
 # You can still add custom endpoints as needed using pure Django Ninja syntax
 @api.get("/stats/")
@@ -163,6 +172,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from ninja import NinjaAPI
 
 api = NinjaAPI()
+
 
 @api.exception_handler(ObjectDoesNotExist)
 def handle_object_does_not_exist(request, exc):
